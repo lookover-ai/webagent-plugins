@@ -26,5 +26,5 @@ Logins live in the webagent vault (dashboard, Vault), never in this repo. Refer 
 - <Anything the agent cannot test: email codes, real payments, CAPTCHA pages.>
 
 ## Test data and gotchas
-- <e.g. Signup needs a unique email: use qa+<random>@example.com.>
+- <e.g. Signup needs a unique email: write it as qa+{{uid}}@example.com in a step ({{uid}} is new each run).>
 - <e.g. The card form accepts 4242 4242 4242 4242 in test mode.>

@@ -64,7 +64,7 @@ cases:                      # required, 1 to 100
     title: A new user can sign up    # required
     path: /signup           # optional: start path under the target url. Default /
     steps: [click "Create account"]  # optional list of plain steps (max 30). Default none
-    expect: the page shows "Welcome" # optional: the outcome in words
+    expect: shows "Welcome"      # optional: the outcome in words
     checks: { text: Welcome, url: /dashboard, noText: error }   # optional: same, as exact fields. Wins over `expect`
     tags: [smoke, auth]     # optional
     priority: 1             # optional: 1 (most important) to 5. Default 3
@@ -75,7 +75,7 @@ cases:                      # required, 1 to 100
 |---|---|
 | `targets` / `url` | Where the app runs. A local url is reached through a tunnel the agent opens. No sites at all: the reader asks you for one. |
 | `id` | Stable: reports and fixes refer to it. Missing: made from the title (lower-case, other characters become `-`, cut to 64; `case-<position>` if nothing is left; `-2`, `-3` if taken). Ids you wrote are kept and never renamed. Write them for cases you keep. |
-| `steps` | What a user does, one action per item: `click "Sign up"`, `type a unique email into Email`. No selectors, no secrets. Empty: the case only loads the page. |
+| `steps` | What a user does, one action per item: `click "Sign up"`, `type "qa+{{uid}}@example.com" into Email`. No selectors, no secrets. Empty: the case only loads the page. |
 | `expect` | What a user sees, in words. The server understands `shows "X"`, `address contains Y` and `does not show "Z"`; anything else is reported as "not checked". |
 | `checks` | The exact form of `expect`: `text` (the page shows it), `url` (the address contains it), `noText` (the page must not show it). When set, `checks` wins over `expect`. |
 | `tags` | `smoke` = the few cases that must pass on every change. Other tags are yours (`auth`, `checkout`, `validation`). |
@@ -86,6 +86,12 @@ cases:                      # required, 1 to 100
 The `session` option of a target (headers, proxy) is applied by the server: the plugin sends the file to `qa_run` as it is, so it works for plugin runs too.
 
 How a case becomes a webagent call is in `plugins/webagent/skills/qa-test/reference.md`.
+
+## Writing steps that replay
+- Quote every literal value you type: `type "qa+{{uid}}@example.com" into Email`. A description such as `type a unique email into Email` is typed as written.
+- `{{uid}}` is a short value that is new on every run: use it for anything that must be unique (emails, names). No real secrets in steps.
+- One action per step. Name a control by its visible label (`click "Create account"`, `... into Email`), not a selector.
+- `expect` in the form the server reads: `shows "Welcome"`, `address contains /dashboard`, `does not show "Error"`. Other wording is reported as "not checked"; use `checks` when unsure.
 
 ## Why plain language
 webagent's engine decides how to click and type. A case that says `click "Create account"` keeps working when the markup

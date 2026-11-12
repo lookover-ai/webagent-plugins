@@ -1,7 +1,7 @@
 {
   "name": "webagent",
   "displayName": "Lookover webagent",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Give your coding agent a cloud browser: run web tasks (research, forms, scrape, monitor) and test your app, with webagent's MCP tools, /webagent:run, /webagent:engines and /webagent:qa.",
   "author": {
     "name": "Lookover",

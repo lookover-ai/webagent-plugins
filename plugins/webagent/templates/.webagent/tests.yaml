@@ -16,7 +16,7 @@ targets:
 cases:
   - id: home-loads
     title: The home page loads and its links work
-    expect: the page shows "<a heading or word that is always on the home page>"
+    expect: shows "<a heading or word that is always on the home page>"
     tags: [smoke]
     priority: 1
 
@@ -24,10 +24,10 @@ cases:
     title: A new user can sign up
     path: /signup
     steps:
-      - type a unique email like qa+<random>@example.com into Email
-      - type a throwaway password into Password
+      - type "qa+{{uid}}@example.com" into Email       # {{uid}}: a new value each run, so the email is unique
+      - type "Throwaway-{{uid}}-pw1" into Password     # a throwaway value for a new account, never a real password
       - click "Create account"
-    expect: the address contains /dashboard and the page shows "Welcome"
+    expect: address contains /dashboard and shows "Welcome"
     tags: [smoke, auth]
     priority: 1
 
@@ -47,6 +47,6 @@ cases:
     title: A signed-in user sees the dashboard
     path: /login
     signedIn: true                    # needs the target's vault login: the plugin runs it as a goal; workflow runs skip it
-    expect: the dashboard shows the user's name and no error message
+    expect: shows "<the user's name>"
     tags: [auth]
     # priority: 3                     # 1 (most important) to 5; default 3

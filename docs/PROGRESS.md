@@ -47,3 +47,8 @@ Done: api A96 (d27cb2e, contracts 0.38.0) wired in. `qa_run { testsYaml }` for a
 `maxCostUsdPerCase` of a file is applied (note removed); diff-picked cap 5 -> 10; engine `slug` is for built-ins only (forks by `id`). SKILL 4A/4C, reference, `/webagent:qa`, Codex `AGENTS.md`.
 Next: K8 publish; K4; K5b; live run on staging. Api ask: allow `caseIds` / `tags` with `testsYaml` / `testsFile` (now refused: "apply to a saved workflow").
 Gotchas: brief said select with `caseIds`/`tags` + `testsYaml`; qa-tools.ts refuses that, so a subset still sends parsed `testsFile` and `testsYaml` runs the whole file (max 20 cases). `maxCostUsdPerCase` only via a file, `cases` has no such arg.
+
+## 2026-11-12 K9 done (plugin 0.4.2)
+Done: from the e2e gate (real Claude Code run). SKILL 3/5/8 + reference: `qa_status` once per failed case; exact final-summary template (page URL, step, expected vs actual, console, requests, screenshot, likely cause); "writing steps that replay" (quoted values, `{{uid}}`, one action, visible labels, canonical `shows "X"`) in reference, WEBAGENT-FOLDER.md, qa-init. Templates fixed.
+Next: K8 publish; K4; K5b. Api asks (gate): `expect` prefix `the page shows`; runtime matcher must not type descriptive values; case `failure` should carry url + first console error.
+Gotchas: `{{uid}}` in a case step is filled by the runtime (`template.ts`/`runner.ts`); the `signedIn` template `expect` now uses a quoted placeholder. Codex AGENTS.md already says to call `qa_status` for failed cases; template line added there too.

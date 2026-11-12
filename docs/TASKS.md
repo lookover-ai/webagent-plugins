@@ -29,5 +29,6 @@ Task prefix `K`. One block per session. Check: see `CLAUDE.md`. Brief: `../webag
   `qa_run` is absent; A91/A94 hedges dropped (slug `engineId`, `list_engines`). Skills, reference, `/webagent:qa`, Codex `AGENTS.md`, README, format doc.
 - [x] **K7b · qa_run testsYaml (api A96, plugin 0.4.1).** Whole `tests.yaml` goes as raw `testsYaml` (server parses, YAML errors with line/column); a subset still goes
   as filtered `testsFile` (the api has no `caseIds`/`tags` with a file: see PROGRESS); `session` also with `workflowId`; `maxCostUsdPerCase` applied; cap from the diff 5 to 10; `slug` on built-in engines only.
+- [x] **K9 · Gate fixes (plugin 0.4.2).** Failed cases: `qa_status` once each, summary template with page URL, expected vs actual, console, requests, screenshot, likely cause (reference.md). Templates and docs use quoted values / `{{uid}}` and the canonical `shows "X"` form; "writing steps that replay" note.
 - [ ] **K8 · Publish.** CTO creates the public repo `lookover-ai/webagent-plugins` after Abhisht's OK; license is MIT (decided, `LICENSE`);
   switch the default API URL to the production host when it exists; submit to Anthropic's directory if wanted.

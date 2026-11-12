@@ -17,7 +17,9 @@ Steps:
    exists for the test account and its namespace (the dashboard Vault groups logins by namespace); the 3 to 5 flows that
    must never break. Passwords are never asked for and never written down.
 4. Show the draft of both files (the full `tests.yaml`, a short `product.md`) and ask for approval. Write them only after a yes.
-5. Keep it small: 5 to 8 cases, plain-language steps, `expect` as what the user sees, one `smoke` tagged per critical flow
+5. Write steps that replay: one action per step, controls named by their visible label, every typed value a quoted literal
+   (`type "qa+{{uid}}@example.com" into Email`; `{{uid}}` is new each run), `expect` as `shows "X"` / `address contains Y` / `does not show "Z"`.
+   Keep it small: 5 to 8 cases, plain-language steps, `expect` as what the user sees, one `smoke` tagged per critical flow
    (`priority: 1`; scale is 1 most important to 5, default 3), `local` target = the dev server URL (the agent opens a tunnel when
    it tests it). Give every case an `id`. Use only the fields in the templates: the format is shared with the dashboard and CI.
 6. After writing, tell the user: commit `.webagent/` with the code (it holds no secrets), and run `/webagent:qa` next.

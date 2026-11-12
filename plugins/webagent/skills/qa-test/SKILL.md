@@ -41,9 +41,10 @@ browser can never reach it (SSRF guard, no override). Do not call a tool with it
   list what you skipped. "all" or "regression" means every case (in calls of up to 20).
 - New or changed behaviour with no case: append one to `.webagent/tests.yaml` (`title` is the only required field; add `id`, `steps`, `expect`, `tags`,
   `priority`; plain language, no secrets; only fields from the format in reference.md). Edit an existing case only when the app changed on purpose, and say so.
-- A case is what a user does and sees: steps like `click "Sign up"`, `type <unique email> into Email`; expect like
-  `the page shows "Welcome"`. Signup needs a unique throwaway address (`qa+<random>@example.com`). A flow that needs a
-  real inbox (email code) cannot be tested: mark that part COULD NOT TEST.
+- A case is what a user does and sees. **Write steps that replay:** one action per step, controls named by their visible label,
+  every typed value a quoted literal: `click "Sign up"`, `type "qa+{{uid}}@example.com" into Email` (`{{uid}}` = a new value each run). Never
+  describe a value ("a unique email"): it would be typed as written. `expect` in the form the server reads: `shows "Welcome"`,
+  `address contains /dashboard`, `does not show "Error"`. A flow that needs a real inbox (email code) cannot be tested: COULD NOT TEST.
 
 ## 4. Run: one `qa_run` for the whole set
 **Default: ONE `qa_run` call with every chosen case** (at most 20 per call; more: a second call). The server derives case ids, defaults
@@ -95,8 +96,9 @@ that link in one line when you start the run. Do not repeat it for each poll.
 - One `qa_run` waits up to 60 s (`waitSeconds` up to 90). If it comes back `running`, call `qa_status { id: <wfr_...>, waitSeconds: 90 }`
   and let the server wait. At most 3 such calls, then report the unfinished cases as `error` (timeout) and give the Watch live link.
   Never loop with short waits and never poll in a tight loop. (`run_task`: 90 s, then `get_report { id, waitSeconds: 90 }`.)
-- Do not print or re-read the whole run. Use the answer text (rollup + up to 5 failed cases). For one failed case:
-  `qa_status { id: <wfr_...>, caseId }` (the `caseId` is in the answer; the server made it from the title). Read `summary`, `verdict`,
+- Do not print or re-read the whole run. Use the answer text (rollup + up to 5 failed cases). **For every failed case, call
+  `qa_status { id: <wfr_...>, caseId }` once** (the `caseId` is in the answer; the server made it from the title): the rollup alone
+  has no page URL, console text or expected vs actual. Read `summary`, `verdict`,
   failed `steps[]` (`title`, `error`; task steps also `expected`, `actual`, `url`), `counts`. Open `consoleErrors` and `networkFailures` only for a
   failed case, first 5. Download a screenshot (`curl` its URL to a temp file, then Read it) only when the text does not explain the
   failure, at most once per failure.
@@ -129,13 +131,7 @@ Next `allowedDevOrigins`). Use `$URL` as the target. **When done, always: `kill 
 process), also after a failed run.
 
 ## 8. Final summary (always, short)
-```
-QA <target url> · <n> passed · <n> failed · <n> could not test
-PASS  <case id> - <title>
-FAIL  <case id> - <title>: <summary line>. Cause <file:line>. <Fixed and re-run: pass | Fix ready, redeploy then /webagent:qa rerun | Still failing after 2 rounds>
-COULD NOT TEST  <case id> - <why>. To unblock: <one step>
-Watch live / replay: <dashboardUrl>. Evidence: report <reportSignedUrl> (expires <urlsExpireAt>), recordingPath (needs your key)
-Warnings: <the Warning: lines, e.g. signedIn cases skipped>
-Changed: <files>, tests.yaml: <cases added/edited>. Skipped: <cases>. Tunnel: closed.
-```
-Say nothing the tool results do not show. A task `pass` is "the agent says it is done", say so.
+Use the template in reference.md (`Final summary template`). Passed cases: one line each. **Every failed case gets a block** (from its
+`qa_status`): page URL, step, expected vs actual, first 1-2 console errors (trimmed), failed requests (method, URL, status), screenshot
+link, then one line "Likely cause" with `file:line` if the repo is open (else "not checked: no repo"). A field the report does not
+have: write `not recorded`, never guess. Say nothing the tool results do not show. A task `pass` is "the agent says it is done", say so.

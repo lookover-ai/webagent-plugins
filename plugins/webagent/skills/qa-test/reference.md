@@ -155,10 +155,35 @@ cases:                           # required, 1-100
   - id: signup-happy             # optional slug; made from the title if missing
     title: A new user can sign up       # required
     path: /signup                # optional, default /
-    steps: [type a unique email into Email, type a throwaway password into Password, click "Create account"]   # optional
-    expect: the page shows "Welcome" and the address contains /dashboard   # optional, in words
+    steps: ['type "qa+{{uid}}@example.com" into Email', 'type "Throwaway-{{uid}}-pw1" into Password', click "Create account"]   # optional
+    expect: shows "Welcome" and address contains /dashboard   # optional; forms the server reads: shows "X", address contains Y, does not show "Z"
     checks: { text: Welcome, url: /dashboard, noText: error }              # optional, wins over expect
     tags: [smoke, auth]
     priority: 1                  # 1 (most important) to 5, default 3. 1 = run on every change
     signedIn: false              # optional: needs the target's vault login (the plugin runs it via run_task; workflow runs skip it)
+```
+
+## Writing steps that replay
+One action per step. Name a control by its visible label (`click "Create account"`, `type "..." into Email`). Quote every typed value; a
+description ("a unique email") is typed as written. `{{uid}}` is a new short value per run: `qa+{{uid}}@example.com`. No secrets in steps.
+`expect`: `shows "X"`, `address contains Y`, `does not show "Z"` (join with "and"); other wording is "not checked". When unsure use `checks`.
+
+## Final summary template
+Passed: one line. Failed: one block, filled from `qa_status { id, caseId }` (call it once per failed case). Keep each field to one line.
+```
+QA <target url> · <n> passed · <n> failed · <n> could not test
+PASS  <case id> - <title>
+FAIL  <case id> - <title>
+  Page:      <failing page URL (the step's `url`, else `finalUrl`)>
+  Step:      <step number and title>
+  Expected:  <expected>   Actual: <actual>          (or: not recorded)
+  Console:   <first 1-2 console errors, each cut to ~120 chars>   (or: none recorded)
+  Requests:  <METHOD url -> status>, up to 3          (or: none failed)
+  Screenshot: <url>
+  Likely cause: <one line>. Look at <file:line or route/handler>   (no repo open: "not checked: no repo")
+  Status: <Fixed and re-run: pass | Fix ready, redeploy then /webagent:qa rerun | Still failing after 2 rounds>
+COULD NOT TEST  <case id> - <why>. To unblock: <one step>
+Watch live / replay: <dashboardUrl>. Report <reportSignedUrl> (expires <urlsExpireAt>), recording (needs your key)
+Warnings: <the Warning: lines, e.g. signedIn cases skipped>
+Changed: <files>, tests.yaml: <cases added/edited>. Skipped: <cases>. Tunnel: closed.
 ```
