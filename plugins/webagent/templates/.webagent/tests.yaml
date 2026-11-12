@@ -1,0 +1,50 @@
+# Test cases for the webagent QA agent. Format: docs/WEBAGENT-FOLDER.md in the webagent-plugins repo.
+# Plain language only. No passwords or keys here: signed-in cases use the vault namespace in `credentials`.
+version: 1
+
+targets:
+  local:
+    url: http://localhost:3000        # a local URL is reached through a tunnel the agent opens
+  staging:
+    url: https://staging.example.com
+    credentials: staging              # webagent vault namespace for this site's test login (optional)
+
+# engine: qa                          # optional: engine for cases that run as a goal (default qa)
+
+cases:
+  - id: home-loads
+    title: The home page loads and its links work
+    steps: []
+    expect: the page shows "<a heading or word that is always on the home page>"
+    tags: [smoke]
+    priority: 1
+
+  - id: signup-happy
+    title: A new user can sign up
+    path: /signup
+    steps:
+      - type a unique email like qa+<random>@example.com into Email
+      - type a throwaway password into Password
+      - click "Create account"
+    expect: the address contains /dashboard and the page shows "Welcome"
+    tags: [smoke, auth]
+    priority: 1
+
+  - id: signup-bad-email
+    title: Signup rejects an invalid email
+    path: /signup
+    steps:
+      - type "not-an-email" into Email
+      - click "Create account"
+    expect: the page shows "valid email" and the address still contains /signup
+    tags: [auth, validation]
+    priority: 2
+
+  - id: dashboard-signed-in
+    title: A signed-in user sees the dashboard
+    path: /login
+    signedIn: true                    # uses the target's vault login; runs as a goal, not smoke_test
+    steps: []
+    expect: the dashboard shows the user's name and no error message
+    tags: [auth]
+    priority: 2

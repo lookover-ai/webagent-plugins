@@ -1,0 +1,14 @@
+{
+  "name": "webagent",
+  "description": "Lookover webagent plugins for coding agents: test the web app you are building in a real cloud browser.",
+  "owner": {
+    "name": "Lookover"
+  },
+  "plugins": [
+    {
+      "name": "webagent",
+      "source": "./plugins/webagent",
+      "description": "QA inside Claude Code: /webagent:qa tests your web app in a cloud browser through webagent's MCP, reads the report, fixes the bugs and re-runs the failed cases."
+    }
+  ]
+}

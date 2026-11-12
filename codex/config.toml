@@ -1,0 +1,12 @@
+# Add to ~/.codex/config.toml (all projects) or .codex/config.toml in a trusted project.
+# Set the key in the shell that starts Codex:  export WEBAGENT_API_KEY=wa_...   (never write the key in this file)
+#
+# Until production is live the staging host is the only live one. Replace the url when your team gives you another.
+
+[mcp_servers.webagent]
+url = "https://webagent-staging-in-api.lookover.ai/mcp"
+bearer_token_env_var = "WEBAGENT_API_KEY"
+startup_timeout_sec = 20
+# smoke_test waits up to 60 s and run_task up to 90 s for one answer. Codex's default tool timeout is 60 s,
+# which would cut a normal test short, so raise it.
+tool_timeout_sec = 120

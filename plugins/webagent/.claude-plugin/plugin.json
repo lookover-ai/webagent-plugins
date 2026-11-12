@@ -1,0 +1,12 @@
+{
+  "name": "webagent",
+  "displayName": "Lookover webagent",
+  "version": "0.1.0",
+  "description": "Test the web app you are building in a real cloud browser from Claude Code: webagent's MCP tools, a QA skill, /webagent:qa and /webagent:qa-init.",
+  "author": {
+    "name": "Lookover",
+    "url": "https://webagent.lookover.ai"
+  },
+  "homepage": "https://webagent.lookover.ai",
+  "keywords": ["qa", "testing", "smoke-test", "browser", "mcp", "e2e"]
+}
