@@ -1,0 +1,12 @@
+# webagent settings for this repo. Commit it. Never put an API key in this file:
+# the key lives in your coding agent's own settings (Claude Code: /plugin configure webagent@webagent; Codex: WEBAGENT_API_KEY).
+version: 1
+
+# Which engine drives the cloud browser for tasks started from this repo.
+# A slug (research, general, forms, monitor, careful, qa) or a full engine id.
+# Omit it to use your project's default engine. List them with /webagent:engines.
+# engine: general
+
+# Optional note for teammates: the API origin this repo's team uses (no /mcp). Not a secret. The plugin
+# does not read it; each person sets the URL in their own plugin settings. Usually leave it out.
+# apiUrl: https://webagent-staging-in-api.lookover.ai

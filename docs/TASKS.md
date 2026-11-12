@@ -13,8 +13,12 @@ Task prefix `K`. One block per session. Check: see `CLAUDE.md`. Brief: `../webag
   possible (see CLAUDE.md rule 5); README says so and notes OAuth sign-in is coming, API keys stay for CI.
 - [ ] **K4 · Codex packaging.** Check whether Codex loads Agent Skills / plugins from a repo path; if so ship the same
   `qa-test` skill instead of an `AGENTS.md` paste. Run the Codex snippet with a real agent.
-- [ ] **K5 · Last-run memory.** `/webagent:qa rerun failed` across sessions: write `.webagent/.last-run.json` (case ids, verdicts,
+- [ ] **K5b · Last-run memory.** `/webagent:qa rerun failed` across sessions: write `.webagent/.last-run.json` (case ids, verdicts,
   report ids, no URLs with tokens), gitignored. Only if K2 shows testers need it.
+- [x] **K5 · General connector (hub D66).** Plugin 0.3.0: skill `browse` (+ reference), `/webagent:run`, `/webagent:engines`,
+  `.webagent/config.yaml` (`version`, `engine`, `apiUrl` note; format + template), engine order in `qa-test`, README / plugin.json /
+  Codex `AGENTS.md` general-first. Waits on api A91 for `list_engines` and slug `engineId` (skills say "if in your tool list").
+  (The old "Last-run memory" row is renamed K5b.)
 - [ ] **K6 · Import into Workflows.** When the api's Workflows module imports `.webagent/tests.yaml`: move the schema to
   `../webagent-contracts`, drop the draft banner in `docs/WEBAGENT-FOLDER.md`, add `/webagent:qa-ci` (print the CI call).
 - [ ] **K7 · Publish.** CTO creates the public repo `lookover-ai/webagent-plugins` after Abhisht's OK; license is MIT (decided, `LICENSE`);

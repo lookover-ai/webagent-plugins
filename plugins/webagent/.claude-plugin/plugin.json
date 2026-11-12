@@ -1,18 +1,20 @@
 {
   "name": "webagent",
   "displayName": "Lookover webagent",
-  "version": "0.2.0",
-  "description": "Test the web app you are building in a real cloud browser from Claude Code: webagent's MCP tools, a QA skill, /webagent:qa and /webagent:qa-init.",
+  "version": "0.3.0",
+  "description": "Give your coding agent a cloud browser: run web tasks (research, forms, scrape, monitor) and test your app, with webagent's MCP tools, /webagent:run, /webagent:engines and /webagent:qa.",
   "author": {
     "name": "Lookover",
     "url": "https://webagent.lookover.ai"
   },
   "homepage": "https://webagent.lookover.ai",
   "keywords": [
+    "browser",
+    "web-agent",
+    "automation",
     "qa",
     "testing",
     "smoke-test",
-    "browser",
     "mcp",
     "e2e"
   ],

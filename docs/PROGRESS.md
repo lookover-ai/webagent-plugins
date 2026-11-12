@@ -18,3 +18,10 @@ Next: K4; live `/webagent:qa` run on staging; read `qa_run` args after api A86 a
 Gotchas: `${user_config.api_key:-${WEBAGENT_API_KEY}}` drops the server silently (so no env fallback); an unset required option also
 hides the server; a default on `api_url` is enough (install says "not yet set" but connects). `claude plugin install --config k=v` sets
 options non-interactively (used for the fake-server test of the Authorization header).
+
+## 2026-11-12 K5 done (plugin 0.3.0)
+Done: hub D66 split. New skill `browse` (+ reference.md), `/webagent:run`, `/webagent:engines` (asks before writing config), `.webagent/config.yaml`
+(template + `docs/WEBAGENT-FOLDER.md`), qa-test engine order `tests.yaml` > `config.yaml` > `qa`, README/plugin.json/marketplace/Codex general first.
+Tool names checked against `webagent-api/src/modules/mcp` (scrape, screenshot, pdf, crawl, run_task, create_session, skill_*) and contracts quick.ts.
+Next: when api A91 lands, confirm `list_engines` output and slug `engineId`, drop the "if in your tool list" hedges; K4; K5b; live run on staging.
+Gotchas: quick tools (scrape etc.) take no engineId or vault credentials. The plugin does not read `apiUrl` from config.yaml (URL is a plugin setting). Old K5 row renamed K5b.

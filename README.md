@@ -1,11 +1,15 @@
 # webagent plugins
 
-Test the web app you are building without leaving your coding agent. Type
-`/webagent:qa test the signup I just built`, and Claude Code (or Codex) runs the flow in a real cloud browser through
-[webagent](https://webagent.lookover.ai)'s MCP, reads the report, fixes the bug it finds and re-runs only the failed cases.
+Give your coding agent a cloud browser: run web tasks, test your app. Claude Code (or Codex) drives a real, isolated, recorded
+cloud browser through [webagent](https://webagent.lookover.ai)'s MCP, and you can watch it live and take over from the dashboard.
 
-Your agent knows your code, so it decides **what** to test. webagent decides **how** (cloud browser, QA engine) and keeps
-the proof: a verdict, the failed step, console errors, failed network calls, a screenshot and a replay.
+- **Run web tasks.** `/webagent:run find the monthly price of the Pro plan on example.com/pricing`: research and extract, fill a
+  form, check a page, monitor a value, screenshot, scrape or crawl, multi-step tasks on a site. Skill `browse`.
+- **Test your app (the headline use case).** `/webagent:qa test the signup I just built`: the agent runs the flow in the cloud
+  browser, reads the report, fixes the bug it finds and re-runs only the failed cases. Skill `qa-test`.
+
+Your agent knows your code, so it decides **what** to do or test. webagent decides **how** (cloud browser, engine) and keeps
+the proof: for tests a verdict, the failed step, console errors, failed network calls, a screenshot and a replay.
 
 ## Claude Code
 
@@ -20,10 +24,21 @@ the proof: a verdict, the failed step, console errors, failed network calls, a s
 4. Check `/mcp`: the server `webagent` is connected.
 5. First prompt:
    ```
+   /webagent:run find the price of the Pro plan on example.com/pricing
    /webagent:qa test the signup I just built
    ```
-   No `.webagent/` folder yet? Run `/webagent:qa-init` once: it reads your code and proposes `product.md` and `tests.yaml`
-   (it asks before writing).
+   For tests, no `.webagent/` folder yet? Run `/webagent:qa-init` once: it reads your code and proposes `product.md` and
+   `tests.yaml` (it asks before writing).
+
+| Command | What it does |
+|---|---|
+| `/webagent:run <task>` | Any web task in a cloud browser |
+| `/webagent:engines` | List the engines, pick one, optionally save it to `.webagent/config.yaml` |
+| `/webagent:qa <what to test>` | Test your web app, fix, re-run the failures |
+| `/webagent:qa-init` | Create `.webagent/product.md` and `tests.yaml` from your code |
+
+**Engines.** An engine is the agent that drives the browser (`general`, `research`, `forms`, `monitor`, `careful`, `qa`, or a
+fork of your team). Order: the engine the call names, then `engine:` in `.webagent/config.yaml`, then your project's default.
 
 | Setting | Needed | Meaning |
 |---|---|---|
@@ -46,7 +61,7 @@ Set another API URL in `/plugin configure webagent@webagent` when your team give
 2. Paste [`codex/AGENTS.md`](codex/AGENTS.md) into your project's `AGENTS.md` (or `~/.codex/AGENTS.md`).
 3. Ask: `Smoke test the signup I just built.` Check with `codex mcp get webagent`.
 
-## What it does
+## What testing does
 
 1. Picks the target: the URL you give, or a target in `.webagent/tests.yaml`.
 2. Reads `.webagent/` and your diff, chooses up to 5 cases (your changed areas plus the smoke cases).
@@ -66,8 +81,8 @@ Nothing is installed for you: install `cloudflared` or `ngrok` once.
 
 ## The `.webagent/` folder
 
-`product.md` (what the app is, roles, flows, environments, test accounts by vault namespace, never passwords) and
-`tests.yaml` (plain-language cases). Format: [docs/WEBAGENT-FOLDER.md](docs/WEBAGENT-FOLDER.md). Templates:
+`config.yaml` (optional: which engine, no key ever), `product.md` (what the app is, roles, flows, environments, test accounts by
+vault namespace, never passwords) and `tests.yaml` (plain-language cases). Format: [docs/WEBAGENT-FOLDER.md](docs/WEBAGENT-FOLDER.md). Templates:
 [`plugins/webagent/templates/.webagent/`](plugins/webagent/templates/.webagent/). It is a draft format and will become a shared
 contract when webagent's Workflows import it.
 

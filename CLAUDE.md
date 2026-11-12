@@ -1,7 +1,7 @@
 # webagent-plugins
 
 Plugins and snippets that put webagent QA inside the user's own coding agent (Lookover suite, task prefix `K`).
-First product: the Claude Code plugin `webagent` (`/webagent:qa`) plus a Codex snippet. Public repo planned
+First product: the Claude Code plugin `webagent` (general connector: `/webagent:run`, `/webagent:engines`; QA is the headline use case: `/webagent:qa`) plus a Codex snippet. Public repo planned
 (`lookover-ai/webagent-plugins`); until the CTO creates it there is no remote: do not add one, do not push.
 Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hub/ENGINES.md` (the `qa` engine).
 
@@ -15,9 +15,10 @@ Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hu
 plugins/webagent/                   the plugin (installs copy ONLY this folder: nothing in it may reach outside it)
   .claude-plugin/plugin.json        name, version, license MIT, userConfig (api_key sensitive, api_url default)
   .mcp.json                         http MCP server `webagent` (${user_config.api_key}, ${user_config.api_url})
-  skills/qa-test/SKILL.md           the workflow, written for a model; long reference in reference.md
-  commands/qa.md, qa-init.md        /webagent:qa, /webagent:qa-init
-  templates/.webagent/              product.md, tests.yaml starters
+  skills/browse/SKILL.md            general web tasks (hub D66); reference.md beside it
+  skills/qa-test/SKILL.md           the QA workflow, written for a model; long reference in reference.md
+  commands/run.md, engines.md, qa.md, qa-init.md   /webagent:run, :engines, :qa, :qa-init
+  templates/.webagent/              config.yaml, product.md, tests.yaml starters
 codex/AGENTS.md, config.toml        the same workflow for Codex
 docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs/PROGRESS.md
 ```

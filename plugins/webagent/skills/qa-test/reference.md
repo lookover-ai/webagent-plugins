@@ -63,8 +63,10 @@ write as steps; `run_task` to explore, with its answer quoted, never to decide p
 | Fail on a tunnel URL, text missing, page is a warning page | The tunnel's interstitial, not your app | `error`: ngrok header or cloudflared, re-run |
 
 ## Engine id (`run_task`, `create_session`)
-Try in this order, stop at the first the server accepts: the slug `qa`; then `eng_us_00000000qa00000000000000` (the seeded
-id of the built-in QA engine); then omit `engineId` and say so. Never invent another id. `GET /v1/engines` lists real ones.
+Which engine: `tests.yaml` `engine`, else `.webagent/config.yaml` `engine`, else `qa`. Pass the slug (or full id) as `engineId`.
+The server accepts a slug (api A91) or an id. If it refuses the slug, and the engine is `qa`, try `eng_us_00000000qa00000000000000`
+(the seeded id of the built-in QA engine); still refused: omit `engineId` and say so. Never invent another id. `list_engines`
+(when in your tool list) shows the real ones. For non-QA work, the `browse` skill covers engines.
 
 ## Tunnels
 | | cloudflared quick tunnel (default) | ngrok free |
@@ -122,7 +124,7 @@ version: 1
 targets:                         # one per environment
   local:   { url: http://localhost:3000 }          # local URLs get a tunnel
   staging: { url: https://staging.example.com, credentials: staging }  # vault namespace
-engine: qa                       # optional: engine for run_task cases (default qa)
+engine: qa                       # optional: engine for run_task cases (default: config.yaml engine, else qa)
 cases:
   - id: signup-happy             # unique, kebab-case
     title: A new user can sign up

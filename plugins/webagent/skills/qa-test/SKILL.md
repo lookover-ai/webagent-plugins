@@ -67,7 +67,7 @@ warning page (ngrok "You are about to visit", Cloudflare "Just a moment"). If th
 **C. `run_task` (QA engine): only to explore an unknown flow, or when the user asks. Never a pass/fail gate.** A task has
 no assertions: `pass` only means the agent says it is done, and a found bug often ends `blocked` (verdict `error`). Report it
 as "explored", quote the `answer`, and treat consoleErrors/networkFailures in its report as findings. A `FAIL:` answer is
-worth acting on; a `pass` proves nothing. Args, goal template, `engineId`: reference.md. For dependent steps on one browser:
+worth acting on; a `pass` proves nothing. Args, goal template, `engineId`: reference.md. Engine order: `tests.yaml` `engine` > `.webagent/config.yaml` `engine` > `qa`. For dependent steps on one browser:
 `create_session`, `run_task {sessionId, goal}` per step, `stop_session`.
 
 ## 5. Wait without burning tokens

@@ -1,7 +1,29 @@
+## webagent (cloud browser): web tasks and QA
+
+The `webagent` MCP tools give you a real cloud browser (isolated, recorded; I can watch and take over live in the dashboard,
+Sessions, the session id). Do not use a local browser for web work. Two jobs: **web tasks** (below) and **testing my web app**
+(the next section: use it whenever I ask to test, smoke test, QA or verify my own app).
+
+### Web tasks (research, extract, fill a form, check a page, monitor a value, screenshot, crawl)
+- Same rules as QA below: no secret in any tool call, never try to pass a CAPTCHA, close the sessions you open, tell me if the
+  tools are missing or answer 401.
+- Pick the cheapest tool: `scrape` (markdown), `screenshot`, `pdf`, `crawl` for read-only pages (no session to close);
+  `run_task { goal, startUrl }` for a goal in plain words; `create_session` then `run_task { sessionId, goal }` per step, then
+  `stop_session`, for dependent steps or when you need `headers`, `proxyUrl` or a vault login (`credentials: { namespace,
+  autoSubmit: true }`); `list_skills` then the typed `skill_<name>` tool for a packaged skill. Prefer `scrape` over `run_task`
+  when nothing needs clicking.
+- Engine (only `run_task` and `create_session`), first hit wins: one I name; `engine:` in `.webagent/config.yaml` (read it if it
+  exists; pass it as `engineId`); if the task clearly fits another engine and `list_engines` is in your tool list, call it once and
+  pick by slug (`research`, `forms`, `monitor`, `careful`, `general`); else omit `engineId` (the project default runs).
+  `engineId` takes a slug or a full id. Refused: retry once without it. Never invent an id. Do not use the `qa` engine for non-test work.
+- A goal states one outcome, what to return and a stop condition. Waiting and reading as in "Wait without burning tokens" below.
+  A call returning `running`: `get_report { id: taskId, waitSeconds: 90 }`, at most 3 times. Give me the session id once for any task
+  longer than a few seconds. `paused` = I took over: do not restart it. `captcha` / `blocked`: report it, do not retry.
+- Finish with a few lines: what you found or did, key values, URLs, session id, what you could not do. Quote the task `answer`.
+
 ## QA with webagent (cloud browser)
 
-Use the `webagent` MCP tools to test web apps in a real cloud browser. Do not use a local browser for this.
-You know the code, so you decide what to test. webagent decides how to test and keeps the evidence.
+Testing my own web app. You know the code, so you decide what to test. webagent decides how to test and keeps the evidence.
 
 ### Rules
 - Never put a secret (API key, password, token, `.env` value) in a tool call, step, goal or answer. Step and goal text is stored with the run.
@@ -31,8 +53,8 @@ then run `cloudflared tunnel --url http://localhost:<port>` in the background (d
   login in `steps`. If `qa_run` / `qa_status` are in your tool list, prefer one `qa_run` with all chosen cases, then `qa_status`
   on a failed case.
 - **`run_task`** only to explore an unknown flow or when I ask, **never as the pass/fail gate** (it said `pass` on a broken
-  checkout in 3 of 6 runs; `pass` only means the agent says it is done). Args: `goal`, `startUrl`, `record: true`, `engineId` (try
-  the slug `qa`, then `eng_us_00000000qa00000000000000`, then omit it), `credentials: { namespace, autoSubmit: true }` for a vault
+  checkout in 3 of 6 runs; `pass` only means the agent says it is done). Args: `goal`, `startUrl`, `record: true`, `engineId` (`tests.yaml`
+  `engine`, else `.webagent/config.yaml` `engine`, else the slug `qa`; if the server refuses `qa`, try `eng_us_00000000qa00000000000000`, then omit it), `credentials: { namespace, autoSubmit: true }` for a vault
   login. End the goal with `Answer exactly PASS: <what you saw> or FAIL: <what you saw instead>. If you cannot run it answer
   COULD NOT TEST: <why>.` Quote the answer, call the result "explored".
 - ngrok free: `headers: [{ "hosts": ["<tunnel host>"], "headers": { "ngrok-skip-browser-warning": "1" } }]` on `run_task`, or
