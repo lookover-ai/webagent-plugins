@@ -9,3 +9,12 @@ bearer `${WEBAGENT_API_KEY}`), skill `qa-test` (+ `reference.md`), `/webagent:qa
 Next: K2 (run it for real with a key). Not done: no end-to-end run (no key, local stack not up), tunnel recipe not run.
 Gotchas: installs copy only `plugins/webagent/`, so templates live inside it, not at the repo root. Codex's default tool timeout (60 s) is
 shorter than a `smoke_test` wait, so `config.toml` sets 120. `engineId` must be a full id; the skill derives the `qa` id from the region.
+
+## 2026-11-12 K2 + K3 done (plugin 0.2.0)
+Done: skill/reference/Codex text from the tunnel run (smoke_test default, run_task never the gate, cloudflared default, ngrok header,
+warning-page = error, engine slug then id, qa_run/qa_status when listed). `userConfig` api_key (sensitive, required) + api_url (default
+staging) with `${user_config.*}` in `.mcp.json`; MIT `LICENSE` + `license`; README (beta staging host, OAuth coming).
+Next: K4; live `/webagent:qa` run on staging; read `qa_run` args after api A86 and update SKILL.md section 4A + reference.md.
+Gotchas: `${user_config.api_key:-${WEBAGENT_API_KEY}}` drops the server silently (so no env fallback); an unset required option also
+hides the server; a default on `api_url` is enough (install says "not yet set" but connects). `claude plugin install --config k=v` sets
+options non-interactively (used for the fake-server test of the Authorization header).

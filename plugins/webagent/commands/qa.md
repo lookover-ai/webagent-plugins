@@ -1,7 +1,7 @@
 ---
 description: Test your web app in a real cloud browser with webagent, read the report, fix bugs and re-run the failed cases.
 argument-hint: [what to test, a URL, "all", or "rerun failed"]
-allowed-tools: mcp__plugin_webagent_webagent__smoke_test mcp__plugin_webagent_webagent__run_task mcp__plugin_webagent_webagent__get_report mcp__plugin_webagent_webagent__get_task mcp__plugin_webagent_webagent__create_session mcp__plugin_webagent_webagent__stop_session Read Grep Glob Bash(git status *) Bash(git diff *)
+allowed-tools: mcp__plugin_webagent_webagent__smoke_test mcp__plugin_webagent_webagent__run_task mcp__plugin_webagent_webagent__get_report mcp__plugin_webagent_webagent__get_task mcp__plugin_webagent_webagent__create_session mcp__plugin_webagent_webagent__stop_session mcp__plugin_webagent_webagent__qa_run mcp__plugin_webagent_webagent__qa_status Read Grep Glob Bash(git status *) Bash(git diff *)
 ---
 
 Run a QA pass with webagent.

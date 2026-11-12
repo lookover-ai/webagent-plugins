@@ -13,8 +13,8 @@ Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hu
 ```
 .claude-plugin/marketplace.json     marketplace `webagent`, one plugin
 plugins/webagent/                   the plugin (installs copy ONLY this folder: nothing in it may reach outside it)
-  .claude-plugin/plugin.json        name webagent, version
-  .mcp.json                         http MCP server `webagent` (env: WEBAGENT_API_KEY, WEBAGENT_API_URL)
+  .claude-plugin/plugin.json        name, version, license MIT, userConfig (api_key sensitive, api_url default)
+  .mcp.json                         http MCP server `webagent` (${user_config.api_key}, ${user_config.api_url})
   skills/qa-test/SKILL.md           the workflow, written for a model; long reference in reference.md
   commands/qa.md, qa-init.md        /webagent:qa, /webagent:qa-init
   templates/.webagent/              product.md, tests.yaml starters
@@ -29,10 +29,12 @@ docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs
 2. **The skill is read by a model.** Short imperative steps, exact arg names, no marketing. Keep SKILL.md under 200 lines;
    long tables go in `reference.md`. A claim the model should not make (a fix is live, a CAPTCHA passed) is a rule in the skill.
 3. **Never** put a secret, a real key or a real host id in a file. Placeholder keys: `wa_<region>_...`. The default API URL
-   lives in ONE place (`.mcp.json`; plus `codex/config.toml`); change both together when production hosts exist.
+   lives in ONE place (`userConfig.api_url.default` in `plugin.json`; plus `codex/config.toml`); change both together when production hosts exist.
 4. **`.webagent/` is a draft contract** (`docs/WEBAGENT-FOLDER.md`). Do not add fields without a real use. It becomes a shared
    contract when the api's Workflows module imports it: then it moves to `../webagent-contracts` and this repo follows it.
-5. Bump `version` in `plugin.json` on every change users should receive (Claude Code caches by version).
+5. The plugin has NO env fallback for the key: `${user_config.x:-${ENV}}` makes Claude Code drop the server (tested, v2.1.322). Do not
+   add one. Codex keeps `WEBAGENT_API_KEY`.
+6. Bump `version` in `plugin.json` on every change users should receive (Claude Code caches by version).
 
 ## Check (before every commit)
 ```

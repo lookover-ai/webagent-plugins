@@ -9,32 +9,35 @@ the proof: a verdict, the failed step, console errors, failed network calls, a s
 
 ## Claude Code
 
-1. Create a webagent API key (dashboard, Keys, Create key; the **member** role is enough) and export it in the shell that
-   starts Claude Code:
-   ```bash
-   export WEBAGENT_API_KEY=wa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
+1. Create a webagent API key (dashboard, Keys, Create key; the **member** role is enough).
 2. Install the plugin:
    ```
    /plugin marketplace add lookover-ai/webagent-plugins
    /plugin install webagent@webagent
    ```
-3. Check `/mcp`: the server `webagent` is connected.
-4. First prompt:
+3. Claude Code asks for two values when the plugin is enabled: your **API key** (masked, kept in your system keychain, never in a
+   file) and the **API URL** (keep the default). Change them later with `/plugin configure webagent@webagent`.
+4. Check `/mcp`: the server `webagent` is connected.
+5. First prompt:
    ```
    /webagent:qa test the signup I just built
    ```
    No `.webagent/` folder yet? Run `/webagent:qa-init` once: it reads your code and proposes `product.md` and `tests.yaml`
    (it asks before writing).
 
-| Variable | Needed | Meaning |
+| Setting | Needed | Meaning |
 |---|---|---|
-| `WEBAGENT_API_KEY` | yes | Your key (`wa_<region>_...`). Never commit it. |
-| `WEBAGENT_API_URL` | no | API origin without `/mcp`. Default is the staging host below. |
+| API key | yes | Your key (`wa_<region>_...`). Never commit it. |
+| API URL | no | API origin without `/mcp`. Default is the staging host below. |
 
-**Availability.** Production hosts are not live yet. The default API is the staging host
+The Claude Code plugin reads these two settings only; a `WEBAGENT_API_KEY` shell variable is **not** used by the plugin (Claude
+Code cannot fall back to an environment variable inside the plugin's server entry). Codex and CI use the variable, see below.
+
+**Coming: "Sign in with Lookover".** Browser sign-in (OAuth), no key to copy, is planned. API keys stay for CI and for Codex.
+
+**Beta.** Production hosts are not live yet. The default API is the staging host
 `https://webagent-staging-in-api.lookover.ai` (key from the staging dashboard, `https://webagent-staging.lookover.ai`).
-Use `export WEBAGENT_API_URL=...` to point somewhere else.
+Set another API URL in `/plugin configure webagent@webagent` when your team gives you one.
 
 ## Codex
 
@@ -47,7 +50,8 @@ Use `export WEBAGENT_API_URL=...` to point somewhere else.
 
 1. Picks the target: the URL you give, or a target in `.webagent/tests.yaml`.
 2. Reads `.webagent/` and your diff, chooses up to 5 cases (your changed areas plus the smoke cases).
-3. Runs them in the cloud browser (`smoke_test`, or `run_task` with the QA engine for signed-in or judgement checks).
+3. Runs them in the cloud browser: one `smoke_test` per case (or one `qa_run` for all cases once your server has it). `run_task`
+   is only for exploring a flow you cannot write as steps; it is never the pass/fail gate.
 4. Reads the compact report. Verdicts: `pass`, `fail` (the app is wrong), `error` (the test could not run: CAPTCHA, blocked
    address, capacity, timeout; never reported as an app bug).
 5. Fixes the code for each `fail`, re-runs only those cases, at most 2 rounds. A remote target is re-run only after you deploy.
@@ -56,8 +60,8 @@ Use `export WEBAGENT_API_URL=...` to point somewhere else.
 ## Testing localhost
 
 webagent's cloud browser can never open `localhost` or a private address (by design). For a local dev server the agent opens a
-tunnel itself (`cloudflared tunnel --url http://localhost:<port>`, no account; or `ngrok http <port>`), tests the public tunnel
-URL and closes the tunnel afterwards. **The tunnel exposes your dev server to the internet while it runs. Use test data.**
+tunnel itself (`cloudflared tunnel --url http://localhost:<port>`, no account, the default; or `ngrok http <port>` with the
+`ngrok-skip-browser-warning` header it adds for you), tests the public tunnel URL and closes the tunnel afterwards. **The tunnel exposes your dev server to the internet while it runs. Use test data.**
 Nothing is installed for you: install `cloudflared` or `ngrok` once.
 
 ## The `.webagent/` folder
@@ -71,6 +75,10 @@ contract when webagent's Workflows import it.
 
 The agent never pastes secrets into tool calls (step and goal text is stored with the run), uses test accounts, never tries to
 pass a CAPTCHA, and closes the browser sessions and tunnels it opens.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
 
 ## Develop
 

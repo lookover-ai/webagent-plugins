@@ -9,7 +9,7 @@ You know the code, so you decide what to test. webagent decides how to test and 
 - `pass` and `fail` are the app's result. `error` means the test could not run (CAPTCHA, `navigation_blocked`, capacity, timeout).
   Never call an `error` a bug in the app. Never try to get past a CAPTCHA or bot check.
 - Close what you open: `stop_session` for sessions you left open, kill tunnels you started.
-- If the webagent tools are missing or answer 401: tell me to create a key in the webagent dashboard and `export WEBAGENT_API_KEY=...`. Stop.
+- If the webagent tools are missing or answer 401: tell me to create a key in the webagent dashboard and `export WEBAGENT_API_KEY=...` (then restart Codex). Stop.
 
 ### Context
 Read `.webagent/product.md` and `.webagent/tests.yaml` if they exist (format: cases with `id`, `title`, `path`, `steps`, `expect`,
@@ -20,20 +20,24 @@ and tell me what you skipped. Append new cases for new behaviour to `tests.yaml`
 ### Target URL
 My URL, else the `tests.yaml` target I name, else ask once. The cloud browser cannot open `localhost`, private IPs or `.internal`
 (by design). For a local app, tell me in one line that a tunnel exposes the dev server to the internet while it runs (use test data),
-then run `cloudflared tunnel --url http://localhost:<port>` in the background (no account), read the `https://...trycloudflare.com`
-address from its output, and use that. Without cloudflared use `ngrok http <port>` (its free plan needs header
+then run `cloudflared tunnel --url http://localhost:<port>` in the background (default, no account), wait about 10 s, read the
+`https://...trycloudflare.com` address from its output, and use that. Second choice `ngrok http <port>` (its free plan needs header
 `ngrok-skip-browser-warning`, see below). Stop the tunnel when done, also after a failure.
 
 ### Run a case
-- **`smoke_test`** (default): `{ url, steps: [...], expectText, expectUrl, expectNoText, strictLinks: false }`. Always give at least one
-  `expect...`; without it the case only checks that the page loads. Steps run after load, the first failed step stops the flow.
-  It cannot use vault logins.
-- **`run_task`** for a signed-in case (`startUrl`, `credentials: { namespace, autoSubmit: true }`) or a judgement-based check:
-  add `engineId` of the `qa` engine (`eng_<region>_00000000qa00000000000000`, region = two letters in any returned id such as
-  `sess_in_...`; omit it if unknown or rejected) and `record: true`. A task has no assertions: end the goal with
-  `Answer exactly PASS: <what you saw> or FAIL: <what you saw instead>. If you cannot run it answer COULD NOT TEST: <why>.` and read the answer.
-- ngrok free or another gate: `headers: [{ "hosts": ["<host>"], "headers": { "ngrok-skip-browser-warning": "1" } }]` on `run_task`,
-  or inside `session` on `smoke_test`.
+- **`smoke_test`** (default, one call per case; the verdict comes from its report): `{ url, steps: [...], expectText, expectUrl,
+  expectNoText, strictLinks: false }`. Always give at least one `expect...`; without it the case only checks that the page loads.
+  Steps run after load, the first failed step stops the flow. It cannot use vault logins: for a signed-in case type a throwaway
+  login in `steps`. If `qa_run` / `qa_status` are in your tool list, prefer one `qa_run` with all chosen cases, then `qa_status`
+  on a failed case.
+- **`run_task`** only to explore an unknown flow or when I ask, **never as the pass/fail gate** (it said `pass` on a broken
+  checkout in 3 of 6 runs; `pass` only means the agent says it is done). Args: `goal`, `startUrl`, `record: true`, `engineId` (try
+  the slug `qa`, then `eng_us_00000000qa00000000000000`, then omit it), `credentials: { namespace, autoSubmit: true }` for a vault
+  login. End the goal with `Answer exactly PASS: <what you saw> or FAIL: <what you saw instead>. If you cannot run it answer
+  COULD NOT TEST: <why>.` Quote the answer, call the result "explored".
+- ngrok free: `headers: [{ "hosts": ["<tunnel host>"], "headers": { "ngrok-skip-browser-warning": "1" } }]` on `run_task`, or
+  inside `session` on `smoke_test`. A failed case on a tunnel whose page is ngrok's "You are about to visit" page (or Cloudflare's
+  "Just a moment") is `error`, not an app bug: fix the header and re-run.
 
 ### Wait without burning tokens
 Run at most 3 cases at once. A call waits up to 60 s (`smoke_test`) or 90 s (`run_task`). If it returns `running`, call

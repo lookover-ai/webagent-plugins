@@ -19,9 +19,9 @@ Hard rules, always:
 - Close what you open: `stop_session` for every session you left open, kill every tunnel you started.
 
 ## 0. Is webagent connected?
-If the `webagent` tools are not in your tool list, or a call says 401 / unauthorized: tell the user once, then stop:
-create a key (member role is enough) in the webagent dashboard, run `export WEBAGENT_API_KEY=wa_...` in the shell that
-starts Claude Code, restart it, check `/mcp`. Do not guess a key.
+If the `webagent` tools are not in your tool list, or a call says 401 / unauthorized: tell the user once, then stop. They
+set the key in Claude Code: `/plugin configure webagent@webagent` (webagent API key, from the dashboard; member role is
+enough), then restart and check `/mcp`. Do not guess a key, do not ask them to paste it in chat.
 
 ## 1. Pick the target URL
 Order: a URL the user gave > `.webagent/tests.yaml` `targets` (the env they named; else `local` if its dev server answers;
@@ -46,30 +46,29 @@ browser can never reach it (SSRF guard, no override). Do not call a tool with it
   real inbox (email code) cannot be tested: mark that part COULD NOT TEST.
 
 ## 4. Run
-Per case pick one tool.
-
-**A. `smoke_test` (default).** Repeatable, asserted, recorded. One call, one report.
+**Default: one `smoke_test` per case** (if `qa_run` is in your tool list, see A). It is repeatable, asserted and recorded; the verdict comes from the RunReport, never
+from your reading of a transcript. (A goal-driven `run_task` said `pass` on a broken checkout in 3 of 6 test runs.)
 `{ url, steps: [...], expectText?, expectUrl?, expectNoText?, strictLinks: false, waitSeconds? }`
 - `url` = target + the case `path`. Steps run after the page loads, in order; the first failed step stops the flow.
 - Always set at least one of `expectText` (text that must be there), `expectUrl` (address contains), `expectNoText`
   (an error text that must be absent). Without one the case only proves the page loads.
 - Flow cases: `strictLinks: false` (a broken link on the start page would fail a flow test; it stays a finding). Keep one
   page-level case with the default so links get checked.
-- Cannot sign in with the vault (refused). Needs login: use B, or put a throwaway login in `steps`.
+- It cannot use vault logins. A signed-in case: put a throwaway login in `steps` (text is stored with the run), or see C.
 
-**B. `run_task` with the QA engine.** For a signed-in case (vault `credentials`), a judgement-based expectation, or a
-multi-page flow smoke_test cannot assert.
-`{ goal, startUrl, engineId, record: true, credentials?: { namespace, autoSubmit: true }, headers?, maxSteps?, waitSeconds? }`
-- `engineId` is the built-in `qa` engine: `eng_<region>_00000000qa00000000000000`, `<region>` = the two letters in any id
-  webagent returned (`sess_in_...` gives `in`). No id yet: run one `smoke_test` first, or omit `engineId`. If the engine is
-  rejected as not found, retry without it and say so.
-- A task has **no assertions**: verdict `pass` only means the agent says it is done. Put the check in the goal and end it
-  with: `Answer exactly PASS: <what you saw> or FAIL: <what you saw instead>. If you cannot run the test (CAPTCHA, blocked
-  page, missing data) answer COULD NOT TEST: <why>.` Read the `answer`, not only the verdict.
-- Several dependent steps on one browser: `create_session {startUrl, engineId, record, credentials}`, then `run_task
-  {sessionId, goal}` per step, then `stop_session`. Otherwise one `run_task` per case (it opens and closes its own).
+**A. `qa_run` / `qa_status`, if they are in your tool list.** One `qa_run` with all chosen cases (use the tool's own input
+schema; map each tests.yaml case as in reference.md), then `qa_status` on a failed case for the detail. Not in the list:
+loop `smoke_test`. Never say a tool exists that you do not see.
 
-**Tunnel to ngrok free?** Add header `ngrok-skip-browser-warning` (reference.md) or the browser sees ngrok's warning page.
+**B. Tunnel page, not your app.** On a tunnel URL a `fail` such as "Expected text not on the page" may be the tunnel's
+warning page (ngrok "You are about to visit", Cloudflare "Just a moment"). If the report says so, or the screenshot or
+`finalUrl` suggests it, the case is `error` (could not test): add the ngrok header (reference.md) or use cloudflared, re-run.
+
+**C. `run_task` (QA engine): only to explore an unknown flow, or when the user asks. Never a pass/fail gate.** A task has
+no assertions: `pass` only means the agent says it is done, and a found bug often ends `blocked` (verdict `error`). Report it
+as "explored", quote the `answer`, and treat consoleErrors/networkFailures in its report as findings. A `FAIL:` answer is
+worth acting on; a `pass` proves nothing. Args, goal template, `engineId`: reference.md. For dependent steps on one browser:
+`create_session`, `run_task {sessionId, goal}` per step, `stop_session`.
 
 ## 5. Wait without burning tokens
 - Several cases: put the calls in one message (at most 3 at once; the free plan allows 3 browsers).
@@ -94,16 +93,18 @@ multi-page flow smoke_test cannot assert.
 
 ## 7. Local app: tunnel recipe
 Warn the user first, in one line: the tunnel exposes the dev server to the internet while it runs; use test data; the
-cases may create records. Then (cloudflared needs no account):
+cases may create records. **cloudflared is the default** (no account, no header):
 ```bash
 LOG=$(mktemp); nohup cloudflared tunnel --url http://localhost:PORT >"$LOG" 2>&1 & echo $! >"$LOG.pid"
 for i in $(seq 1 30); do URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' "$LOG" | head -1); [ -n "$URL" ] && break; sleep 1; done; echo "$URL"
 ```
-No cloudflared: `ngrok http PORT` and read the URL from `curl -s localhost:4040/api/tunnels`. Neither installed: tell the user
-to install one (do not install software without asking) or to give a public preview URL.
-Before testing, `curl -sI "$URL"` until it answers (a new tunnel hostname takes a few seconds). A "host not allowed" page:
-the dev server must allow the tunnel host (Vite `server.allowedHosts`, webpack `allowedHosts`, Next `allowedDevOrigins`).
-Use `$URL` as the target. **When done, always: `kill $(cat "$LOG.pid")`**, also after a failed run.
+The URL shows after about 10 s. Then `curl -sI "$URL"` until it answers (a new hostname takes a few more seconds).
+**ngrok is second** (needs the user's authtoken): `ngrok http PORT`, URL from `curl -s localhost:4040/api/tunnels`, and every
+webagent call needs the `ngrok-skip-browser-warning` header for that host (reference.md). Neither installed: tell the user
+to install one (do not install software without asking) or give a public preview URL.
+A "host not allowed" page: the dev server must allow the tunnel host (Vite `server.allowedHosts`, webpack `allowedHosts`,
+Next `allowedDevOrigins`). Use `$URL` as the target. **When done, always: `kill $(cat "$LOG.pid")`** (ngrok: kill its
+process), also after a failed run.
 
 ## 8. Final summary (always, short)
 ```

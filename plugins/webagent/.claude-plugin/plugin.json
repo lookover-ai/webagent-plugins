@@ -1,12 +1,35 @@
 {
   "name": "webagent",
   "displayName": "Lookover webagent",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Test the web app you are building in a real cloud browser from Claude Code: webagent's MCP tools, a QA skill, /webagent:qa and /webagent:qa-init.",
   "author": {
     "name": "Lookover",
     "url": "https://webagent.lookover.ai"
   },
   "homepage": "https://webagent.lookover.ai",
-  "keywords": ["qa", "testing", "smoke-test", "browser", "mcp", "e2e"]
+  "keywords": [
+    "qa",
+    "testing",
+    "smoke-test",
+    "browser",
+    "mcp",
+    "e2e"
+  ],
+  "license": "MIT",
+  "userConfig": {
+    "api_key": {
+      "type": "string",
+      "title": "webagent API key",
+      "description": "Key from the webagent dashboard (Keys, Create key; the member role is enough). Looks like wa_<region>_... Stored in your system keychain, never in a file.",
+      "sensitive": true,
+      "required": true
+    },
+    "api_url": {
+      "type": "string",
+      "title": "webagent API URL",
+      "description": "API origin without /mcp. Keep the default unless your team gave you another (beta: this is the staging host).",
+      "default": "https://webagent-staging-in-api.lookover.ai"
+    }
+  }
 }

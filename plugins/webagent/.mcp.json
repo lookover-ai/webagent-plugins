@@ -2,9 +2,9 @@
   "mcpServers": {
     "webagent": {
       "type": "http",
-      "url": "${WEBAGENT_API_URL:-https://webagent-staging-in-api.lookover.ai}/mcp",
+      "url": "${user_config.api_url}/mcp",
       "headers": {
-        "Authorization": "Bearer ${WEBAGENT_API_KEY}"
+        "Authorization": "Bearer ${user_config.api_key}"
       }
     }
   }
