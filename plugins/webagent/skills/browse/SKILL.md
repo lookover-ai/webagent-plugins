@@ -32,7 +32,7 @@ the key with `/plugin configure webagent@webagent`, restart, check `/mcp`. Do no
 | Many pages of one site | `crawl` (set `maxPages`, `include`; follow `cursor` only if you need more) |
 | A goal in plain words ("find the price of X", "fill this form", "check if the banner says Y") | `run_task { goal, startUrl }` |
 | Several dependent steps, or headers, a proxy, a vault login, or a task you will follow up on | `create_session { startUrl, ... }`, then `run_task { sessionId, goal }` per step, then `stop_session` |
-| A repeatable check with a pass/fail answer on a page they own | `smoke_test` (or the `qa-test` skill) |
+| A repeatable check with a pass/fail answer on a page they own | the `qa-test` skill (`qa_run`; `smoke_test` only on an older server) |
 | One of the packaged skills (price check, page audit, ...) | `list_skills` once, then the typed `skill_<name>` tool (or `run_skill`) |
 `scrape`, `screenshot`, `pdf`, `crawl` are single calls with no engine and no session to close. Prefer them over `run_task`
 whenever you do not need to click or type: faster, cheaper, no model in the loop.
@@ -45,8 +45,8 @@ Order, first hit wins:
 1. The user named one in this conversation.
 2. `.webagent/config.yaml` `engine:` in the repo (read it if the file exists; format in the plugin repo `docs/WEBAGENT-FOLDER.md`).
 3. The task clearly fits a non-default engine (find or extract information `research`; fill forms or portals from given data `forms`;
-   check a page for changes `monitor`; account, billing or admin work `careful`) **and** `list_engines` is in your
-   tool list: call it once, pick by `slug`/`description`, pass that `slug` as `engineId`.
+   check a page for changes `monitor`; account, billing or admin work `careful`): call `list_engines` once, pick by
+   `slug`/`description` (teams may have forks), pass that `slug` as `engineId`.
 4. Otherwise omit `engineId`: the project default engine runs. Most tasks end here; do not call `list_engines` for them.
 `engineId` accepts the slug or the full id. A `not_found` / `invalid_input` on it: retry once without `engineId` and say so.
 Never invent an id. The `qa` engine is for testing; do not use it for general tasks.
@@ -58,14 +58,15 @@ prose. Do not put credentials in it. Keep `maxSteps` low (10 to 20) for a simple
 
 ## 4. Wait without burning tokens
 - A call waits up to 90 s. If it returns `running` (`{sessionId, taskId}`), call `get_report { id: taskId, waitSeconds: 90 }`
-  and let the server wait. At most 3 such calls, then tell the user it is still running and give the session link.
+  and let the server wait. At most 3 such calls, then tell the user it is still running and give the Watch live link.
 - Several independent pages: send the calls in one message (at most 3 at once; the free plan allows 3 browsers).
 - Use the `answer`, `stoppedBy` and `summary`. Do not print or re-read whole pages or reports. Ask `scrape` for `markdown`
   (or `readability`), not `html`. Download a screenshot only when the text is not enough.
 
 ## 5. The user can watch and take over
-Every session is live in the dashboard (Sessions, then the session id: `/sessions/<sessionId>`): they can watch, pause,
-type, and take over the browser. After you start a task that takes more than a few seconds, give them the `sessionId` once.
+Every session is live in the dashboard: they can watch, pause, type, and take over the browser. Every tool that starts a session
+(`run_task`, `create_session`, `run_skill`, `smoke_test`) answers with a `Watch live: <url>` line (also `structuredContent.dashboardUrl`).
+After you start a task that takes more than a few seconds, give them that link once (not again on each poll).
 - A task that ends `paused`: a person paused or took over. Say so, do not restart it; ask whether to continue.
 - `blocked` or `captcha`: the agent hit something it must not do alone (a bot check, a payment, a hard block). Report it, say
   what the user can do by hand in the live view, and stop. Do not retry in `full_auto` unless the user asks for it.
@@ -73,6 +74,6 @@ type, and take over the browser. After you start a task that takes more than a f
 - `capacity_exceeded`, `capacity_timeout`: all browsers are busy; wait 30 s, retry once.
 
 ## 6. Finish
-Answer in a few lines: what you found or did, the key values, the page URL(s), the session id or report link, and anything
+Answer in a few lines: what you found or did, the key values, the page URL(s), the Watch live link or report link, and anything
 you could not do and why. Quote the task `answer`; do not add facts it does not contain. Then `stop_session` for each session
 you opened with `create_session` or `keepOpen`. `run_task` without a `sessionId` closes its own session.

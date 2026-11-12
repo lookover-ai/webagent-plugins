@@ -1,12 +1,14 @@
 # webagent QA reference
 
-Checked against the webagent api and contracts on 2026-11-12 (MCP server `webagent` 0.1.0, 25 tools: 15 fixed + 10 `skill_*`) and
-against a real run through a tunnel (2026-11-12). If a call is refused with `invalid_input`, trust the error text over this file.
+Checked against the webagent api (A94, commit 80a67b0, `src/modules/mcp/qa-tools.ts`, `qa-inline.ts`, `dashboard-url.ts`) and contracts 0.36.0
+on 2026-11-12, and against a real run through a tunnel. If a call is refused with `invalid_input`, trust the error text over this file.
 
 ## Tools you use for QA
 | Tool | Args (real names) | Waits | Returns |
 |---|---|---|---|
-| `smoke_test` | `url` (required), `steps[]` (max 30, each 500 chars), `expectText`, `expectUrl`, `expectNoText`, `maxLinks` (0-200, default 50), `strictLinks` (default true), `waitSeconds` (1-90, default 60), `session` (`headers`, `proxyUrl`, `allowHosts`, ...; `credentials` is refused; recording is always on) | up to `waitSeconds` | text summary + failed steps; whole RunReport in `structuredContent` |
+| `qa_run` | see "`qa_run`" below | up to `waitSeconds` (default 60) | rollup text + failed cases (max 5) + `Watch live:` line; whole `WorkflowRun` (`wfr_...`) in `structuredContent` |
+| `qa_status` | `id` (`wfr_`, `run_` or `tsk_`), `caseId?` (with `wfr_`), `waitSeconds` (0-90, default 30) | up to `waitSeconds` | the run, or with `caseId` that case's whole report |
+| `smoke_test` (fallback: only when `qa_run` is absent) | `url` (required), `steps[]` (max 30, each 500 chars), `expectText`, `expectUrl`, `expectNoText`, `maxLinks` (0-200, default 50), `strictLinks` (default true), `waitSeconds` (1-90, default 60), `session` (`headers`, `proxyUrl`, `allowHosts`, ...; `credentials` is refused; recording is always on) | up to `waitSeconds` | text summary + failed steps; whole RunReport in `structuredContent` |
 | `run_task` | `goal`, `maxSteps` (1-50), `startUrl`, `engineId`, `engineVersion`, `record`, `headers`, `proxyUrl`, `allowHosts`, `credentials` (`true` or `{namespace, autoSubmit}`), `mode` (`auto` default or `full_auto`), `keepOpen`, `sessionId`, `waitSeconds` (1-90, default 90) | up to 90 s | text (`Task finished|stopped (<stoppedBy>) ...`), `structuredContent {sessionId, sessionClosed, task}`; still running: `{sessionId, taskId, status: running}` |
 | `get_report` | `id` (`run_...` or `tsk_...`), `waitSeconds` (0-90, default 30) | up to `waitSeconds` | the RunReport (text + `structuredContent`) |
 | `get_task` | `sessionId`, `taskId?`, `waitSeconds` | up to 90 s | raw task record; use `get_report` instead |
@@ -19,12 +21,22 @@ Other tools exist (`scrape`, `screenshot`, `pdf`, `crawl`, `list_skills`, `run_s
 `get_session`, 10 `skill_*`). QA does not need them; `skill_smoke_uat` runs the same flow as `smoke_test` but its text has no
 verdict word, so use `smoke_test`.
 
-**`qa_run` and `qa_status`** (in your tool list on servers with the Workflows module; use them only then). `qa_run`: `cases` (1 to 20
-inline cases) **or** `workflowId` (a saved one); with `cases`, `url` (the site, required), optional `name`, `engineId`, `waitSeconds`
-(1-90, default 60); with `workflowId`, optional `target`, `url`, `caseIds`, `tags`. No `headers`/`session`. `qa_status`: `id` (`wfr_`,
-`run_` or `tsk_`), optional `caseId` (with `wfr_`: that case's whole report), `waitSeconds`. Per-case verdict is the same
-`pass`/`fail`/`error`. An inline case needs `id`, `title`, `path`, `steps` (all set below), `expect` and/or `checks`, optional
-`tags`, `priority` (1-5).
+## `qa_run` (the default QA call)
+Give **exactly one** of `cases`, `testsFile`, `workflowId`.
+| Arg | Meaning |
+|---|---|
+| `cases` | 1 to 20 inline cases in the tests-file shape: `title` (required); optional `id` (made from the title), `path` (default `/`), `steps` (default none), `expect` or `checks {text, url, noText}`, `tags`, `priority` 1-5. Needs `url`. `signedIn` or `credentials` in a case is refused. |
+| `testsFile` | The parsed `.webagent/tests.yaml` (object with `cases` and `targets` or `url`, optional `name`, `engine`, `concurrency`) or just the list of cases. Filter `cases` first, then send. `signedIn` cases are left out and named in a `Warning:` line. `maxCostUsdPerCase` is not applied (a warning says so). |
+| `url` | The site under test. Required with `cases`. With `testsFile`: replaces the chosen target's address (use it for a tunnel). A file with no `targets`/`url` takes it as its site. |
+| `target` | With `testsFile`: which target of the file (default its `defaultTarget`). With `workflowId`: the saved target. Unknown name: `invalid_input` listing the known ones. |
+| `session` | Inline runs only (`cases`, `testsFile`): `headers` (host-scoped; joined with the target's own), `proxyUrl`, `allowHosts`. Refused with `workflowId`. Recording is always on. |
+| `engineId` | Slug or id. With `testsFile` the file's `engine` is used when you omit it. Refused with `workflowId`. |
+| `name`, `waitSeconds` | A name for an inline run; wait 1-90 s (default 60). Still going: verdict `running` and an id for `qa_status`. |
+| `workflowId` + `caseIds`, `tags`, `target`, `url` | A saved workflow (`wf_...`). The plugin does not use it unless the user names one. |
+Per-case verdict is `pass` / `fail` / `error`. Case ids are made server-side (`deriveCaseIds`: title lower-cased, `-` between words); read them from the
+answer or `structuredContent.cases[].caseId`. `isError` is true only when the whole run is `error`.
+**Answers carry** `Note:` and `Warning:` lines (`structuredContent.warnings`: skipped `signedIn` cases, `maxCostUsdPerCase`) and, from every tool that
+starts or polls a session or run, `Watch live: <dashboardUrl>` (also `structuredContent.dashboardUrl`): give it to the user once per run.
 
 ## The report (what to read)
 `verdict`: `pass` | `fail` | `error` | `running`. `isError` on the tool call is true only for `error`: a failed test is a result.
@@ -34,19 +46,19 @@ inline cases) **or** `workflowId` (a saved one); with `cases`, `url` (the site, 
 | `outcome` | Raw reason: skill status (`passed`, `failed`, `error`, `cancelled`, `denied`) or task `stoppedBy` |
 | `url`, `finalUrl` | Page tested; where the browser ended (`finalUrl` needs the session log) |
 | `counts` | True totals (`steps`, `failedSteps`, `findings`, `consoleErrors`, `networkFailures`) before the lists are cut |
-| `steps[]` | `number`, `title`, `kind`, `status` (`pass`/`fail`/`skipped`), `error`, `ms`, `screenshotUrl` (failed steps of a skill run) |
+| `steps[]` | `number`, `title`, `kind`, `status` (`pass`/`fail`/`skipped`), `error`, `ms`, `screenshotUrl` (failed steps of a skill run). Task steps (qa engine 1.1.0 `STEP` lines) also `url` (page), `expected`, `actual`: quote them for a failed step. |
 | `findings[]` | `severity`, `title`, `url`, `fix`: broken links, accessibility. A task has none. |
 | `consoleErrors[]`, `networkFailures[]` | First 15 / 20. `http_error` = 4xx/5xx answer, `request_failed` = no answer. |
 | `evidence` | `reportSignedUrl` and `screenshotUrl` expire at `urlsExpireAt` (~5 min; call `get_report` again for fresh links). `recordingPath` and `logsPath` need the API key. |
 | `notes[]` | What is missing and why. Read when a list looks too empty. |
 
-A task step has only an action and target (`click e12`), no screenshot, no page URL.
+A task whose engine wrote no `STEP` lines has only an action and target per step (`click e12`), no screenshot, no page URL.
 
 ## Why `run_task` is not the gate
 Measured on a planted-bug checkout (500 on submit): the same goal, 6 runs: 3 `blocked` (verdict `error`), 3 `done` (verdict
 `pass`, two of them with an answer saying the step was NOT RUN). `smoke_test` with explicit steps: 2 of 2 `fail`, 10-12 s, with
-the failed step, console error (file:line), the failing request and the broken link. So: `smoke_test` for every case you can
-write as steps; `run_task` to explore, with its answer quoted, never to decide pass or fail.
+the failed step, console error (file:line), the failing request and the broken link. So: `qa_run` (same engine as `smoke_test`: asserted
+steps) for every case you can write as steps; `run_task` to explore, with its answer quoted, never to decide pass or fail.
 
 ## Task `stoppedBy` (run_task)
 `done` (pass if `ok`) · `stuck`, `budget`, `unanswered` = **fail** (agent could not finish the flow; check the app, then the goal) ·
@@ -61,14 +73,14 @@ write as steps; `run_task` to explore, with its answer quoted, never to decide p
 | `rate_limited` / 429 | 600 requests per minute per key | Slow down; you should never hit this |
 | 401 `invalid API key`, 421 `wrong_region` | Key wrong or for another region | Tell the user (new key from the right dashboard) |
 | `captcha` | A bot check appeared | Do not try to pass it. COULD NOT TEST; the user can test that step by hand or use a staging build without it |
-| `not_found` / `invalid_input` on `engineId` | The slug or id is not known in this region | Next form in the list under "Engine id", last: omit `engineId` |
+| `not_found` / `invalid_input` on `engineId` | The slug or id is not known in this region | Check the slug (see "Engine id"), call `list_engines`, else omit `engineId` and say so |
 | Fail on a tunnel URL, text missing, page is a warning page | The tunnel's interstitial, not your app | `error`: ngrok header or cloudflared, re-run |
 
-## Engine id (`run_task`, `create_session`)
-Which engine: `tests.yaml` `engine`, else `.webagent/config.yaml` `engine`, else `qa`. Pass the slug (or full id) as `engineId`.
-The server accepts a slug (api A91) or an id. If it refuses the slug, and the engine is `qa`, try `eng_us_00000000qa00000000000000`
-(the seeded id of the built-in QA engine); still refused: omit `engineId` and say so. Never invent another id. `list_engines`
-(when in your tool list) shows the real ones. For non-QA work, the `browse` skill covers engines.
+## Engine id (`qa_run`, `run_task`, `create_session`)
+Which engine: `tests.yaml` `engine` (read by the server on a `testsFile`), else `.webagent/config.yaml` `engine`, else `qa`. Pass the slug
+(`qa`, `general`, `research`, `forms`, `monitor`, `careful`) or a full id as `engineId`: the server resolves a built-in slug for your region.
+`list_engines` shows the real ones (forks too). A slug that is not built in and not an id is refused with `invalid_input`: ask the user,
+never invent an id. For non-QA work, the `browse` skill covers engines.
 
 ## Tunnels
 | | cloudflared quick tunnel (default) | ngrok free |
@@ -85,8 +97,8 @@ Sent only to the hosts named (and subdomains); values are write-only (logs show 
 ```json
 [{ "hosts": ["abc123.ngrok-free.app"], "headers": { "ngrok-skip-browser-warning": "1" } }]
 ```
-`run_task`/`create_session`: top-level `headers`. `smoke_test`: `session: { "headers": [ ... ] }`. `hosts` = the host of the
-tunnel URL, nothing else. Without the header a `smoke_test` on ngrok returns verdict `fail` ("Expected text ... is not on the
+`run_task`/`create_session`: top-level `headers`. `qa_run` and `smoke_test`: `session: { "headers": [ ... ] }` (on `qa_run` they are joined
+with the target's own headers and apply to every case). `hosts` = the host of the tunnel URL, nothing else. Without the header a run on ngrok returns verdict `fail` ("Expected text ... is not on the
 page") because the page is ngrok's "You are about to visit ..." page; the report does not say so. Treat that as `error`.
 
 ## Vault logins (signed-in cases)
@@ -95,7 +107,7 @@ Logins are saved by the user in the dashboard Vault (origin + username + passwor
 `run_task { startUrl: <login page>, credentials: { namespace: "staging", autoSubmit: true } }`.
 Exact origin only: `https://staging.example.com` is not `https://www.example.com`. A tunnel URL is a new origin, so a vault
 login saved for it does not exist: for tunnelled apps use a throwaway login in the steps (text is stored with the run).
-Skill runs (`smoke_test`) cannot use `credentials`.
+Workflow runs (`qa_run`) and skill runs (`smoke_test`) cannot use `credentials`.
 
 ## Goal template for exploratory `run_task`
 ```
@@ -107,12 +119,12 @@ page, missing data) answer COULD NOT TEST: <why>.
 Payments: the `qa` engine blocks actions that spend money. Test checkout against the app's test mode and expect to stop
 at the real payment button; report that as not tested.
 
-## Mapping a case to `qa_run` (inline cases)
-Pass the case as written; the server parses `expect`, `checks` go through as they are. Fill what the file may omit:
-`id` = the title lower-cased, runs of other characters become `-`, cut to 64 (`case-<n>` if empty; `-2`, `-3` if taken; written ids are kept),
-`path` = `/`, `steps` = `[]`, `priority` = 3 (the server's default). Do not send `signedIn` (run that case as a goal).
+## Cases to `qa_run`: no mapping
+Send the cases as the file has them (`testsFile`, or `cases` with only what you wrote). Do not add `id`, `path`, `steps` or `priority`
+yourself; do not split `expect`. `signedIn` cases: leave them in a `testsFile` (the server skips them with a warning) and run them as a
+`run_task` with the target's vault `credentials`; never put them in `cases`.
 
-## Mapping a case to `smoke_test`
+## Mapping a case to `smoke_test` (fallback when `qa_run` is absent)
 | tests.yaml | smoke_test |
 |---|---|
 | `target url` + `path` | `url` |

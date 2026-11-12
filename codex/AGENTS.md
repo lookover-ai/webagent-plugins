@@ -1,7 +1,7 @@
 ## webagent (cloud browser): web tasks and QA
 
-The `webagent` MCP tools give you a real cloud browser (isolated, recorded; I can watch and take over live in the dashboard,
-Sessions, the session id). Do not use a local browser for web work. Two jobs: **web tasks** (below) and **testing my web app**
+The `webagent` MCP tools give you a real cloud browser (isolated, recorded; I can watch and take over live in the dashboard;
+every session-starting tool returns a `Watch live: <url>` link). Do not use a local browser for web work. Two jobs: **web tasks** (below) and **testing my web app**
 (the next section: use it whenever I ask to test, smoke test, QA or verify my own app).
 
 ### Web tasks (research, extract, fill a form, check a page, monitor a value, screenshot, crawl)
@@ -13,11 +13,11 @@ Sessions, the session id). Do not use a local browser for web work. Two jobs: **
   autoSubmit: true }`); `list_skills` then the typed `skill_<name>` tool for a packaged skill. Prefer `scrape` over `run_task`
   when nothing needs clicking.
 - Engine (only `run_task` and `create_session`), first hit wins: one I name; `engine:` in `.webagent/config.yaml` (read it if it
-  exists; pass it as `engineId`); if the task clearly fits another engine and `list_engines` is in your tool list, call it once and
+  exists; pass it as `engineId`); if the task clearly fits another engine, call `list_engines` once and
   pick by slug (`research`, `forms`, `monitor`, `careful`, `general`); else omit `engineId` (the project default runs).
   `engineId` takes a slug or a full id. Refused: retry once without it. Never invent an id. Do not use the `qa` engine for non-test work.
 - A goal states one outcome, what to return and a stop condition. Waiting and reading as in "Wait without burning tokens" below.
-  A call returning `running`: `get_report { id: taskId, waitSeconds: 90 }`, at most 3 times. Give me the session id once for any task
+  A call returning `running`: `get_report { id: taskId, waitSeconds: 90 }`, at most 3 times. Give me the `Watch live: <url>` link once for any task
   longer than a few seconds. `paused` = I took over: do not restart it. `captcha` / `blocked`: report it, do not retry.
 - Finish with a few lines: what you found or did, key values, URLs, session id, what you could not do. Quote the task `answer`.
 
@@ -48,23 +48,31 @@ then run `cloudflared tunnel --url http://localhost:<port>` in the background (d
 `ngrok-skip-browser-warning`, see below). Stop the tunnel when done, also after a failure.
 
 ### Run a case
-- **`smoke_test`** (default, one call per case; the verdict comes from its report): `{ url, steps: [...], expectText, expectUrl,
-  expectNoText, strictLinks: false }`. Always give at least one `expect...`; without it the case only checks that the page loads.
-  Steps run after load, the first failed step stops the flow. It cannot use vault logins: for a signed-in case type a throwaway
-  login in `steps`. If `qa_run` / `qa_status` are in your tool list, prefer one `qa_run { url, cases: [...] }` (at most 20; pass `expect` and `checks` as written, fill `id` from the title, `path` `/`, `steps` `[]`;
-  leave `signedIn` cases out; no headers, so use `smoke_test` on ngrok), then `qa_status { id, caseId }` on a failed case.
+- **One `qa_run` for the whole set** (default; the verdict comes from its report; at most 20 cases per call). The server makes case ids and
+  defaults `path` and `steps`: send the cases as written, only `title` is required, never fill `id`/`path`/`steps` yourself, pass `expect` unchanged.
+  - `.webagent/tests.yaml` exists: `qa_run { testsFile: <the parsed file with only the chosen cases>, target?: <env name>, url?: <override> }`
+    (`url` replaces the target's address: use the tunnel URL for a local target). The file's `engine` and `concurrency` are read by the server.
+    Leave `signedIn` cases in: the server skips them and says so; run them as `run_task` (below) with the target's vault namespace.
+  - No file: `qa_run { url, cases: [{ title, path?, steps?, expect | checks, tags?, priority? }] }` (`signedIn` is refused in `cases`).
+  - ngrok free, a WAF or staging gate: `session: { headers: [{ hosts: ["<host>"], headers: { "ngrok-skip-browser-warning": "1" } }] }`
+    on `qa_run` (so ngrok needs no `smoke_test`). Refused together with `workflowId`.
+  - On a failed case: `qa_status { id: <wfr_...>, caseId }`. Failed task steps carry `url`, `expected`, `actual`: quote them.
+  - Tell me the `Watch live: <url>` link once per run (not on every poll). Pass on every `Warning:` line (skipped `signedIn` cases).
+  - **Only when `qa_run` is not in your tool list:** one `smoke_test` per case: `{ url, steps: [...], expectText, expectUrl, expectNoText,
+    strictLinks: false }` with at least one `expect...`; it cannot use vault logins, so a signed-in case types a throwaway login in `steps`.
 - **`run_task`** only to explore an unknown flow or when I ask, **never as the pass/fail gate** (it said `pass` on a broken
   checkout in 3 of 6 runs; `pass` only means the agent says it is done). Args: `goal`, `startUrl`, `record: true`, `engineId` (`tests.yaml`
-  `engine`, else `.webagent/config.yaml` `engine`, else the slug `qa`; if the server refuses `qa`, try `eng_us_00000000qa00000000000000`, then omit it), `credentials: { namespace, autoSubmit: true }` for a vault
-  login. End the goal with `Answer exactly PASS: <what you saw> or FAIL: <what you saw instead>. If you cannot run it answer
+  `engine`, else `.webagent/config.yaml` `engine`, else the slug `qa`; the server accepts a slug or an id, `list_engines` shows them), `credentials: { namespace, autoSubmit: true }` for a vault
+  login (use it for `signedIn` cases). End the goal with `Answer exactly PASS: <what you saw> or FAIL: <what you saw instead>. If you cannot run it answer
   COULD NOT TEST: <why>.` Quote the answer, call the result "explored".
 - ngrok free: `headers: [{ "hosts": ["<tunnel host>"], "headers": { "ngrok-skip-browser-warning": "1" } }]` on `run_task`, or
-  inside `session` on `smoke_test`. A failed case on a tunnel whose page is ngrok's "You are about to visit" page (or Cloudflare's
+  inside `session` on `qa_run` / `smoke_test`. A failed case on a tunnel whose page is ngrok's "You are about to visit" page (or Cloudflare's
   "Just a moment") is `error`, not an app bug: fix the header and re-run.
 
 ### Wait without burning tokens
-Run at most 3 cases at once. A call waits up to 60 s (`smoke_test`) or 90 s (`run_task`). If it returns `running`, call
-`get_report { id, waitSeconds: 90 }`; at most 3 such calls per case, then report `error` (timeout). Never poll in a tight loop.
+`qa_run` waits up to 60 s (`waitSeconds` up to 90) and runs 3 cases at a time server-side. If it returns `running`, call
+`qa_status { id: <wfr_...>, waitSeconds: 90 }`; at most 3 such calls, then report the rest as `error` (timeout). `run_task` waits 90 s, then
+`get_report { id, waitSeconds: 90 }`. Never poll in a tight loop.
 Read `summary`, `verdict`, the failed `steps`, `counts`. Open console errors and failed network calls only for a failed case.
 Do not paste the whole report into the chat.
 
@@ -77,6 +85,7 @@ At most 2 fix rounds per case. For `error`: do not change app code, say what unb
 ```
 QA <target> · <n> passed · <n> failed · <n> could not test
 PASS / FAIL / COULD NOT TEST  <case id> - <one line>. For FAIL: cause file:line and whether it is fixed and re-run.
-Evidence: report link (expires <urlsExpireAt>), session id. Changed: files, tests.yaml. Skipped: cases. Tunnel: closed.
+Watch live / replay: <dashboardUrl>. Evidence: report link (expires <urlsExpireAt>). Warnings: <Warning: lines>.
+Changed: files, tests.yaml. Skipped: cases. Tunnel: closed.
 ```
 Say only what the tool results show. A `run_task` pass means "the agent says it is done".

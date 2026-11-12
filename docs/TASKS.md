@@ -23,5 +23,9 @@ Task prefix `K`. One block per session. Check: see `CLAUDE.md`. Brief: `../webag
   `qa-init`, Codex `AGENTS.md` follow the contract (optional steps/expect/targets, `url` shorthand, `defaultTarget`, priority 1-5 default 3,
   `checks`, `key`, `concurrency`, `maxCostUsdPerCase`; `signedIn` skipped by workflow runs); `qa_run` inline mapping; `scripts/check-templates.py`.
   Open: `/webagent:qa-ci` (print the CI call) waits on the CI endpoint docs.
-- [ ] **K7 · Publish.** CTO creates the public repo `lookover-ai/webagent-plugins` after Abhisht's OK; license is MIT (decided, `LICENSE`);
+- [x] **K7a · qa_run tests-file path (api A94, plugin 0.4.0).** Default QA path is one `qa_run` with the filtered `testsFile` (or `cases`; only
+  `title` required, no id/path/steps from the plugin); `session.headers` on `qa_run` replaces `smoke_test` for ngrok; `Warning:` lines (skipped
+  `signedIn`) and the `Watch live:` link surfaced once per run; task steps `url`/`expected`/`actual`; `smoke_test` kept as fallback only when
+  `qa_run` is absent; A91/A94 hedges dropped (slug `engineId`, `list_engines`). Skills, reference, `/webagent:qa`, Codex `AGENTS.md`, README, format doc.
+- [ ] **K8 · Publish.** CTO creates the public repo `lookover-ai/webagent-plugins` after Abhisht's OK; license is MIT (decided, `LICENSE`);
   switch the default API URL to the production host when it exists; submit to Anthropic's directory if wanted.

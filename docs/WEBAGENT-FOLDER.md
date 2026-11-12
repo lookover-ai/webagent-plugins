@@ -81,9 +81,9 @@ cases:                      # required, 1 to 100
 | `tags` | `smoke` = the few cases that must pass on every change. Other tags are yours (`auth`, `checkout`, `validation`). |
 | `priority` | 1 (most important) to 5, default 3. 1 runs on every change. |
 | `signedIn` | The plugin runs the case as a signed-in goal with the target's `credentials` namespace. **A workflow run (dashboard, CI) skips it and says so in a warning**: it cannot sign in. |
-| `concurrency`, `maxCostUsdPerCase` | Limits for workflow runs. The plugin keeps at most 3 cases at once. |
+| `concurrency`, `maxCostUsdPerCase` | Limits for workflow runs. The server runs 3 cases at once by default. |
 
-The `session` option of a target is for workflow runs; the plugin does not read it.
+The `session` option of a target (headers, proxy) is applied by the server: the plugin sends the file to `qa_run` as it is, so it works for plugin runs too.
 
 How a case becomes a webagent call is in `plugins/webagent/skills/qa-test/reference.md`.
 

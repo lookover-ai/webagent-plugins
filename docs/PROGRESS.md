@@ -33,3 +33,11 @@ template valid (`targets` as url strings, `checks`, `signedIn`, priority 1-5 def
 `scripts/check-templates.py` (PyYAML; `WEBAGENT_CONTRACTS_DIST` also runs `readTestsFile` + `testsFileToWorkflowRequest`).
 Next: `/webagent:qa-ci` once the CI call is documented; K4; K5b; K7.
 Gotchas: `qa_run` cases need `id`, `path`, `steps` (api schema), so the plugin fills them; the file allows omitting them. Public docs must not link the private contracts path.
+
+## 2026-11-12 K7a done (plugin 0.4.0)
+Done: api A94 (80a67b0) wired into the plugin. `qa-test` section 4 rewritten: one `qa_run` (`testsFile` filtered, or `cases` with only `title`), no id/path/steps
+filled by the plugin, `session.headers` for ngrok, `signedIn` left in the file (server warns) and run via `run_task` + vault namespace, `Warning:` lines and the
+`Watch live:` link surfaced once, `qa_status { id, caseId }` for detail; `smoke_test` only if `qa_run` absent. reference.md (qa_run arg table), browse, `/webagent:qa`,
+Codex `AGENTS.md`, README, format doc. Hedges for A91 dropped (slug `engineId`, `list_engines`). Old K7 publish row renamed K8.
+Next: K8 publish; K4; K5b; live run with a real Claude Code on staging once A94 is deployed.
+Gotchas: `cases` refuse `signedIn` but `testsFile` skips it with a warning; `qa_run` caps at 20 cases (inline request limit) even from a file of 100; `maxCostUsdPerCase` is not applied to inline runs.

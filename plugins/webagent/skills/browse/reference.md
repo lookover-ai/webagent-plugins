@@ -1,8 +1,7 @@
 # webagent browse reference
 
 Checked against the webagent api (MCP tools in `src/modules/mcp`) and contracts 0.33.x on 2026-11-12. If a call is refused with
-`invalid_input`, trust the error text over this file. Tools marked (api A91) are announced and may not be on every server yet:
-use them only when they are in your tool list.
+`invalid_input`, trust the error text over this file. (Api A94, commit 80a67b0, 2026-11-12.)
 
 ## Tools for general tasks
 | Tool | Args (real names) | Returns |
@@ -18,10 +17,11 @@ use them only when they are in your tool list.
 | `get_task` | `sessionId`, `taskId?`, `waitSeconds` | raw task record |
 | `list_sessions`, `get_session` | `sessionId` | what is open now |
 | `list_skills`, `run_skill`, `get_skill_run`, `skill_<name>` | `list_skills` shows each skill's inputs; `run_skill {name, inputs, engineId?}` | a skill run (`run_...`) |
-| `list_engines` (api A91) | none | `[{id, slug, name, description, version, isProjectDefault}]` |
+| `list_engines` | none | `[{id, slug, name, description, version, isProjectDefault}]` |
 
 `sessionId`, `startUrl`, `engineId`, `record`, `headers`, `proxyUrl`, `allowHosts`, `credentials` on `run_task` apply only
 when it opens the session. With `sessionId` they are refused: put them on `create_session`.
+Every tool that starts a session or run (`create_session`, `run_task`, `run_skill`, `smoke_test`, `qa_run`) also returns `dashboardUrl` in `structuredContent` and a `Watch live: <url>` line in its text (so do `get_report` and `qa_status`): tell the user once per task.
 Quick tools (`scrape`, `screenshot`, `pdf`, `crawl`) take no `engineId`, no vault `credentials`, and cannot click or type.
 
 ## Engines

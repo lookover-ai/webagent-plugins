@@ -65,8 +65,9 @@ Set another API URL in `/plugin configure webagent@webagent` when your team give
 
 1. Picks the target: the URL you give, or a target in `.webagent/tests.yaml`.
 2. Reads `.webagent/` and your diff, chooses up to 5 cases (your changed areas plus the smoke cases).
-3. Runs them in the cloud browser: one `smoke_test` per case (or one `qa_run` for all cases once your server has it). `run_task`
-   is only for exploring a flow you cannot write as steps; it is never the pass/fail gate.
+3. Runs them in the cloud browser in one `qa_run` call (your `tests.yaml`, filtered to those cases, with the target you picked; the server
+   queues them and keeps the evidence). It gives you a "Watch live" link, and passes on warnings (for example `signedIn` cases it skipped).
+   `run_task` is only for exploring a flow you cannot write as steps or a signed-in case; it is never the pass/fail gate.
 4. Reads the compact report. Verdicts: `pass`, `fail` (the app is wrong), `error` (the test could not run: CAPTCHA, blocked
    address, capacity, timeout; never reported as an app bug).
 5. Fixes the code for each `fail`, re-runs only those cases, at most 2 rounds. A remote target is re-run only after you deploy.
