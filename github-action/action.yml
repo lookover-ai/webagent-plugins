@@ -1,0 +1,80 @@
+name: Lookover QA
+description: Run your .webagent/tests.yaml in a cloud browser against a preview URL. Gates the job and keeps one PR comment.
+author: Lookover
+branding:
+  icon: check-circle
+  color: blue
+
+inputs:
+  api-key:
+    description: Your webagent API key (a repository secret). Empty on a fork PR: the action then skips with a notice.
+    required: true
+  api-url:
+    description: API origin, without a path. Default is the host the bundled CLI is built for (staging until production exists).
+    required: false
+  url:
+    description: The site to test, for example the preview URL. Wins over the target in the tests file.
+    required: false
+  file:
+    description: The tests file. If this default is missing and `workflow` is set, the saved workflow of that key runs.
+    required: false
+    default: .webagent/tests.yaml
+  workflow:
+    description: Workflow key. Default is `key` in the tests file. Names the sticky PR comment too.
+    required: false
+  target:
+    description: A target name from the tests file (default is its defaultTarget).
+    required: false
+  tags:
+    description: Comma-separated tags. Only cases with one of them run.
+    required: false
+  case-ids:
+    description: Comma-separated case ids. Only these cases run.
+    required: false
+  sync:
+    description: "`true` saves the file as the workflow (by key) before the run; `false` runs ad hoc and saves nothing. Empty: true only on a push to the default branch, so a pull request never changes the saved workflow."
+    required: false
+  wait-for-url:
+    description: Seconds to wait for the URL to answer 2xx or 3xx before the run starts (1 to 180). `0` or `false` skips the wait.
+    required: false
+    default: "120"
+  timeout-minutes:
+    description: Give up after this many minutes and cancel the run.
+    required: false
+    default: "15"
+  retries:
+    description: Extra tries for a failed case, 0 to 2. Empty: the API default (1 for CI runs).
+    required: false
+  on-error:
+    description: "`block` (default): when the app could not be tested the job fails with exit code 2. `neutral`: the job passes with a warning."
+    required: false
+    default: block
+  fail-on:
+    description: "`fail` (default): a failed required case fails the job. `never`: report only, the job never fails because of a result (setup problems still fail it)."
+    required: false
+    default: fail
+  comment:
+    description: Keep one comment on the pull request, updated in place on every push. Needs `pull-requests: write`.
+    required: false
+    default: "true"
+  share-links:
+    description: Put a 7-day replay link per failed case in the comment. A link is a bearer link, so empty means false on public repos and true on private ones.
+    required: false
+  github-token:
+    description: Token for the PR comment.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  verdict:
+    description: "pass, fail, error (could not test), setup (not run: setup problem) or skipped (fork PR without the secret)."
+  run-id:
+    description: The workflow run id (empty when no run started).
+  run-url:
+    description: Dashboard page of the run (empty when unknown).
+  flaky:
+    description: How many cases passed only on a retry ("0" when none).
+
+runs:
+  using: node24
+  main: dist/index.cjs

@@ -20,6 +20,7 @@ plugins/webagent/                   the plugin (installs copy ONLY this folder: 
   commands/run.md, engines.md, qa.md, qa-init.md   /webagent:run, :engines, :qa, :qa-init
   templates/.webagent/              config.yaml, product.md, tests.yaml starters
 codex/AGENTS.md, config.toml        the same workflow for Codex
+github-action/                      the GitHub Action (K10): action.yml, src/ (TypeScript), dist/ (committed bundle + vendored CLI), README
 docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs/PROGRESS.md
 ```
 
@@ -47,5 +48,5 @@ claude -p --plugin-dir plugins/webagent --output-format stream-json --verbose "h
 H=$(mktemp -d) && cp codex/config.toml "$H" && CODEX_HOME="$H" codex mcp get webagent   # Codex parses the TOML
 python3 scripts/check-templates.py   # templates parse and match the format (WEBAGENT_CONTRACTS_DIST=../webagent-contracts/dist adds the contract reader)
 ```
-No build, no dependencies, no dev server. Commits: one block, check green; no remote yet (DEV MODE applies once it exists).
+The plugin has no build and no dependencies. `github-action/` does: `cd github-action && VITEST_MAX_WORKERS=4 flock /tmp/claude-1000/webagent-heavy.lock pnpm check` (typecheck, tests, build; commit `dist/`; re-vendor `dist/webagent.cjs` from `../webagent-contracts/cli/dist/webagent.cjs` after `pnpm -C cli build` there). The Action only maps inputs to the CLI's flags: the CLI and the api own behaviour. No dev server. Commits: one block, check green; no remote yet (DEV MODE applies once it exists).
 PROGRESS.md entry per task (max 10 lines: `## <date> <id> done`, `Done:`, `Next:`, `Gotchas:`).

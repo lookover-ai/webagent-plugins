@@ -86,6 +86,12 @@ Nothing is installed for you: install `cloudflared` or `ngrok` once.
 vault namespace, never passwords) and `tests.yaml` (plain-language cases). Format: [docs/WEBAGENT-FOLDER.md](docs/WEBAGENT-FOLDER.md). Templates:
 [`plugins/webagent/templates/.webagent/`](plugins/webagent/templates/.webagent/). The `tests.yaml` format is shared with webagent's dashboard import and CI call, so the same file runs from here, from CI or from the dashboard.
 
+## CI: the GitHub Action
+
+Run the same `.webagent/tests.yaml` on every pull request: [`github-action/`](github-action/README.md) (`lookover-ai/webagent-plugins/github-action@v1`)
+gates the job, keeps one comment on the PR (updated on every push) and writes the report to the job summary. Copy-paste workflow,
+preview-URL examples (Vercel, Netlify, a staging URL) and the exit codes are in its README.
+
 ## Safety
 
 The agent never pastes secrets into tool calls (step and goal text is stored with the run), uses test accounts, never tries to

@@ -1,0 +1,21 @@
+{
+  "name": "webagent-action",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lookover QA GitHub Action: runs .webagent/tests.yaml against a preview URL, gates the job, keeps one PR comment.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "node scripts/build.mjs",
+    "check": "pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.3"
+  }
+}
