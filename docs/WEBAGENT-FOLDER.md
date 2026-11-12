@@ -29,7 +29,7 @@ apiUrl: https://...  # optional, informational: the API origin your team uses (n
 ```
 | Field | Rule |
 |---|---|
-| `engine` | The engine that drives the cloud browser for tasks started from this repo. Omitted: the project's default engine runs. **Choice order:** the call's `engineId` (a user's explicit choice) > `tests.yaml` `engine` (QA only) > `config.yaml` `engine` > the project default. QA with none set uses `qa`. |
+| `engine` | The engine that drives the cloud browser for tasks started from this repo. Omitted: the project's default engine runs. **Choice order:** the call's `engineId` (a user's explicit choice) > `tests.yaml` `engine` (QA only) > `config.yaml` `engine` > the project default. QA with none set uses the project default engine (`qa` is a sensible choice for testing, never required). |
 | `apiUrl` | A note for teammates. The plugin does not read it: the URL is each person's plugin setting (`/plugin configure webagent@webagent`). |
 
 **The API key never goes in this file** (nor anywhere in the repo). It lives in your coding agent's settings (Claude Code
@@ -48,7 +48,7 @@ version: 1                  # optional, only 1 exists
 name: Acme smoke            # optional: workflow name (default "Tests")
 description: ...            # optional
 key: acme-smoke             # optional slug: CI updates the same workflow by it
-engine: qa                  # optional: engine slug or id for cases that run as a goal. Default: config.yaml `engine`, else qa.
+engine: qa                  # optional: any engine of your project (short name or id, your own too) for cases that run as a goal. Default: config.yaml `engine`, else the project default engine.
 targets:                    # the sites to test, by name (1 to 10)
   local: http://localhost:3000      # a url, or an object:
   staging:

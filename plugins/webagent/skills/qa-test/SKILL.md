@@ -6,7 +6,7 @@ argument-hint: [what to test]
 
 # QA with webagent
 
-You know the code, so you decide **what** to test. webagent decides **how** (cloud browser, QA engine) and keeps the
+You know the code, so you decide **what** to test. webagent decides **how** (cloud browser, engine) and keeps the
 evidence. The tools are the MCP server `webagent` (Claude Code lists them as `mcp__plugin_webagent_webagent__<tool>`;
 below they are bare names). Tool table, report fields, error codes, `tests.yaml` format (priorities 1 to 5, `checks`, `url` shorthand): [reference.md](reference.md).
 
@@ -62,7 +62,7 @@ a transcript. (A goal-driven `run_task` said `pass` on a broken checkout in 3 of
 - `target` = the environment name the user gave (default: the file's `defaultTarget`). `url` replaces that target's address: set it
   to the tunnel URL for a local target (section 7) or to a URL the user gave. A file with no `targets`/`url` takes `url` as its site.
 - Leave `engine`, `concurrency`, `name` in the file: the server reads them. Pass `engineId` only to override (order: `tests.yaml`
-  `engine` > `.webagent/config.yaml` `engine` > `qa`). `maxCostUsdPerCase` in the file is applied (a case stops when its model spend passes it).
+  `engine` > `.webagent/config.yaml` `engine` > the project default engine; `qa` is a sensible choice for testing but never mandatory). `maxCostUsdPerCase` in the file is applied (a case stops when its model spend passes it).
 - Leave `signedIn` cases in the file you send: the server skips them and says so (`Warning:` line, `structuredContent.warnings`). Run
   those yourself as in D.
 
@@ -74,7 +74,7 @@ that case as in D.
 on `qa_run` (merged with the target's own headers; also allowed with a saved `workflowId`). So an ngrok tunnel works with `qa_run`: no
 `smoke_test` needed. Never put a real secret value in it from memory: ask the user.
 
-**D. `run_task` (QA engine): only to explore an unknown flow, run a `signedIn` case, or when the user asks. Never a pass/fail gate.** A task
+**D. `run_task` (the chosen engine): only to explore an unknown flow, run a `signedIn` case, or when the user asks. Never a pass/fail gate.** A task
 has no assertions: `pass` only means the agent says it is done, and a found bug often ends `blocked` (verdict `error`). Report it as
 "explored", quote the `answer`, treat consoleErrors/networkFailures as findings. A `FAIL:` answer is worth acting on; a `pass` proves
 nothing. Args, goal template, `engineId`: reference.md. For a `signedIn` case use the target's `credentials` namespace:

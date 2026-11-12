@@ -18,4 +18,4 @@ Steps:
    call or `tests.yaml` names another." **Ask first; write only after a yes.** Start from
    `${CLAUDE_PLUGIN_ROOT}/templates/.webagent/config.yaml`; keep any other keys that file already has; never write a key or secret.
 5. After writing, say: commit `.webagent/config.yaml` with the code, and that `/webagent:run <task>` uses it.
-   For testing use `/webagent:qa` (it keeps the `qa` engine unless `tests.yaml` names one).
+   For testing use `/webagent:qa` (it uses the engine `tests.yaml` names, else this file, else the project default; `qa` is a good pick for testing, never required).

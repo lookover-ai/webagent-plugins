@@ -11,7 +11,7 @@ targets:
 
 # defaultTarget: staging              # optional: one of the targets above (default: the first)
 # key: my-app-smoke                   # optional slug: CI updates the same workflow by it
-# engine: qa                          # optional: engine for cases that run as a goal (default qa)
+# engine: qa                          # optional: any engine in your project (short name or id, yours too); omitted: the project default engine
 
 cases:
   - id: home-loads

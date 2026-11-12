@@ -54,6 +54,13 @@ nightly run test). Set `sync: true` or `sync: false` to override.
 A workflow synced from the repo is marked "Managed by owner/repo" in the dashboard: edit `.webagent/tests.yaml` in the repo, or
 duplicate the workflow to edit it in the dashboard.
 
+### Which engine runs the tests
+
+`engine:` in `tests.yaml` (any engine's short name or id, your own engines included) wins; without it the saved workflow's engine runs;
+without that, your project's default engine. Nothing is forced to a built-in. A name that matches no engine in your project stops the job
+before any run starts: exit **3**, `NOT RUN · setup problem`, and the plain sentence `Engine '<name>' not found in this project` in the
+job summary and the PR comment. Fix the name in `tests.yaml` (the dashboard's Engines page lists the names and ids).
+
 ## 3. Preview URLs
 
 The `url` input wins over the target in `tests.yaml`. The action waits up to 120 s for the URL to answer (2xx or 3xx) before it
@@ -141,7 +148,7 @@ Use outputs in a later step: `if: steps.qa.outputs.verdict == 'fail'` (give the 
 | Pass (flaky passes included) | exit 0 | `PASS`, counts, case table; flaky cases marked `PASS (flaky: passed on try 2 of 2)` |
 | A required case failed | exit **1** | `FAIL`, the failed step, expected vs actual, page, console error, failed request, replay link |
 | Could not test (preview never answered, capacity, timeout; **not** an app failure) | exit **2** (`on-error: neutral`: 0 with a warning) | `COULD NOT TEST`, in plain words why |
-| Setup problem (no key, key rejected or revoked, bad file, bad input) | exit **3** | `NOT RUN · setup problem`: what to fix, for example "API key rejected: make a new one in API keys" |
+| Setup problem (no key, key rejected or revoked, bad file, bad input, `engine:` not found) | exit **3** | `NOT RUN · setup problem`: what to fix, for example "API key rejected: make a new one in API keys" or "Engine 'my-qa' not found in this project" |
 | Fork PR, or Dependabot (GitHub gives no secrets) | exit 0, one notice | none |
 | No `pull-requests: write` | unchanged | one notice in the log; the job summary still has the report |
 | Job cancelled (new push) | the cloud run is cancelled | updated to could not test (best effort) |

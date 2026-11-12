@@ -38,7 +38,7 @@ the proof: for tests a verdict, the failed step, console errors, failed network 
 | `/webagent:qa-init` | Create `.webagent/product.md` and `tests.yaml` from your code |
 
 **Engines.** An engine is the agent that drives the browser (`general`, `research`, `forms`, `monitor`, `careful`, `qa`, or a
-fork of your team). Order: the engine the call names, then `engine:` in `.webagent/config.yaml`, then your project's default.
+fork of your team). Order: the engine the call names, then `engine:` in `.webagent/config.yaml`, then your project's default (`qa` suits testing; nothing makes it mandatory).
 
 | Setting | Needed | Meaning |
 |---|---|---|

@@ -65,7 +65,7 @@ then run `cloudflared tunnel --url http://localhost:<port>` in the background (d
     strictLinks: false }` with at least one `expect...`; it cannot use vault logins, so a signed-in case types a throwaway login in `steps`.
 - **`run_task`** only to explore an unknown flow or when I ask, **never as the pass/fail gate** (it said `pass` on a broken
   checkout in 3 of 6 runs; `pass` only means the agent says it is done). Args: `goal`, `startUrl`, `record: true`, `engineId` (`tests.yaml`
-  `engine`, else `.webagent/config.yaml` `engine`, else the slug `qa`; the server accepts a slug or an id, `list_engines` shows them), `credentials: { namespace, autoSubmit: true }` for a vault
+  `engine`, else `.webagent/config.yaml` `engine`, else the project default engine (omit `engineId`; `qa` is a sensible pick for testing, never required); the server accepts a slug or an id, `list_engines` shows them), `credentials: { namespace, autoSubmit: true }` for a vault
   login (use it for `signedIn` cases). End the goal with `Answer exactly PASS: <what you saw> or FAIL: <what you saw instead>. If you cannot run it answer
   COULD NOT TEST: <why>.` Quote the answer, call the result "explored".
 - ngrok free: `headers: [{ "hosts": ["<tunnel host>"], "headers": { "ngrok-skip-browser-warning": "1" } }]` on `run_task`, or

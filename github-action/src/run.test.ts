@@ -160,6 +160,18 @@ describe("run", () => {
     expect(r.summary.join("")).toContain("API key rejected");
   });
 
+  it("engine in tests.yaml not found: exit 3, the CLI sentence is in the comment, summary and no run starts", async () => {
+    const r = rig({
+      cli: { code: 3, stdout: "", report: null, stderr: "Setup problem: Engine 'my-qa' not found in this project\n" },
+    });
+    expect(await run(r.deps)).toBe(3);
+    expect(r.outputs).toMatchObject({ verdict: "setup", "run-id": "" });
+    const body = r.gh.filter((c) => c.method !== "GET").at(-1)?.body?.body ?? "";
+    expect(body).toContain("NOT RUN");
+    expect(body).toContain("Engine 'my-qa' not found in this project");
+    expect(r.summary.join("")).toContain("Engine 'my-qa' not found in this project");
+  });
+
   it("fork PR without the secret: one notice, exit 0, no comment, no CLI", async () => {
     const r = rig({
       env: { "INPUT_API-KEY": "", GITHUB_ACTOR: "stranger" },

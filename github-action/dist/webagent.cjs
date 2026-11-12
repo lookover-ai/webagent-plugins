@@ -27082,7 +27082,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// ../dist/chunk-EMSJ4A22.js
+// ../dist/chunk-BUA4T3C7.js
 var webagentEnvSchema = external_exports.enum(["local", "staging", "production"]);
 var regionCodeSchema = external_exports.enum(["us", "in"]);
 var hosts = {
@@ -28070,7 +28070,7 @@ var engineIconSchema = external_exports.string().min(1).max(64);
 var engineSlugSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
 var engineSummarySchema = external_exports.object({
   id: idSchema("engine"),
-  /** Slug (`qa`, `general`, ...) for built-ins; a fork may have none. Lets a client pick an engine by name. */
+  /** Unique per project (`qa`, `general`, `my-qa`, ...); optional, so an engine may have none. Lets a client pick an engine by name. */
   slug: engineSlugSchema.optional(),
   name: engineNameSchema,
   description: engineDescriptionSchema,
@@ -28090,6 +28090,8 @@ var engineDetailSchema = engineSummarySchema.extend({
 });
 var forkEngineRequestSchema = external_exports.object({
   baseEngineId: idSchema("engine").optional(),
+  /** Unique per project; not a built-in slug (0.40.0). Absent: the engine has none. */
+  slug: engineSlugSchema.optional(),
   name: engineNameSchema,
   description: engineDescriptionSchema.optional(),
   icon: engineIconSchema.optional(),
@@ -28098,6 +28100,8 @@ var forkEngineRequestSchema = external_exports.object({
   checks: engineConfigSchema.shape.checks
 });
 var patchEngineDraftRequestSchema = engineConfigSchema.partial().extend({
+  /** Unique per project; not a built-in slug (0.40.0). Applies at once, like `name`. */
+  slug: engineSlugSchema.optional(),
   name: engineNameSchema.optional(),
   description: engineDescriptionSchema.optional(),
   icon: engineIconSchema.nullable().optional()
@@ -30984,7 +30988,11 @@ var workflowFieldsSchema = external_exports.object({
   defaultTarget: workflowSlugSchema,
   /** 1..100 cases with unique ids. */
   cases: external_exports.array(workflowCaseSchema).min(1).max(100),
-  /** Absent: the built-in QA engine. */
+  /**
+   * Engine for this workflow's runs (D68). Resolution order for a run: the call's own engine, then
+   * this one (a tests.yaml `engine:` lands here on sync; a PR run with `workflowKey` uses the saved
+   * workflow's), then the project's default engine. Never a hidden built-in.
+   */
   engineId: idSchema("engine").optional(),
   /** Pins one engine version; needs `engineId`. */
   engineVersion: engineVersionNumberSchema.optional(),
@@ -31076,6 +31084,7 @@ var startAdhocWorkflowRunRequestSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(200).optional(),
   url: workflowUrlSchema,
   cases: external_exports.array(workflowCaseSchema).min(1).max(20),
+  /** Absent: the saved workflow's engine when `workflowKey` names one, else the project default engine (D68). */
   engineId: idSchema("engine").optional(),
   session: runSkillRequestSchema.shape.session,
   concurrency: external_exports.number().int().min(1).max(10).default(3),
@@ -31246,7 +31255,7 @@ var testsFileFieldsSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(200).optional(),
   description: external_exports.string().max(1e3).optional(),
   key: workflowSlugSchema.optional(),
-  /** Engine slug or engine id; a slug is resolved by the caller (the request takes an id). */
+  /** Engine slug or engine id; a slug is resolved by the caller (the request takes an id). Absent: the project default engine (D68). */
   engine: engineRefStringSchema.optional(),
   /** Sites by slug. Absent (and no `url`): the file has no sites, the reader supplies them. */
   targets: external_exports.record(workflowSlugSchema, testsFileTargetSchema).optional(),
@@ -31677,6 +31686,34 @@ var WebagentClient = class {
   }
   closeSession(id) {
     return this.http.json("DELETE", `/v1/sessions/${id}`, deleteSessionResponseSchema);
+  }
+  // Engines
+  /** The project's engines: built-in and its own (`GET /v1/engines`). */
+  async listEngines() {
+    const res = await this.http.json(
+      "GET",
+      "/v1/engines",
+      listEnginesResponseSchema
+    );
+    return res.engines;
+  }
+  /**
+   * Turn an engine reference (`eng_...` id or a slug such as `qa` or `my-qa`) into the engine id,
+   * checked against this project's engines. Throws `WebagentApiError` with code `not_found`
+   * ("Engine '<ref>' not found in this project") or `conflict` (more than one engine matches).
+   * `details.ref` carries the reference.
+   */
+  async resolveEngine(ref) {
+    const engines = await this.listEngines();
+    const hits = engines.filter((e) => e.id === ref || e.slug === ref);
+    if (hits.length === 1) return hits[0].id;
+    const names = hits.map((e) => `${e.slug ?? e.name} (${e.id})`).join(", ");
+    throw new WebagentApiError({
+      code: hits.length === 0 ? "not_found" : "conflict",
+      status: hits.length === 0 ? 404 : 409,
+      message: hits.length === 0 ? `Engine '${ref}' not found in this project` : `Engine '${ref}' is ambiguous in this project: ${names}`,
+      details: { ref }
+    });
   }
   // Skills
   async listSkills() {
@@ -32373,10 +32410,9 @@ async function execute(opts, d2, log, setName) {
   const request = loaded.request;
   setName(opts.workflow ?? request.key ?? request.name);
   for (const w of loaded.warnings) d2.err(`Warning: ${w}`);
-  if (loaded.engineSlug) {
-    d2.err(
-      `Warning: engine "${loaded.engineSlug}" is a slug; the CLI cannot look it up yet, so the default engine is used`
-    );
+  const engineRef = loaded.engineSlug ?? request.engineId;
+  if (engineRef !== void 0) {
+    request.engineId = await resolveEngineRef(d2, api, engineRef);
   }
   const target = resolveTarget(request, opts);
   await checkUrl(opts, target.url, d2, log);
@@ -32423,6 +32459,18 @@ async function execute(opts, d2, log, setName) {
     () => d2.client.startAdhocWorkflowRun(adhoc, { idempotencyKey: key })
   );
   return waitForRun(run, opts, d2, log);
+}
+async function resolveEngineRef(d2, api, ref) {
+  return callApi(api, "looking up the engine", async () => {
+    try {
+      return await d2.client.resolveEngine(ref);
+    } catch (e) {
+      if (e instanceof WebagentApiError && (e.code === "not_found" || e.code === "conflict")) {
+        if (e.details?.ref === ref) throw new SetupError(e.message);
+      }
+      throw e;
+    }
+  });
 }
 function repoPath(cwd, file2) {
   const rel = (0, import_node_path.relative)(cwd, (0, import_node_path.resolve)(cwd, file2));
@@ -32584,7 +32632,7 @@ async function safeWrite(d2, path, text) {
 }
 
 // src/main.ts
-var VERSION = true ? "0.1.0" : "0.1.0";
+var VERSION = true ? "0.1.1" : "0.1.0";
 function sleep2(ms, signal) {
   return new Promise((resolve2, reject) => {
     if (signal?.aborted) return reject(signal.reason);

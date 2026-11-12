@@ -78,7 +78,7 @@ steps) for every case you can write as steps; `run_task` to explore, with its an
 | Fail on a tunnel URL, text missing, page is a warning page | The tunnel's interstitial, not your app | `error`: ngrok header or cloudflared, re-run |
 
 ## Engine id (`qa_run`, `run_task`, `create_session`)
-Which engine: `tests.yaml` `engine` (read by the server on a `testsFile` / `testsYaml`), else `.webagent/config.yaml` `engine`, else `qa`. Pass the slug
+Which engine: `tests.yaml` `engine` (read by the server on a `testsFile` / `testsYaml`), else `.webagent/config.yaml` `engine`, else the project default engine (`qa` is a sensible pick for testing, never required). Pass the slug
 (`qa`, `general`, `research`, `forms`, `monitor`, `careful`) or a full id as `engineId`: the server resolves a built-in slug for your region.
 `list_engines` shows the real ones (forks too; only built-ins have a `slug`, a fork is used by its `id`). A slug that is not built in and not an id is refused with `invalid_input`: ask the user,
 never invent an id. For non-QA work, the `browse` skill covers engines.
@@ -149,7 +149,7 @@ targets:                         # one per environment (or `url: https://...` fo
   local:   http://localhost:3000                   # local URLs get a tunnel
   staging: { url: https://staging.example.com, credentials: staging }  # credentials = vault namespace
 defaultTarget: staging           # optional, default the first target
-engine: qa                       # optional: engine slug or id for run_task cases (default: config.yaml engine, else qa)
+engine: qa                       # optional: engine slug or id for run_task cases (default: config.yaml engine, else the project default engine)
 concurrency: 3                   # optional 1-10, maxCostUsdPerCase: 0.5 optional (workflow runs)
 cases:                           # required, 1-100
   - id: signup-happy             # optional slug; made from the title if missing
