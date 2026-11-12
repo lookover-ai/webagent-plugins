@@ -7,7 +7,7 @@ branding:
 
 inputs:
   api-key:
-    description: Your webagent API key (a repository secret). Empty on a fork PR: the action then skips with a notice.
+    description: "Your webagent API key (a repository secret). Empty on a fork PR: the action then skips with a notice."
     required: true
   api-url:
     description: API origin, without a path. Default is the host the bundled CLI is built for (staging until production exists).
@@ -43,7 +43,7 @@ inputs:
     required: false
     default: "15"
   retries:
-    description: Extra tries for a failed case, 0 to 2. Empty: the API default (1 for CI runs).
+    description: "Extra tries for a failed case, 0 to 2. Empty: the API default (1 for CI runs)."
     required: false
   on-error:
     description: "`block` (default): when the app could not be tested the job fails with exit code 2. `neutral`: the job passes with a warning."
@@ -54,7 +54,7 @@ inputs:
     required: false
     default: fail
   comment:
-    description: Keep one comment on the pull request, updated in place on every push. Needs `pull-requests: write`.
+    description: "Keep one comment on the pull request, updated in place on every push. Needs `pull-requests: write`."
     required: false
     default: "true"
   share-links:
