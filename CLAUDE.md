@@ -17,8 +17,9 @@ plugins/webagent/                   the plugin (installs copy ONLY this folder: 
   .mcp.json                         http MCP server `webagent` (${user_config.api_key}, ${user_config.api_url})
   skills/browse/SKILL.md            general web tasks (hub D66); reference.md beside it
   skills/qa-test/SKILL.md           the QA workflow, written for a model; long reference in reference.md
-  commands/run.md, engines.md, qa.md, qa-init.md   /webagent:run, :engines, :qa, :qa-init
+  commands/run.md, engines.md, qa.md, qa-init.md, qa-ci.md   /webagent:run, :engines, :qa, :qa-init, :qa-ci
   templates/.webagent/              config.yaml, product.md, tests.yaml starters
+  templates/github/webagent-qa.yml  the workflow /webagent:qa-init offers (checked against github-action/action.yml)
 codex/AGENTS.md, config.toml        the same workflow for Codex
 github-action/                      the GitHub Action (K10): action.yml, src/ (TypeScript), dist/ (committed bundle + vendored CLI), README
 docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs/PROGRESS.md

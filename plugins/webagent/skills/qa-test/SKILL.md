@@ -44,7 +44,7 @@ browser can never reach it (SSRF guard, no override). Do not call a tool with it
 - A case is what a user does and sees. **Write steps that replay:** one action per step, controls named by their visible label,
   every typed value a quoted literal: `click "Sign up"`, `type "qa+{{uid}}@example.com" into Email` (`{{uid}}` = a new value each run). Never
   describe a value ("a unique email"): it would be typed as written. `expect` in the form the server reads: `shows "Welcome"`,
-  `address contains /dashboard`, `does not show "Error"`. A flow that needs a real inbox (email code) cannot be tested: COULD NOT TEST.
+  `address contains /dashboard`, `does not show "Error"`. Quote a YAML value that contains `: ` as a whole (`expect: 'shows "Total: $19.00"'`; unquoted it is invalid YAML). A flow that needs a real inbox (email code) cannot be tested: COULD NOT TEST.
 
 ## 4. Run: one `qa_run` for the whole set
 **Default: ONE `qa_run` call with every chosen case** (at most 20 per call; more: a second call). The server derives case ids, defaults

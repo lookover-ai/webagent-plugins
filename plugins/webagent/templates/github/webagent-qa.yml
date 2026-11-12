@@ -1,0 +1,28 @@
+# .github/workflows/webagent-qa.yml
+# Runs .webagent/tests.yaml in a cloud browser on every pull request, keeps one comment on the PR, and fails the job when a
+# required case fails. Docs: github-action/README.md in the webagent-plugins repo (inputs, preview URLs, exit codes).
+# The API key is the repository secret WEBAGENT_API_KEY (never in this file).
+name: Lookover QA
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:                       # a new push cancels the old run (the action cancels the cloud run too)
+  group: lookover-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write             # for the PR comment (without it the check still works, just no comment)
+
+jobs:
+  qa:
+    name: Lookover QA              # the status check you can mark "required" later
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lookover-ai/webagent-plugins/github-action@v1
+        with:
+          api-key: ${{ secrets.WEBAGENT_API_KEY }}
+          url: https://staging.example.com          # the public https site to test (a per-PR preview URL works too)

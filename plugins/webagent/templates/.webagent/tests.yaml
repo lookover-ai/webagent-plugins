@@ -17,6 +17,8 @@ cases:
   - id: home-loads
     title: The home page loads and its links work
     expect: shows "<a heading or word that is always on the home page>"
+    # A value that contains ": " (colon, space) must be quoted as a whole, or the file is invalid YAML:
+    #   expect: 'shows "Total: $19.00"'      (not: expect: shows "Total: $19.00")
     tags: [smoke]
     priority: 1
 

@@ -35,7 +35,8 @@ the proof: for tests a verdict, the failed step, console errors, failed network 
 | `/webagent:run <task>` | Any web task in a cloud browser |
 | `/webagent:engines` | List the engines, pick one, optionally save it to `.webagent/config.yaml` |
 | `/webagent:qa <what to test>` | Test your web app, fix, re-run the failures |
-| `/webagent:qa-init` | Create `.webagent/product.md` and `tests.yaml` from your code |
+| `/webagent:qa-init` | Create `.webagent/product.md` and `tests.yaml` from your code; offers the GitHub Actions workflow (asks first) |
+| `/webagent:qa-ci` | Print the CI call (GitHub Actions snippet, plain CLI call, exit codes). Writes nothing |
 
 **Engines.** An engine is the agent that drives the browser (`general`, `research`, `forms`, `monitor`, `careful`, `qa`, or a
 fork of your team). Order: the engine the call names, then `engine:` in `.webagent/config.yaml`, then your project's default (`qa` suits testing; nothing makes it mandatory).
@@ -90,7 +91,9 @@ vault namespace, never passwords) and `tests.yaml` (plain-language cases). Forma
 
 Run the same `.webagent/tests.yaml` on every pull request: [`github-action/`](github-action/README.md) (`lookover-ai/webagent-plugins/github-action@v1`)
 gates the job, keeps one comment on the PR (updated on every push) and writes the report to the job summary. Copy-paste workflow,
-preview-URL examples (Vercel, Netlify, a staging URL) and the exit codes are in its README.
+preview-URL examples (Vercel, Netlify, a staging URL) and the exit codes are in its README. `/webagent:qa-init` offers to write the
+workflow (`.github/workflows/webagent-qa.yml`, from [`templates/github/`](plugins/webagent/templates/github/webagent-qa.yml)); `/webagent:qa-ci` prints
+the call for your CI. CI uses an API key kept as the repository secret `WEBAGENT_API_KEY` (a key, not the plugin's sign-in).
 
 ## Safety
 

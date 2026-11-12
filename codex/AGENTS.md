@@ -59,7 +59,7 @@ then run `cloudflared tunnel --url http://localhost:<port>` in the background (d
   - ngrok free, a WAF or staging gate: `session: { headers: [{ hosts: ["<host>"], headers: { "ngrok-skip-browser-warning": "1" } }] }`
     on `qa_run` (so ngrok needs no `smoke_test`).
   - **Every failed case:** call `qa_status { id: <wfr_...>, caseId }` once, then report per case: page URL, step, expected vs actual, first 1-2 console errors, failed requests (method, URL, status), screenshot link, one line likely cause (+ file:line if the repo is open). Not in the report: `not recorded`. Failed task steps carry `url`, `expected`, `actual`: quote them.
-  - Write steps that replay: quoted literal values (`type "qa+{{uid}}@example.com" into Email`, `{{uid}}` is new each run), one action per step, visible labels; `expect` as `shows "X"`.
+  - Write steps that replay: quoted literal values (`type "qa+{{uid}}@example.com" into Email`, `{{uid}}` is new each run), one action per step, visible labels; `expect` as `shows "X"`. In `tests.yaml` quote a value that contains `: ` as a whole (`expect: 'shows "Total: $19.00"'`; unquoted it is invalid YAML).
   - Tell me the `Watch live: <url>` link once per run (not on every poll). Pass on every `Warning:` line (skipped `signedIn` cases).
   - **Only when `qa_run` is not in your tool list:** one `smoke_test` per case: `{ url, steps: [...], expectText, expectUrl, expectNoText,
     strictLinks: false }` with at least one `expect...`; it cannot use vault logins, so a signed-in case types a throwaway login in `steps`.

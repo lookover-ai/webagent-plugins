@@ -102,6 +102,44 @@ def contract_reader(d):
         err("contract reader rejected tests.yaml")
 
 
+def check_workflow(path):
+    """The GitHub workflow template parses and only uses inputs that github-action/action.yml declares."""
+    d = yaml.safe_load(path.read_text())
+    action = yaml.safe_load((ROOT / "github-action/action.yml").read_text())
+    known = set(action["inputs"])
+    # PyYAML reads the key `on` as boolean True
+    trig = d.get("on", d.get(True))
+    if not isinstance(trig, dict) or "pull_request" not in trig:
+        err("workflow: must run on pull_request")
+    uses = 0
+    for job in d["jobs"].values():
+        for step in job["steps"]:
+            if str(step.get("uses", "")).startswith("lookover-ai/webagent-plugins/github-action@"):
+                uses += 1
+                extra = set(step.get("with", {})) - known
+                if extra:
+                    err(f"workflow: inputs not in action.yml: {sorted(extra)}")
+                if "secrets.WEBAGENT_API_KEY" not in str(step.get("with", {}).get("api-key", "")):
+                    err("workflow: api-key must come from secrets.WEBAGENT_API_KEY")
+    if uses != 1:
+        err("workflow: expected one webagent-plugins action step")
+    print("parsed", path.name)
+
+
+def check_expect_quoting(path):
+    """`expect: shows "Total: $19.00"` is invalid YAML: a plain value with ': ' must be quoted (the parse above catches live lines;
+    this catches the same mistake inside the docs' YAML examples)."""
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        m = re.match(r"^\s*(?:- )?expect:\s+([^'\"\s{\[].*)$", line)
+        if m and ": " in re.split(r"\s#\s", m.group(1))[0]:
+            err(f"{path.relative_to(ROOT)}:{n}: unquoted expect value contains ': ' (quote it whole)")
+
+
+for f in sorted((ROOT / "plugins/webagent/templates/github").glob("*.yml")):
+    check_workflow(f)
+for f in [*ROOT.glob("plugins/webagent/**/*.md"), *ROOT.glob("docs/*.md"), ROOT / "codex/AGENTS.md", ROOT / "README.md"]:
+    check_expect_quoting(f)
+
 for f in sorted(TPL.glob("*.yaml")):
     d = yaml.safe_load(f.read_text())
     if f.name == "tests.yaml":

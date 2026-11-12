@@ -167,6 +167,8 @@ cases:                           # required, 1-100
 One action per step. Name a control by its visible label (`click "Create account"`, `type "..." into Email`). Quote every typed value; a
 description ("a unique email") is typed as written. `{{uid}}` is a new short value per run: `qa+{{uid}}@example.com`. No secrets in steps.
 `expect`: `shows "X"`, `address contains Y`, `does not show "Z"` (join with "and"); other wording is "not checked". When unsure use `checks`.
+**YAML colon trap:** a value that contains `: ` (colon, space) is quoted as a whole: `expect: 'shows "Total: $19.00"'`. Unquoted
+(`expect: shows "Total: $19.00"`) is invalid YAML and the whole file fails to load. Same for steps (`- 'click "Pay: now"'`). Check this on every case you write.
 
 ## Final summary template
 Passed: one line. Failed: one block, filled from `qa_status { id, caseId }` (call it once per failed case). Keep each field to one line.

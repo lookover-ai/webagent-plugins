@@ -15,7 +15,8 @@ acts, and appends cases when you build something new. Commit it with your code.
   tests.yaml     QA: the cases
 ```
 Templates: `plugins/webagent/templates/.webagent/`. Create `product.md` and `tests.yaml` from your code with `/webagent:qa-init`,
-and `config.yaml` with `/webagent:engines`.
+and `config.yaml` with `/webagent:engines`. `/webagent:qa-init` also offers the GitHub Actions workflow that runs `tests.yaml` on every pull
+request; `/webagent:qa-ci` prints the CI call for any CI.
 
 ## Never put secrets in it
 No passwords, API keys, tokens or session cookies. Test logins live in the webagent vault (dashboard, Vault) and are referred
@@ -64,7 +65,7 @@ cases:                      # required, 1 to 100
     title: A new user can sign up    # required
     path: /signup           # optional: start path under the target url. Default /
     steps: [click "Create account"]  # optional list of plain steps (max 30). Default none
-    expect: shows "Welcome"      # optional: the outcome in words
+    expect: shows "Welcome"      # optional: the outcome in words. A value with ": " is quoted whole: 'shows "Total: $19.00"'
     checks: { text: Welcome, url: /dashboard, noText: error }   # optional: same, as exact fields. Wins over `expect`
     tags: [smoke, auth]     # optional
     priority: 1             # optional: 1 (most important) to 5. Default 3
@@ -92,6 +93,7 @@ How a case becomes a webagent call is in `plugins/webagent/skills/qa-test/refere
 - `{{uid}}` is a short value that is new on every run: use it for anything that must be unique (emails, names). No real secrets in steps.
 - One action per step. Name a control by its visible label (`click "Create account"`, `... into Email`), not a selector.
 - `expect` in the form the server reads: `shows "Welcome"`, `address contains /dashboard`, `does not show "Error"`. Other wording is reported as "not checked"; use `checks` when unsure.
+- Quote a YAML value as a whole when it contains `: ` (colon and space): `expect: 'shows "Total: $19.00"'`. Unquoted, `expect: shows "Total: $19.00"` is invalid YAML (the colon starts a mapping) and the file does not load. The same goes for a step: `- 'click "Pay: now"'`.
 
 ## Why plain language
 webagent's engine decides how to click and type. A case that says `click "Create account"` keeps working when the markup
