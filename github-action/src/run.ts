@@ -16,6 +16,7 @@ import { outcomeFor, type RunLike, type VerdictOutput } from "./outcome.js";
 import {
   dashboardUrl,
   finalBody,
+  finalCases,
   noticeForFork,
   notRunBody,
   type RunCase,
@@ -161,12 +162,13 @@ export async function run(d: Deps): Promise<number> {
   const url = report ? dashboardUrl(report) : "";
 
   if (report) {
-    const links = shareLinks
-      ? await replayLinks(
-          { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey },
-          runJson?.cases ?? [],
-        )
-      : [];
+    let links: { caseId: string; url: string }[] = [];
+    if (shareLinks) {
+      const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
+      // Links follow the settled run (a retried case's LAST attempt), not the CLI's copy; the CLI's JSON is the fallback.
+      const settled = await finalCases(share, runJson?.id ?? "");
+      links = await replayLinks(share, settled ?? runJson?.cases ?? []);
+    }
     await d.appendSummary(`${report.trimEnd()}\n`);
     await comment(finalBody({ workflowKey, report, links, buildUrl }));
   } else if (out.verdict === "setup") {

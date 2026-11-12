@@ -25,6 +25,26 @@ export interface ShareDeps {
 const MAX_LINKS = 10;
 const SEVEN_DAYS = 7 * 86_400;
 
+/**
+ * The cases of the settled run, read fresh from the API: a case that was retried points at its LAST attempt's session
+ * (the API clears `session_id` on retry and sets the new one), the same as the report's own "Replay:" line.
+ * `undefined` when the read fails or has no `cases` (the caller falls back to the CLI's JSON). Never throws.
+ */
+export async function finalCases(d: ShareDeps, runId: string): Promise<RunCase[] | undefined> {
+  if (!runId) return undefined;
+  try {
+    const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/workflow-runs/${encodeURIComponent(runId)}`, {
+      method: "GET",
+      headers: { authorization: `Bearer ${d.apiKey}` },
+    });
+    if (!res.ok) return undefined;
+    const body = (await res.json()) as { cases?: unknown };
+    return Array.isArray(body.cases) ? (body.cases as RunCase[]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** A 7-day replay link per failed required case (max 10). A case without a recording yields none; never throws. */
 export async function replayLinks(
   d: ShareDeps,

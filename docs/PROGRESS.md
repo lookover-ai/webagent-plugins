@@ -62,3 +62,8 @@ Gotchas: node20 and node24 are the only JS runtimes (node24 used, CLI built for 
 Done: contracts pull (2582c0e), CLI rebuilt and re-vendored into `github-action/dist/webagent.cjs` (resolveEngine present); `dist/index.cjs` unchanged. New test: exit 3 `Engine 'my-qa' not found in this project` reaches the PR comment and job summary (setupLines path, no Action code change). Engine order per D68 (tests.yaml `engine` > saved workflow's engine > project default) in Action README; "default qa" wording removed from qa-test SKILL/reference, engines command, WEBAGENT-FOLDER.md, tests.yaml template, Codex AGENTS.md, README. `qa` stays a suggestion.
 Next: K8 publish + tag v1; K4; K5b.
 Gotchas: the plugin's `config.yaml`/qa flow still falls back to omitting `engineId` (project default); CLAUDE.md layout line unchanged.
+
+## 2026-11-13 K11 done (qa-polish B3)
+Done: staging PR #2 showed a replay share link for attempt 1 while the report and API said attempt 2. `report.ts` `finalCases` does a fresh `GET /v1/workflow-runs/<id>` (same key, API URL) after the CLI exits; `run.ts` builds the 7-day share links from those cases, falling back to the CLI's `runJson.cases` if the read fails or has no cases. 2 new tests in `run.test.ts` (58 total); `dist/index.cjs` rebuilt. Comment format, exit codes, check status unchanged.
+Next: CTO release (tag `v1` not moved); K8.
+Gotchas: the Action only copies the CLI's stdout JSON (`WorkflowRun` printed after `waitForWorkflowRun`, `cli/src/run-test.ts:338`); it never read `attempts[0]`. So the CLI's last poll held a stale `sessionId` (api race: verdict terminal before the retry swapped `session_id`?). Not confirmed; the Action no longer depends on it.

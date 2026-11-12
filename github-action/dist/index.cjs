@@ -248,6 +248,20 @@ function dashboardUrl(markdown) {
 }
 var MAX_LINKS = 10;
 var SEVEN_DAYS = 7 * 86400;
+async function finalCases(d, runId) {
+  if (!runId) return void 0;
+  try {
+    const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/workflow-runs/${encodeURIComponent(runId)}`, {
+      method: "GET",
+      headers: { authorization: `Bearer ${d.apiKey}` }
+    });
+    if (!res.ok) return void 0;
+    const body = await res.json();
+    return Array.isArray(body.cases) ? body.cases : void 0;
+  } catch {
+    return void 0;
+  }
+}
 async function replayLinks(d, cases) {
   const out = [];
   const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && c.sessionId);
@@ -421,10 +435,12 @@ ${noticeForFork}
   const out = outcomeFor(res.code, runJson, inputs.failOn);
   const url = report ? dashboardUrl(report) : "";
   if (report) {
-    const links = shareLinks ? await replayLinks(
-      { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey },
-      runJson?.cases ?? []
-    ) : [];
+    let links = [];
+    if (shareLinks) {
+      const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
+      const settled = await finalCases(share, runJson?.id ?? "");
+      links = await replayLinks(share, settled ?? runJson?.cases ?? []);
+    }
     await d.appendSummary(`${report.trimEnd()}
 `);
     await comment(finalBody({ workflowKey, report, links, buildUrl }));

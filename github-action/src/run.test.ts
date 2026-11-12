@@ -16,6 +16,7 @@ interface Rig {
   cliCalls: { args: string[]; env: Record<string, string | undefined> }[];
   gh: { method: string; path: string; body?: { body?: string } }[];
   shares: string[];
+  reads: string[];
 }
 
 function rig(o: {
@@ -26,6 +27,8 @@ function rig(o: {
   comments?: { id: number; body: string }[];
   ghStatus?: number;
   runJson?: unknown;
+  /** Body of `GET /v1/workflow-runs/:id` (the settled run); unset = the read answers 404. */
+  finalRun?: unknown;
 }): Rig {
   const env: Record<string, string> = {
     "INPUT_API-KEY": "wa_us_secretsecretsecretsecretsecretsecretsecret1",
@@ -40,7 +43,7 @@ function rig(o: {
     GITHUB_SHA: "a1b2c3d4e5f6",
     ...o.env,
   };
-  const r: Rig = { outputs: {}, summary: [], logs: [], cliCalls: [], gh: [], shares: [], deps: undefined as never };
+  const r: Rig = { outputs: {}, summary: [], logs: [], cliCalls: [], gh: [], shares: [], reads: [], deps: undefined as never };
   const files: Record<string, string> = { ".webagent/tests.yaml": "key: checkout\nname: Checkout\n", ...o.files };
   const cli = o.cli ?? {};
   const runJson = o.runJson ?? {
@@ -64,6 +67,11 @@ function rig(o: {
         if (o.ghStatus) return new Response(JSON.stringify({ message: "Resource not accessible by integration" }), { status: o.ghStatus });
         if (method === "GET") return new Response(JSON.stringify(comments));
         return new Response(JSON.stringify({ id: 99 }), { status: 201 });
+      }
+      if (method === "GET" && u.pathname.startsWith("/v1/workflow-runs/")) {
+        r.reads.push(`${u.pathname} ${new Headers(init.headers).get("authorization")}`);
+        if (o.finalRun === undefined) return new Response("{}", { status: 404 });
+        return new Response(JSON.stringify(o.finalRun));
       }
       r.shares.push(`${method} ${url} ${String(init.body)}`);
       return new Response(JSON.stringify({ url: `https://dash.test/share/${u.pathname.split("/")[3]}` }));
@@ -115,6 +123,27 @@ describe("run", () => {
     expect(last?.body?.body).toContain("Replays");
     expect(last?.body?.body).toContain("https://dash.test/share/ses_1");
     expect(r.logs.some((l) => l.startsWith("::error"))).toBe(true);
+  });
+
+  it("a retried case: the share link uses the settled run's session (last attempt), not the CLI's copy", async () => {
+    const r = rig({
+      finalRun: { id: "wfr_1", cases: [{ caseId: "pay", verdict: "fail", sessionId: "ses_attempt2" }, { caseId: "home", verdict: "pass", sessionId: "ses_2" }] },
+    });
+    await run(r.deps);
+    expect(r.reads).toEqual(["/v1/workflow-runs/wfr_1 Bearer wa_us_secretsecretsecretsecretsecretsecretsecret1"]);
+    expect(r.shares).toHaveLength(1);
+    expect(r.shares[0]).toContain("/v1/sessions/ses_attempt2/share");
+    expect(r.shares[0]).not.toContain("ses_1/");
+    const last = r.gh.filter((c) => c.method !== "GET").at(-1);
+    expect(last?.body?.body).toContain("- pay: https://dash.test/share/ses_attempt2");
+  });
+
+  it("the final read fails: the links fall back to the CLI's cases", async () => {
+    const r = rig({}); // finalRun unset: the read answers 404
+    await run(r.deps);
+    expect(r.reads).toHaveLength(1);
+    expect(r.shares).toHaveLength(1);
+    expect(r.shares[0]).toContain("/v1/sessions/ses_1/share");
   });
 
   it("no share links on a public repo by default", async () => {
