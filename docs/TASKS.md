@@ -27,5 +27,7 @@ Task prefix `K`. One block per session. Check: see `CLAUDE.md`. Brief: `../webag
   `title` required, no id/path/steps from the plugin); `session.headers` on `qa_run` replaces `smoke_test` for ngrok; `Warning:` lines (skipped
   `signedIn`) and the `Watch live:` link surfaced once per run; task steps `url`/`expected`/`actual`; `smoke_test` kept as fallback only when
   `qa_run` is absent; A91/A94 hedges dropped (slug `engineId`, `list_engines`). Skills, reference, `/webagent:qa`, Codex `AGENTS.md`, README, format doc.
+- [x] **K7b · qa_run testsYaml (api A96, plugin 0.4.1).** Whole `tests.yaml` goes as raw `testsYaml` (server parses, YAML errors with line/column); a subset still goes
+  as filtered `testsFile` (the api has no `caseIds`/`tags` with a file: see PROGRESS); `session` also with `workflowId`; `maxCostUsdPerCase` applied; cap from the diff 5 to 10; `slug` on built-in engines only.
 - [ ] **K8 · Publish.** CTO creates the public repo `lookover-ai/webagent-plugins` after Abhisht's OK; license is MIT (decided, `LICENSE`);
   switch the default API URL to the production host when it exists; submit to Anthropic's directory if wanted.

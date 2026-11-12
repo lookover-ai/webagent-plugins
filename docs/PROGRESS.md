@@ -41,3 +41,9 @@ filled by the plugin, `session.headers` for ngrok, `signedIn` left in the file (
 Codex `AGENTS.md`, README, format doc. Hedges for A91 dropped (slug `engineId`, `list_engines`). Old K7 publish row renamed K8.
 Next: K8 publish; K4; K5b; live run with a real Claude Code on staging once A94 is deployed.
 Gotchas: `cases` refuse `signedIn` but `testsFile` skips it with a warning; `qa_run` caps at 20 cases (inline request limit) even from a file of 100; `maxCostUsdPerCase` is not applied to inline runs.
+
+## 2026-11-12 K7b done (plugin 0.4.1)
+Done: api A96 (d27cb2e, contracts 0.38.0) wired in. `qa_run { testsYaml }` for a whole tests.yaml (raw text, <=64 KB, YAML errors with line/column); `session` allowed with `workflowId`;
+`maxCostUsdPerCase` of a file is applied (note removed); diff-picked cap 5 -> 10; engine `slug` is for built-ins only (forks by `id`). SKILL 4A/4C, reference, `/webagent:qa`, Codex `AGENTS.md`.
+Next: K8 publish; K4; K5b; live run on staging. Api ask: allow `caseIds` / `tags` with `testsYaml` / `testsFile` (now refused: "apply to a saved workflow").
+Gotchas: brief said select with `caseIds`/`tags` + `testsYaml`; qa-tools.ts refuses that, so a subset still sends parsed `testsFile` and `testsYaml` runs the whole file (max 20 cases). `maxCostUsdPerCase` only via a file, `cases` has no such arg.

@@ -37,8 +37,8 @@ browser can never reach it (SSRF guard, no override). Do not call a tool with it
 
 ## 3. Choose cases
 - The user named something: that, plus the nearest `tests.yaml` case.
-- Otherwise: cases whose area the diff touches, plus every `tags: [smoke]` / `priority: 1` case (priority runs 1 = most important to 5, default 3). **At most 5 per run**;
-  list what you skipped. "all" or "regression" means every case.
+- Otherwise: cases whose area the diff touches, plus every `tags: [smoke]` / `priority: 1` case (priority runs 1 = most important to 5, default 3). **At most 10 per run**;
+  list what you skipped. "all" or "regression" means every case (in calls of up to 20).
 - New or changed behaviour with no case: append one to `.webagent/tests.yaml` (`title` is the only required field; add `id`, `steps`, `expect`, `tags`,
   `priority`; plain language, no secrets; only fields from the format in reference.md). Edit an existing case only when the app changed on purpose, and say so.
 - A case is what a user does and sees: steps like `click "Sign up"`, `type <unique email> into Email`; expect like
@@ -51,12 +51,17 @@ browser can never reach it (SSRF guard, no override). Do not call a tool with it
 a transcript. (A goal-driven `run_task` said `pass` on a broken checkout in 3 of 6 test runs.)
 **Do not fill `id`, `path` or `steps` yourself.** Send the cases as the file has them. Only `title` is required.
 
-**A. `.webagent/tests.yaml` exists: send the file.** Parse it, keep only the chosen cases in `cases`, and call
-`qa_run { testsFile: <that object>, target?: <name>, url?: <override> }`.
+**A. `.webagent/tests.yaml` exists: send the file.**
+- **Every case of the file (user said "all", or you chose them all; the file has at most 20 cases):** Read the file and send its text
+  **exactly as it reads**, not re-written as JSON: `qa_run { testsYaml: <raw text, at most 64 KB>, target?: <name>, url?: <override> }`. The
+  server parses it. A YAML mistake comes back as `invalid_input` with the line and column: fix that line in the file (or the text) and send again.
+- **Only some cases:** `caseIds` and `tags` do not work with `testsYaml` / `testsFile` (they are for a saved `workflowId`). Parse the file,
+  keep only the chosen cases in `cases`, and call `qa_run { testsFile: <that object>, target?: <name>, url?: <override> }`. More than 20
+  cases in the file: this path too, in calls of up to 20.
 - `target` = the environment name the user gave (default: the file's `defaultTarget`). `url` replaces that target's address: set it
   to the tunnel URL for a local target (section 7) or to a URL the user gave. A file with no `targets`/`url` takes `url` as its site.
 - Leave `engine`, `concurrency`, `name` in the file: the server reads them. Pass `engineId` only to override (order: `tests.yaml`
-  `engine` > `.webagent/config.yaml` `engine` > `qa`).
+  `engine` > `.webagent/config.yaml` `engine` > `qa`). `maxCostUsdPerCase` in the file is applied (a case stops when its model spend passes it).
 - Leave `signedIn` cases in the file you send: the server skips them and says so (`Warning:` line, `structuredContent.warnings`). Run
   those yourself as in D.
 
@@ -65,8 +70,8 @@ a transcript. (A goal-driven `run_task` said `pass` on a broken checkout in 3 of
 that case as in D.
 
 **C. Headers (ngrok, a WAF or staging gate): `session: { headers: [{ hosts: ["<tunnel host>"], headers: { "ngrok-skip-browser-warning": "1" } }] }`**
-on `qa_run` (merged with the target's own headers). So an ngrok tunnel works with `qa_run`: no `smoke_test` needed. `session` is refused with
-a saved `workflowId`. Never put a real secret value in it from memory: ask the user.
+on `qa_run` (merged with the target's own headers; also allowed with a saved `workflowId`). So an ngrok tunnel works with `qa_run`: no
+`smoke_test` needed. Never put a real secret value in it from memory: ask the user.
 
 **D. `run_task` (QA engine): only to explore an unknown flow, run a `signedIn` case, or when the user asks. Never a pass/fail gate.** A task
 has no assertions: `pass` only means the agent says it is done, and a found bug often ends `blocked` (verdict `error`). Report it as
@@ -102,7 +107,7 @@ that link in one line when you start the run. Do not repeat it for each poll.
 1. For each `fail`: decide if the app or the test is wrong. Read the failed step, the `error` and the code. A case that
    expects old text after an intended change is a stale test: update the case, say so.
 2. Fix the app code (smallest change). State cause as `file:line`.
-3. Re-run **only the failed cases**: the same `qa_run` with only those cases in the file (or `cases`). Local/tunnel target: the dev server reloads, re-run now. Staging or other remote:
+3. Re-run **only the failed cases**: the same `qa_run` with only those cases (`testsFile` filtered, or `cases`; not `testsYaml`, it runs the whole file). Local/tunnel target: the dev server reloads, re-run now. Staging or other remote:
    the fix is not live until deployed. Say so and stop; do not re-run against old code or claim it is fixed.
 4. Maximum 2 fix rounds per case. Then report it as still failing with what you tried.
 5. `error` cases: do not edit app code. Say why it could not run and what unblocks it (open a tunnel, use a vault login,

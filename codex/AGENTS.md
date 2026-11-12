@@ -37,7 +37,7 @@ Testing my own web app. You know the code, so you decide what to test. webagent 
 Read `.webagent/product.md` and `.webagent/tests.yaml` if they exist (format: cases with `id`, `title`, `path`, `steps`, `expect` or `checks {text, url, noText}`,
 `tags`, `priority` 1 (most important) to 5, default 3; `targets` per environment, a url or `{ url, credentials }` with an optional vault namespace; or one
 `url`; `defaultTarget`; this format is shared with the dashboard and CI, add no field of your own). Read `git diff --stat`
-and only the changed route/page/form files. Choose the cases the diff touches plus the `smoke` / priority 1 cases, **at most 5**,
+and only the changed route/page/form files. Choose the cases the diff touches plus the `smoke` / priority 1 cases, **at most 10**,
 and tell me what you skipped. Append new cases for new behaviour to `tests.yaml` (plain language, no secrets).
 
 ### Target URL
@@ -50,12 +50,14 @@ then run `cloudflared tunnel --url http://localhost:<port>` in the background (d
 ### Run a case
 - **One `qa_run` for the whole set** (default; the verdict comes from its report; at most 20 cases per call). The server makes case ids and
   defaults `path` and `steps`: send the cases as written, only `title` is required, never fill `id`/`path`/`steps` yourself, pass `expect` unchanged.
-  - `.webagent/tests.yaml` exists: `qa_run { testsFile: <the parsed file with only the chosen cases>, target?: <env name>, url?: <override> }`
-    (`url` replaces the target's address: use the tunnel URL for a local target). The file's `engine` and `concurrency` are read by the server.
+  - `.webagent/tests.yaml` exists, every case (up to 20): `qa_run { testsYaml: <the file's raw text, max 64 KB, not re-written as JSON>, target?: <env name>,
+    url?: <override> }`. A YAML mistake comes back with line and column: fix it and send again. Only some cases: `qa_run { testsFile: <the parsed file
+    with only the chosen cases>, ... }` (`caseIds` / `tags` do not work with a file). `url` replaces the target's address: use the tunnel URL for a local
+    target. The file's `engine`, `concurrency` and `maxCostUsdPerCase` are applied by the server.
     Leave `signedIn` cases in: the server skips them and says so; run them as `run_task` (below) with the target's vault namespace.
   - No file: `qa_run { url, cases: [{ title, path?, steps?, expect | checks, tags?, priority? }] }` (`signedIn` is refused in `cases`).
   - ngrok free, a WAF or staging gate: `session: { headers: [{ hosts: ["<host>"], headers: { "ngrok-skip-browser-warning": "1" } }] }`
-    on `qa_run` (so ngrok needs no `smoke_test`). Refused together with `workflowId`.
+    on `qa_run` (so ngrok needs no `smoke_test`).
   - On a failed case: `qa_status { id: <wfr_...>, caseId }`. Failed task steps carry `url`, `expected`, `actual`: quote them.
   - Tell me the `Watch live: <url>` link once per run (not on every poll). Pass on every `Warning:` line (skipped `signedIn` cases).
   - **Only when `qa_run` is not in your tool list:** one `smoke_test` per case: `{ url, steps: [...], expectText, expectUrl, expectNoText,

@@ -17,7 +17,7 @@ Checked against the webagent api (MCP tools in `src/modules/mcp`) and contracts 
 | `get_task` | `sessionId`, `taskId?`, `waitSeconds` | raw task record |
 | `list_sessions`, `get_session` | `sessionId` | what is open now |
 | `list_skills`, `run_skill`, `get_skill_run`, `skill_<name>` | `list_skills` shows each skill's inputs; `run_skill {name, inputs, engineId?}` | a skill run (`run_...`) |
-| `list_engines` | none | `[{id, slug, name, description, version, isProjectDefault}]` |
+| `list_engines` | none | `[{id, slug?, name, description, version, isProjectDefault}]` (`slug` for built-ins only) |
 
 `sessionId`, `startUrl`, `engineId`, `record`, `headers`, `proxyUrl`, `allowHosts`, `credentials` on `run_task` apply only
 when it opens the session. With `sessionId` they are refused: put them on `create_session`.
@@ -28,7 +28,7 @@ Quick tools (`scrape`, `screenshot`, `pdf`, `crawl`) take no `engineId`, no vaul
 Built-ins (slug): `qa` (testing, see `qa-test`), `general` (any web task, the usual project default), `research` (find, read, compare, pull data out; changes nothing),
 `forms` (fill forms and portals from the data you give), `monitor` (check a page and report changes), `careful` (account, billing
 and admin work, one write step at a time).
-Teams can fork them; forks appear in `list_engines` with their own slug. `isProjectDefault: true` is what runs when you omit
+Teams can fork them; forks appear in `list_engines` by name and `id` (only built-ins carry a `slug`; use a fork's `id`). `isProjectDefault: true` is what runs when you omit
 `engineId`. Slug or full id both work as `engineId`. Choice order: the call's `engineId`, then `.webagent/config.yaml`
 `engine:`, then the project default.
 

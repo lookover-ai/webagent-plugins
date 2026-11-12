@@ -46,7 +46,7 @@ Order, first hit wins:
 2. `.webagent/config.yaml` `engine:` in the repo (read it if the file exists; format in the plugin repo `docs/WEBAGENT-FOLDER.md`).
 3. The task clearly fits a non-default engine (find or extract information `research`; fill forms or portals from given data `forms`;
    check a page for changes `monitor`; account, billing or admin work `careful`): call `list_engines` once, pick by
-   `slug`/`description` (teams may have forks), pass that `slug` as `engineId`.
+   `slug`/`description` (teams may have forks: a fork has no `slug`, pass its `id`), pass that `slug` or `id` as `engineId`.
 4. Otherwise omit `engineId`: the project default engine runs. Most tasks end here; do not call `list_engines` for them.
 `engineId` accepts the slug or the full id. A `not_found` / `invalid_input` on it: retry once without `engineId` and say so.
 Never invent an id. The `qa` engine is for testing; do not use it for general tasks.

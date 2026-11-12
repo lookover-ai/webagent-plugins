@@ -1,6 +1,6 @@
 # webagent QA reference
 
-Checked against the webagent api (A94, commit 80a67b0, `src/modules/mcp/qa-tools.ts`, `qa-inline.ts`, `dashboard-url.ts`) and contracts 0.36.0
+Checked against the webagent api (A96, commit d27cb2e, `src/modules/mcp/qa-tools.ts`, `qa-yaml.ts`, `qa-inline.ts`, `dashboard-url.ts`) and contracts 0.38.0
 on 2026-11-12, and against a real run through a tunnel. If a call is refused with `invalid_input`, trust the error text over this file.
 
 ## Tools you use for QA
@@ -22,20 +22,21 @@ Other tools exist (`scrape`, `screenshot`, `pdf`, `crawl`, `list_skills`, `run_s
 verdict word, so use `smoke_test`.
 
 ## `qa_run` (the default QA call)
-Give **exactly one** of `cases`, `testsFile`, `workflowId`.
+Give **exactly one** of `cases`, `testsFile`, `testsYaml`, `workflowId`.
 | Arg | Meaning |
 |---|---|
 | `cases` | 1 to 20 inline cases in the tests-file shape: `title` (required); optional `id` (made from the title), `path` (default `/`), `steps` (default none), `expect` or `checks {text, url, noText}`, `tags`, `priority` 1-5. Needs `url`. `signedIn` or `credentials` in a case is refused. |
-| `testsFile` | The parsed `.webagent/tests.yaml` (object with `cases` and `targets` or `url`, optional `name`, `engine`, `concurrency`) or just the list of cases. Filter `cases` first, then send. `signedIn` cases are left out and named in a `Warning:` line. `maxCostUsdPerCase` is not applied (a warning says so). |
-| `url` | The site under test. Required with `cases`. With `testsFile`: replaces the chosen target's address (use it for a tunnel). A file with no `targets`/`url` takes it as its site. |
-| `target` | With `testsFile`: which target of the file (default its `defaultTarget`). With `workflowId`: the saved target. Unknown name: `invalid_input` listing the known ones. |
-| `session` | Inline runs only (`cases`, `testsFile`): `headers` (host-scoped; joined with the target's own), `proxyUrl`, `allowHosts`. Refused with `workflowId`. Recording is always on. |
-| `engineId` | Slug or id. With `testsFile` the file's `engine` is used when you omit it. Refused with `workflowId`. |
+| `testsYaml` | The raw text of `.webagent/tests.yaml`, at most 64 KB, exactly as the file reads (the server parses it: do not re-write it as JSON). Same as `testsFile` otherwise. A YAML mistake: `invalid_input` with line and column. Runs **every** case of the file (max 20): no case selection. |
+| `testsFile` | The parsed `.webagent/tests.yaml` (object with `cases` and `targets` or `url`, optional `name`, `engine`, `concurrency`, `maxCostUsdPerCase`) or just the list of cases. Filter `cases` first, then send (the way to run some cases of a file). `signedIn` cases are left out and named in a `Warning:` line. The file's `maxCostUsdPerCase` is applied. |
+| `url` | The site under test. Required with `cases`. With `testsFile` / `testsYaml`: replaces the chosen target's address (use it for a tunnel). A file with no `targets`/`url` takes it as its site. |
+| `target` | With `testsFile` / `testsYaml`: which target of the file (default its `defaultTarget`). With `workflowId`: the saved target. Unknown name: `invalid_input` listing the known ones. |
+| `session` | Every run kind: `headers` (host-scoped; joined with the target's own), `proxyUrl`, `allowHosts`. Allowed with `workflowId` too. Recording is always on. |
+| `engineId` | Slug or id. With `testsFile` / `testsYaml` the file's `engine` is used when you omit it. Refused with `workflowId`. |
 | `name`, `waitSeconds` | A name for an inline run; wait 1-90 s (default 60). Still going: verdict `running` and an id for `qa_status`. |
-| `workflowId` + `caseIds`, `tags`, `target`, `url` | A saved workflow (`wf_...`). The plugin does not use it unless the user names one. |
+| `workflowId` + `caseIds`, `tags`, `target`, `url`, `session` | A saved workflow (`wf_...`). `caseIds` (run only these) and `tags` exist **only** here: with `cases`, `testsFile` or `testsYaml` they are refused. The plugin does not use it unless the user names one. |
 Per-case verdict is `pass` / `fail` / `error`. Case ids are made server-side (`deriveCaseIds`: title lower-cased, `-` between words); read them from the
 answer or `structuredContent.cases[].caseId`. `isError` is true only when the whole run is `error`.
-**Answers carry** `Note:` and `Warning:` lines (`structuredContent.warnings`: skipped `signedIn` cases, `maxCostUsdPerCase`) and, from every tool that
+**Answers carry** `Note:` and `Warning:` lines (`structuredContent.warnings`: skipped `signedIn` cases) and, from every tool that
 starts or polls a session or run, `Watch live: <dashboardUrl>` (also `structuredContent.dashboardUrl`): give it to the user once per run.
 
 ## The report (what to read)
@@ -77,9 +78,9 @@ steps) for every case you can write as steps; `run_task` to explore, with its an
 | Fail on a tunnel URL, text missing, page is a warning page | The tunnel's interstitial, not your app | `error`: ngrok header or cloudflared, re-run |
 
 ## Engine id (`qa_run`, `run_task`, `create_session`)
-Which engine: `tests.yaml` `engine` (read by the server on a `testsFile`), else `.webagent/config.yaml` `engine`, else `qa`. Pass the slug
+Which engine: `tests.yaml` `engine` (read by the server on a `testsFile` / `testsYaml`), else `.webagent/config.yaml` `engine`, else `qa`. Pass the slug
 (`qa`, `general`, `research`, `forms`, `monitor`, `careful`) or a full id as `engineId`: the server resolves a built-in slug for your region.
-`list_engines` shows the real ones (forks too). A slug that is not built in and not an id is refused with `invalid_input`: ask the user,
+`list_engines` shows the real ones (forks too; only built-ins have a `slug`, a fork is used by its `id`). A slug that is not built in and not an id is refused with `invalid_input`: ask the user,
 never invent an id. For non-QA work, the `browse` skill covers engines.
 
 ## Tunnels
@@ -97,7 +98,7 @@ Sent only to the hosts named (and subdomains); values are write-only (logs show 
 ```json
 [{ "hosts": ["abc123.ngrok-free.app"], "headers": { "ngrok-skip-browser-warning": "1" } }]
 ```
-`run_task`/`create_session`: top-level `headers`. `qa_run` and `smoke_test`: `session: { "headers": [ ... ] }` (on `qa_run` they are joined
+`run_task`/`create_session`: top-level `headers`. `qa_run` (any kind) and `smoke_test`: `session: { "headers": [ ... ] }` (on `qa_run` they are joined
 with the target's own headers and apply to every case). `hosts` = the host of the tunnel URL, nothing else. Without the header a run on ngrok returns verdict `fail` ("Expected text ... is not on the
 page") because the page is ngrok's "You are about to visit ..." page; the report does not say so. Treat that as `error`.
 
@@ -120,8 +121,8 @@ Payments: the `qa` engine blocks actions that spend money. Test checkout against
 at the real payment button; report that as not tested.
 
 ## Cases to `qa_run`: no mapping
-Send the cases as the file has them (`testsFile`, or `cases` with only what you wrote). Do not add `id`, `path`, `steps` or `priority`
-yourself; do not split `expect`. `signedIn` cases: leave them in a `testsFile` (the server skips them with a warning) and run them as a
+Send the cases as the file has them (`testsYaml` for the whole file, `testsFile` for some of it, or `cases` with only what you wrote). Do not add `id`, `path`, `steps` or `priority`
+yourself; do not split `expect`. `signedIn` cases: leave them in a `testsYaml` / `testsFile` (the server skips them with a warning) and run them as a
 `run_task` with the target's vault `credentials`; never put them in `cases`.
 
 ## Mapping a case to `smoke_test` (fallback when `qa_run` is absent)
