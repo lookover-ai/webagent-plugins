@@ -31,8 +31,9 @@ docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs
    long tables go in `reference.md`. A claim the model should not make (a fix is live, a CAPTCHA passed) is a rule in the skill.
 3. **Never** put a secret, a real key or a real host id in a file. Placeholder keys: `wa_<region>_...`. The default API URL
    lives in ONE place (`userConfig.api_url.default` in `plugin.json`; plus `codex/config.toml`); change both together when production hosts exist.
-4. **`.webagent/` is a draft contract** (`docs/WEBAGENT-FOLDER.md`). Do not add fields without a real use. It becomes a shared
-   contract when the api's Workflows module imports it: then it moves to `../webagent-contracts` and this repo follows it.
+4. **`tests.yaml` is a shared contract** (`../webagent-contracts/src/public/tests-file.ts`, 0.36.0); it wins over `docs/WEBAGENT-FOLDER.md`.
+   Never add a field here: request it from the hub, then follow. The public docs describe it in words (no link to the private repo).
+   `scripts/check-templates.py` checks the templates (set `WEBAGENT_CONTRACTS_DIST` to also run the contract's own reader).
 5. The plugin has NO env fallback for the key: `${user_config.x:-${ENV}}` makes Claude Code drop the server (tested, v2.1.322). Do not
    add one. Codex keeps `WEBAGENT_API_KEY`.
 6. Bump `version` in `plugin.json` on every change users should receive (Claude Code caches by version).
@@ -44,6 +45,7 @@ claude plugin validate plugins/webagent          # plugin + skills + commands + 
 claude plugin validate plugins/webagent --strict # warnings count too
 claude -p --plugin-dir plugins/webagent --output-format stream-json --verbose "hi"   # init line lists skills, commands, MCP server
 H=$(mktemp -d) && cp codex/config.toml "$H" && CODEX_HOME="$H" codex mcp get webagent   # Codex parses the TOML
+python3 scripts/check-templates.py   # templates parse and match the format (WEBAGENT_CONTRACTS_DIST=../webagent-contracts/dist adds the contract reader)
 ```
 No build, no dependencies, no dev server. Commits: one block, check green; no remote yet (DEV MODE applies once it exists).
 PROGRESS.md entry per task (max 10 lines: `## <date> <id> done`, `Done:`, `Next:`, `Gotchas:`).

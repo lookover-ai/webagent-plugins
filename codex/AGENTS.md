@@ -34,8 +34,9 @@ Testing my own web app. You know the code, so you decide what to test. webagent 
 - If the webagent tools are missing or answer 401: tell me to create a key in the webagent dashboard and `export WEBAGENT_API_KEY=...` (then restart Codex). Stop.
 
 ### Context
-Read `.webagent/product.md` and `.webagent/tests.yaml` if they exist (format: cases with `id`, `title`, `path`, `steps`, `expect`,
-`tags`, `priority`; `targets` per environment with `url` and an optional vault `credentials` namespace). Read `git diff --stat`
+Read `.webagent/product.md` and `.webagent/tests.yaml` if they exist (format: cases with `id`, `title`, `path`, `steps`, `expect` or `checks {text, url, noText}`,
+`tags`, `priority` 1 (most important) to 5, default 3; `targets` per environment, a url or `{ url, credentials }` with an optional vault namespace; or one
+`url`; `defaultTarget`; this format is shared with the dashboard and CI, add no field of your own). Read `git diff --stat`
 and only the changed route/page/form files. Choose the cases the diff touches plus the `smoke` / priority 1 cases, **at most 5**,
 and tell me what you skipped. Append new cases for new behaviour to `tests.yaml` (plain language, no secrets).
 
@@ -50,8 +51,8 @@ then run `cloudflared tunnel --url http://localhost:<port>` in the background (d
 - **`smoke_test`** (default, one call per case; the verdict comes from its report): `{ url, steps: [...], expectText, expectUrl,
   expectNoText, strictLinks: false }`. Always give at least one `expect...`; without it the case only checks that the page loads.
   Steps run after load, the first failed step stops the flow. It cannot use vault logins: for a signed-in case type a throwaway
-  login in `steps`. If `qa_run` / `qa_status` are in your tool list, prefer one `qa_run` with all chosen cases, then `qa_status`
-  on a failed case.
+  login in `steps`. If `qa_run` / `qa_status` are in your tool list, prefer one `qa_run { url, cases: [...] }` (at most 20; pass `expect` and `checks` as written, fill `id` from the title, `path` `/`, `steps` `[]`;
+  leave `signedIn` cases out; no headers, so use `smoke_test` on ngrok), then `qa_status { id, caseId }` on a failed case.
 - **`run_task`** only to explore an unknown flow or when I ask, **never as the pass/fail gate** (it said `pass` on a broken
   checkout in 3 of 6 runs; `pass` only means the agent says it is done). Args: `goal`, `startUrl`, `record: true`, `engineId` (`tests.yaml`
   `engine`, else `.webagent/config.yaml` `engine`, else the slug `qa`; if the server refuses `qa`, try `eng_us_00000000qa00000000000000`, then omit it), `credentials: { namespace, autoSubmit: true }` for a vault

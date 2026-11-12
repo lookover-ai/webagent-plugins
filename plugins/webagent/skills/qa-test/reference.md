@@ -19,10 +19,12 @@ Other tools exist (`scrape`, `screenshot`, `pdf`, `crawl`, `list_skills`, `run_s
 `get_session`, 10 `skill_*`). QA does not need them; `skill_smoke_uat` runs the same flow as `smoke_test` but its text has no
 verdict word, so use `smoke_test`.
 
-**Planned, not in every server yet:** `qa_run` (a set of cases or a saved workflow in one call, waits up to `waitSeconds`) and
-`qa_status` (`id` of a `wfr_`/`run_`/`tsk_`, optional `caseId`, `waitSeconds`) from the api's Workflows module. Use them only
-when they are in your tool list, and follow their own input schema; the plugin does not guess it. Their per-case verdict
-is the same `pass`/`fail`/`error`.
+**`qa_run` and `qa_status`** (in your tool list on servers with the Workflows module; use them only then). `qa_run`: `cases` (1 to 20
+inline cases) **or** `workflowId` (a saved one); with `cases`, `url` (the site, required), optional `name`, `engineId`, `waitSeconds`
+(1-90, default 60); with `workflowId`, optional `target`, `url`, `caseIds`, `tags`. No `headers`/`session`. `qa_status`: `id` (`wfr_`,
+`run_` or `tsk_`), optional `caseId` (with `wfr_`: that case's whole report), `waitSeconds`. Per-case verdict is the same
+`pass`/`fail`/`error`. An inline case needs `id`, `title`, `path`, `steps` (all set below), `expect` and/or `checks`, optional
+`tags`, `priority` (1-5).
 
 ## The report (what to read)
 `verdict`: `pass` | `fail` | `error` | `running`. `isError` on the tool call is true only for `error`: a failed test is a result.
@@ -105,6 +107,11 @@ page, missing data) answer COULD NOT TEST: <why>.
 Payments: the `qa` engine blocks actions that spend money. Test checkout against the app's test mode and expect to stop
 at the real payment button; report that as not tested.
 
+## Mapping a case to `qa_run` (inline cases)
+Pass the case as written; the server parses `expect`, `checks` go through as they are. Fill what the file may omit:
+`id` = the title lower-cased, runs of other characters become `-`, cut to 64 (`case-<n>` if empty; `-2`, `-3` if taken; written ids are kept),
+`path` = `/`, `steps` = `[]`, `priority` = 3 (the server's default). Do not send `signedIn` (run that case as a goal).
+
 ## Mapping a case to `smoke_test`
 | tests.yaml | smoke_test |
 |---|---|
@@ -113,25 +120,32 @@ at the real payment button; report that as not tested.
 | `expect` literal text on the page | `expectText` |
 | `expect` the address changes | `expectUrl` (a fragment such as `/dashboard`) |
 | `expect` an error must not show | `expectNoText` |
+| `checks.text` / `checks.url` / `checks.noText` | `expectText` / `expectUrl` / `expectNoText` (when `checks` is set it wins over `expect`) |
+| no `expect` and no `checks` | no assertion: the case only proves the page loads and the steps run; say so in the summary, and add an `expect` to the case if you can |
 | expectation needs judgement (a total, a colour, an order) | split into literal checks (`expectText` for the total), or explore with `run_task` and report it as explored |
 
 ## `.webagent/` format
-Full description: `docs/WEBAGENT-FOLDER.md` in the plugin repo; templates in `${CLAUDE_PLUGIN_ROOT}/templates/.webagent/`.
+Full description: `docs/WEBAGENT-FOLDER.md` in the plugin repo; templates in `${CLAUDE_PLUGIN_ROOT}/templates/.webagent/`. The
+`tests.yaml` format is a shared contract (the dashboard import and CI read the same file): add no field of your own.
 `product.md`: free Markdown (what the app is, roles, key flows, environments, test accounts by vault namespace, never passwords).
-`tests.yaml`:
+`tests.yaml` (a file that is only a list of cases is valid too):
 ```yaml
-version: 1
-targets:                         # one per environment
-  local:   { url: http://localhost:3000 }          # local URLs get a tunnel
-  staging: { url: https://staging.example.com, credentials: staging }  # vault namespace
-engine: qa                       # optional: engine for run_task cases (default: config.yaml engine, else qa)
-cases:
-  - id: signup-happy             # unique, kebab-case
-    title: A new user can sign up
+version: 1                       # optional
+name: My app smoke tests         # optional; key: <slug> lets CI update the same workflow
+targets:                         # one per environment (or `url: https://...` for a single site; never both)
+  local:   http://localhost:3000                   # local URLs get a tunnel
+  staging: { url: https://staging.example.com, credentials: staging }  # credentials = vault namespace
+defaultTarget: staging           # optional, default the first target
+engine: qa                       # optional: engine slug or id for run_task cases (default: config.yaml engine, else qa)
+concurrency: 3                   # optional 1-10, maxCostUsdPerCase: 0.5 optional (workflow runs)
+cases:                           # required, 1-100
+  - id: signup-happy             # optional slug; made from the title if missing
+    title: A new user can sign up       # required
     path: /signup                # optional, default /
-    steps: [type a unique email into Email, type a throwaway password into Password, click "Create account"]
-    expect: the page shows "Welcome" and the address contains /dashboard
+    steps: [type a unique email into Email, type a throwaway password into Password, click "Create account"]   # optional
+    expect: the page shows "Welcome" and the address contains /dashboard   # optional, in words
+    checks: { text: Welcome, url: /dashboard, noText: error }              # optional, wins over expect
     tags: [smoke, auth]
-    priority: 1                  # 1 = run on every change
-    signedIn: false              # optional: needs the target's vault login (runs via run_task)
+    priority: 1                  # 1 (most important) to 5, default 3. 1 = run on every change
+    signedIn: false              # optional: needs the target's vault login (the plugin runs it via run_task; workflow runs skip it)
 ```

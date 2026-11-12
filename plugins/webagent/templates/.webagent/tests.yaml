@@ -1,20 +1,21 @@
-# Test cases for the webagent QA agent. Format: docs/WEBAGENT-FOLDER.md in the webagent-plugins repo.
+# Test cases for webagent. Format: docs/WEBAGENT-FOLDER.md in the webagent-plugins repo (the dashboard and CI read the same file).
 # Plain language only. No passwords or keys here: signed-in cases use the vault namespace in `credentials`.
 version: 1
+name: My app smoke tests
 
 targets:
-  local:
-    url: http://localhost:3000        # a local URL is reached through a tunnel the agent opens
+  local: http://localhost:3000        # a local URL is reached through a tunnel the agent opens
   staging:
     url: https://staging.example.com
     credentials: staging              # webagent vault namespace for this site's test login (optional)
 
+# defaultTarget: staging              # optional: one of the targets above (default: the first)
+# key: my-app-smoke                   # optional slug: CI updates the same workflow by it
 # engine: qa                          # optional: engine for cases that run as a goal (default qa)
 
 cases:
   - id: home-loads
     title: The home page loads and its links work
-    steps: []
     expect: the page shows "<a heading or word that is always on the home page>"
     tags: [smoke]
     priority: 1
@@ -36,15 +37,16 @@ cases:
     steps:
       - type "not-an-email" into Email
       - click "Create account"
-    expect: the page shows "valid email" and the address still contains /signup
+    checks:                           # exact form of `expect`; wins over it when both are set
+      text: valid email
+      url: /signup
     tags: [auth, validation]
     priority: 2
 
   - id: dashboard-signed-in
     title: A signed-in user sees the dashboard
     path: /login
-    signedIn: true                    # uses the target's vault login; runs as a goal, not smoke_test
-    steps: []
+    signedIn: true                    # needs the target's vault login: the plugin runs it as a goal; workflow runs skip it
     expect: the dashboard shows the user's name and no error message
     tags: [auth]
-    priority: 2
+    # priority: 3                     # 1 (most important) to 5; default 3

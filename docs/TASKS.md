@@ -19,7 +19,9 @@ Task prefix `K`. One block per session. Check: see `CLAUDE.md`. Brief: `../webag
   `.webagent/config.yaml` (`version`, `engine`, `apiUrl` note; format + template), engine order in `qa-test`, README / plugin.json /
   Codex `AGENTS.md` general-first. Waits on api A91 for `list_engines` and slug `engineId` (skills say "if in your tool list").
   (The old "Last-run memory" row is renamed K5b.)
-- [ ] **K6 · Import into Workflows.** When the api's Workflows module imports `.webagent/tests.yaml`: move the schema to
-  `../webagent-contracts`, drop the draft banner in `docs/WEBAGENT-FOLDER.md`, add `/webagent:qa-ci` (print the CI call).
+- [x] **K6 · tests.yaml is a shared contract (contracts 0.36.0).** Plugin 0.3.1: `docs/WEBAGENT-FOLDER.md`, templates, skill/reference,
+  `qa-init`, Codex `AGENTS.md` follow the contract (optional steps/expect/targets, `url` shorthand, `defaultTarget`, priority 1-5 default 3,
+  `checks`, `key`, `concurrency`, `maxCostUsdPerCase`; `signedIn` skipped by workflow runs); `qa_run` inline mapping; `scripts/check-templates.py`.
+  Open: `/webagent:qa-ci` (print the CI call) waits on the CI endpoint docs.
 - [ ] **K7 · Publish.** CTO creates the public repo `lookover-ai/webagent-plugins` after Abhisht's OK; license is MIT (decided, `LICENSE`);
   switch the default API URL to the production host when it exists; submit to Anthropic's directory if wanted.

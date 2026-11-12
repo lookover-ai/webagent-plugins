@@ -83,8 +83,7 @@ Nothing is installed for you: install `cloudflared` or `ngrok` once.
 
 `config.yaml` (optional: which engine, no key ever), `product.md` (what the app is, roles, flows, environments, test accounts by
 vault namespace, never passwords) and `tests.yaml` (plain-language cases). Format: [docs/WEBAGENT-FOLDER.md](docs/WEBAGENT-FOLDER.md). Templates:
-[`plugins/webagent/templates/.webagent/`](plugins/webagent/templates/.webagent/). It is a draft format and will become a shared
-contract when webagent's Workflows import it.
+[`plugins/webagent/templates/.webagent/`](plugins/webagent/templates/.webagent/). The `tests.yaml` format is shared with webagent's dashboard import and CI call, so the same file runs from here, from CI or from the dashboard.
 
 ## Safety
 

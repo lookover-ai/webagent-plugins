@@ -8,7 +8,7 @@ argument-hint: [what to test]
 
 You know the code, so you decide **what** to test. webagent decides **how** (cloud browser, QA engine) and keeps the
 evidence. The tools are the MCP server `webagent` (Claude Code lists them as `mcp__plugin_webagent_webagent__<tool>`;
-below they are bare names). Tool table, report fields, error codes, tests.yaml format: [reference.md](reference.md).
+below they are bare names). Tool table, report fields, error codes, `tests.yaml` format (priorities 1 to 5, `checks`, `url` shorthand): [reference.md](reference.md).
 
 Hard rules, always:
 - Never paste a secret (API key, password, token, `.env` value) into a tool call, a step, a goal or your answer. Goal and
@@ -37,10 +37,10 @@ browser can never reach it (SSRF guard, no override). Do not call a tool with it
 
 ## 3. Choose cases
 - The user named something: that, plus the nearest `tests.yaml` case.
-- Otherwise: cases whose area the diff touches, plus every `tags: [smoke]` / `priority: 1` case. **At most 5 per run**;
+- Otherwise: cases whose area the diff touches, plus every `tags: [smoke]` / `priority: 1` case (priority runs 1 = most important to 5, default 3). **At most 5 per run**;
   list what you skipped. "all" or "regression" means every case.
 - New or changed behaviour with no case: append one to `.webagent/tests.yaml` (`id`, `title`, `steps`, `expect`, `tags`,
-  `priority`; plain language, no secrets). Edit an existing case only when the app changed on purpose, and say so.
+  `priority`; plain language, no secrets; only fields from the format in reference.md). Edit an existing case only when the app changed on purpose, and say so.
 - A case is what a user does and sees: steps like `click "Sign up"`, `type <unique email> into Email`; expect like
   `the page shows "Welcome"`. Signup needs a unique throwaway address (`qa+<random>@example.com`). A flow that needs a
   real inbox (email code) cannot be tested: mark that part COULD NOT TEST.
@@ -56,9 +56,11 @@ from your reading of a transcript. (A goal-driven `run_task` said `pass` on a br
   page-level case with the default so links get checked.
 - It cannot use vault logins. A signed-in case: put a throwaway login in `steps` (text is stored with the run), or see C.
 
-**A. `qa_run` / `qa_status`, if they are in your tool list.** One `qa_run` with all chosen cases (use the tool's own input
-schema; map each tests.yaml case as in reference.md), then `qa_status` on a failed case for the detail. Not in the list:
-loop `smoke_test`. Never say a tool exists that you do not see.
+**A. `qa_run` / `qa_status`, if they are in your tool list.** One `qa_run { url, cases: [...] }` with all chosen cases (at most 20),
+then `qa_status { id, caseId }` on a failed case for the detail. Pass each case as written: `id` (made from the title if the file has
+none), `title`, `path` (default `/`), `steps` (default `[]`), `expect` and `checks` **unchanged** (the server reads `expect`; do not split
+it), `tags`, `priority`. Leave `signedIn` cases out: run them as in C. No `headers` there: on an ngrok tunnel loop `smoke_test`.
+Not in the list: loop `smoke_test`. Never say a tool exists that you do not see.
 
 **B. Tunnel page, not your app.** On a tunnel URL a `fail` such as "Expected text not on the page" may be the tunnel's
 warning page (ngrok "You are about to visit", Cloudflare "Just a moment"). If the report says so, or the screenshot or

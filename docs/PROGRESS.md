@@ -25,3 +25,11 @@ Done: hub D66 split. New skill `browse` (+ reference.md), `/webagent:run`, `/web
 Tool names checked against `webagent-api/src/modules/mcp` (scrape, screenshot, pdf, crawl, run_task, create_session, skill_*) and contracts quick.ts.
 Next: when api A91 lands, confirm `list_engines` output and slug `engineId`, drop the "if in your tool list" hedges; K4; K5b; live run on staging.
 Gotchas: quick tools (scrape etc.) take no engineId or vault credentials. The plugin does not read `apiUrl` from config.yaml (URL is a plugin setting). Old K5 row renamed K5b.
+
+## 2026-11-12 K6 done (plugin 0.3.1)
+Done: tests.yaml now follows the shared contract (contracts 0.36.0, `tests-file.ts`): doc rewritten as short table + "contract is the reference",
+template valid (`targets` as url strings, `checks`, `signedIn`, priority 1-5 default 3), skill/reference/qa-init/Codex updated, `qa_run` inline mapping
+(`expect` and `checks` pass through, `id` derived from title, `path` `/`, `steps` `[]`, `signedIn` left out, no headers so ngrok uses `smoke_test`).
+`scripts/check-templates.py` (PyYAML; `WEBAGENT_CONTRACTS_DIST` also runs `readTestsFile` + `testsFileToWorkflowRequest`).
+Next: `/webagent:qa-ci` once the CI call is documented; K4; K5b; K7.
+Gotchas: `qa_run` cases need `id`, `path`, `steps` (api schema), so the plugin fills them; the file allows omitting them. Public docs must not link the private contracts path.
