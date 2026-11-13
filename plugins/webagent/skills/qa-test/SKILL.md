@@ -16,7 +16,7 @@ Hard rules, always:
   user named in this conversation.
 - `fail` = the app is wrong. `error` = the test could not run (CAPTCHA, `navigation_blocked`, capacity, timeout, browser
   failure). **Never report `error` as an app bug.** Never try to get past a CAPTCHA or bot check.
-- Close what you open: `stop_session` for every session you left open, kill every tunnel you started.
+- Close what you open: `stop_session` for every session you left open, kill every tunnel and `webagent-device connect` you started.
 
 ## 0. Is webagent connected?
 If the `webagent` tools are not in your tool list, or a call says 401 / unauthorized: tell the user once, then stop. They
@@ -27,7 +27,8 @@ enough), then restart and check `/mcp`. Do not guess a key, do not ask them to p
 Order: a URL the user gave > `.webagent/tests.yaml` `targets` (the env they named; else `local` if its dev server answers;
 else the first) > ask one short question.
 **Local or private URL** (`localhost`, `127.*`, `10.*`, `192.168.*`, `172.16-31.*`, `*.local`, `*.internal`): webagent's
-browser can never reach it (SSRF guard, no override). Do not call a tool with it. Open a tunnel first (section 7).
+cloud browser never opens it (SSRF guard, no override). Do not call a tool with it, except the one case of 7A. `localhost:<port>`,
+`127.0.0.1:<port>`, `[::1]:<port>`: section 7A (connect your machine), and 7B (tunnel) if 7A does not apply. Any other private host: 7B.
 
 ## 2. Read context (cheap, once)
 - `.webagent/product.md` and `.webagent/tests.yaml` if they exist. If not, carry on with cases from the diff and suggest
@@ -60,7 +61,7 @@ a transcript. (A goal-driven `run_task` said `pass` on a broken checkout in 3 of
   keep only the chosen cases in `cases`, and call `qa_run { testsFile: <that object>, target?: <name>, url?: <override> }`. More than 20
   cases in the file: this path too, in calls of up to 20.
 - `target` = the environment name the user gave (default: the file's `defaultTarget`). `url` replaces that target's address: set it
-  to the tunnel URL for a local target (section 7) or to a URL the user gave. A file with no `targets`/`url` takes `url` as its site.
+  to the tunnel URL for a local target (7B; with 7A the `localhost` URL) or to a URL the user gave. A file with no `targets`/`url` takes `url` as its site.
 - Leave `engine`, `concurrency`, `name` in the file: the server reads them. Pass `engineId` only to override (order: `tests.yaml`
   `engine` > `.webagent/config.yaml` `engine` > the project default engine; `qa` is a sensible choice for testing but never mandatory). `maxCostUsdPerCase` in the file is applied (a case stops when its model spend passes it).
 - Leave `signedIn` cases in the file you send: the server skips them and says so (`Warning:` line, `structuredContent.warnings`). Run
@@ -83,7 +84,8 @@ nothing. Args, goal template, `engineId`: reference.md. For a `signedIn` case us
 
 **E. Tunnel page, not your app.** On a tunnel URL a `fail` such as "Expected text not on the page" may be the tunnel's warning page
 (ngrok "You are about to visit", Cloudflare "Just a moment"). If the report says so, or the screenshot or `finalUrl` suggests it, the
-case is `error` (could not test): add the ngrok header (C) or use cloudflared, re-run.
+case is `error` (could not test): add the ngrok header (C) or use cloudflared, re-run. The same for a dev-server "Blocked request" / "Invalid Host header" /
+403 page: `error`, give the allowedHosts fix (7A step 5 or 7B), never an app bug.
 
 **Fallback, only when `qa_run` is NOT in your tool list (older server): one `smoke_test` (or `qa_quick_check`) per case.** Mapping and args: reference.md.
 Never say a tool exists that you do not see.
@@ -109,13 +111,42 @@ that link in one line when you start the run. Do not repeat it for each poll.
 1. For each `fail`: decide if the app or the test is wrong. Read the failed step, the `error` and the code. A case that
    expects old text after an intended change is a stale test: update the case, say so.
 2. Fix the app code (smallest change). State cause as `file:line`.
-3. Re-run **only the failed cases**: the same `qa_run` with only those cases (`testsFile` filtered, or `cases`; not `testsYaml`, it runs the whole file). Local/tunnel target: the dev server reloads, re-run now. Staging or other remote:
+3. Re-run **only the failed cases**: the same `qa_run` with only those cases (`testsFile` filtered, or `cases`; not `testsYaml`, it runs the whole file). Local target (7A or 7B): the dev server reloads, re-run now. Staging or other remote:
    the fix is not live until deployed. Say so and stop; do not re-run against old code or claim it is fixed.
 4. Maximum 2 fix rounds per case. Then report it as still failing with what you tried.
 5. `error` cases: do not edit app code. Say why it could not run and what unblocks it (open a tunnel, use a vault login,
    wait for capacity, ask the user to solve the CAPTCHA step by hand).
 
-## 7. Local app: tunnel recipe
+## 7A. Local app: connect your machine (`webagent-device`)
+Only for `localhost:<port>`, `127.0.0.1:<port>`, `[::1]:<port>`. The cloud browser still never opens localhost: it reaches the app
+through a relay that your machine connects out to, under a generated address `http://<alias>:<port>/`. Details, the consent text and every
+message of the tool: reference.md "Local app: connect".
+**Gate. All three must hold, else say ONE line, "Local-app mode is coming soon; using a tunnel", and go to 7B (do not explain, do not tell the user how to install anything):**
+1. `command -v webagent-device` finds it and `webagent-device --help` lists `connect`.
+2. `qa_run` in your tool list has a `localApp` argument. Never call a tool that is not in your list.
+3. `webagent-device status` exits 0 and its JSON has an `alias` (this machine is paired for a local app). "Not paired": the first connect needs a one-time
+   code made for a local app, which the user types in their own terminal (`webagent-device connect <port> --code <CODE> --api <URL>`, and leaves running).
+   Never ask for, read or type a code. No such code available to them: the same one line and 7B.
+Steps:
+1. Tell the user in one line: while `connect` runs, your webagent test sessions (not the internet) can open port N of this computer; use test data; cases may create records.
+2. Start it in the background, **without `--yes`** (ports 1024-65535, at most 8, e.g. the app and its API):
+```bash
+LOG=$(mktemp); nohup webagent-device connect PORT [PORT...] --json >"$LOG" 2>"$LOG.err" </dev/null & echo $! >"$LOG.pid"
+for i in $(seq 1 30); do grep -q '^{' "$LOG" && break; kill -0 $(cat "$LOG.pid") 2>/dev/null || break; sleep 1; done; cat "$LOG" "$LOG.err"
+```
+3. `{"alias":…,"urls":[…],"ports":[…],"status":"connected"}` on one line = ready. A `notes` list may come with it: pass each note on. It exits with
+   "Nothing shared": it asked yes/no, a background shell cannot answer. Show the user the consent summary (reference.md), ask yes/no **in chat**, and only on a
+   yes run step 2 again with `--yes`. Never add `--yes` before they said yes. Other exit text: reference.md table, one line to the user, then 7B.
+4. Test: `qa_run` with `url: "http://localhost:<port>"` exactly as the user's app is named. The server swaps it for the machine's alias; add `localApp: { ports: [<more>] }` only for
+   extra ports (the API next to the web app), `localApp.deviceId` only if it names several machines. A `tests.yaml` `local` target works the same (still pass `url`).
+   Say to the user: "testing http://<alias>:<port>/ through your connected machine", never "the cloud browser opened localhost".
+5. A "Blocked request" / "Invalid Host header" / 403 or a `notes` entry about the host name: the dev server refuses the alias. Say the fix once and re-run after
+   they reload: **Your dev server refused the host name `<alias>`. Allow it in its config (Vite: `server.allowedHosts`, webpack-dev-server: `allowedHosts`, Next: `allowedDevOrigins`, Angular: `allowedHosts`) and reload.**
+   That case is `error` (could not test), not `fail`.
+6. A laptop that sleeps, loses wifi or a `connect` that exited mid-run: those cases are `error` (could not test), never `fail`. Offer to start `connect` again once.
+7. **When done, always: `kill $(cat "$LOG.pid")`**, also after a failed run. Never leave it connected.
+
+## 7B. Local app: tunnel recipe
 Warn the user first, in one line: the tunnel exposes the dev server to the internet while it runs; use test data; the
 cases may create records. **cloudflared is the default** (no account, no header):
 ```bash

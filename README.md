@@ -115,6 +115,8 @@ webagent's cloud browser can never open `localhost` or a private address (by des
 tunnel itself (`cloudflared tunnel --url http://localhost:<port>`, no account, the default; or `ngrok http <port>` with the
 `ngrok-skip-browser-warning` header it adds for you), tests the public tunnel URL and closes the tunnel afterwards. **The tunnel exposes your dev server to the internet while it runs. Use test data.**
 Nothing is installed for you: install `cloudflared` or `ngrok` once.
+Coming soon: connect your own machine to webagent instead of opening a tunnel (the app is never exposed to the internet). When it is available the
+agent uses it by itself, asks you first, and falls back to the tunnel when it is not.
 
 ## The `.webagent/` folder
 
