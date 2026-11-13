@@ -274,7 +274,7 @@ function dashboardUrl(markdown) {
 }
 var MAX_LINKS = 10;
 var SEVEN_DAYS = 7 * 86400;
-async function settledRun(d, runId) {
+async function finalCases(d, runId) {
   if (!runId) return void 0;
   try {
     const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/workflow-runs/${encodeURIComponent(runId)}`, {
@@ -283,16 +283,10 @@ async function settledRun(d, runId) {
     });
     if (!res.ok) return void 0;
     const body = await res.json();
-    return {
-      ...Array.isArray(body.cases) ? { cases: body.cases } : {},
-      ...typeof body.costMicros === "number" ? { costMicros: body.costMicros } : {}
-    };
+    return Array.isArray(body.cases) ? body.cases : void 0;
   } catch {
     return void 0;
   }
-}
-function costLine(costMicros) {
-  return typeof costMicros === "number" && Number.isFinite(costMicros) && costMicros >= 0 ? `Cost: $${(costMicros / 1e6).toFixed(2)}` : "";
 }
 var PRACTICE_BANNER = "Practice mode: this check does not block merging yet.";
 async function replayLinks(d, cases) {
@@ -315,18 +309,13 @@ async function replayLinks(d, cases) {
 }
 var footer = (buildUrl) => `Re-run: push a commit, or "Re-run jobs" in Actions${buildUrl ? ` \xB7 [This job](${buildUrl})` : ""}`;
 function summaryBody(p) {
-  const cost = costLine(p.costMicros);
   return `${p.practice ? `${PRACTICE_BANNER}
 
 ` : ""}${p.report.trimEnd()}
-${cost ? `
-${cost}
-` : ""}`;
+`;
 }
 function finalBody(p) {
-  const cost = costLine(p.costMicros);
   const lines = [marker(p.workflowKey), ...p.practice ? [PRACTICE_BANNER, ""] : [], p.report.trimEnd(), ""];
-  if (cost) lines.push(cost, "");
   if (p.links.length > 0) {
     lines.push(
       "Replays (anyone with the link can watch, 7 days):",
@@ -522,14 +511,11 @@ ${msg}
   if (report) {
     let links = [];
     const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
-    let costMicros = runJson?.costMicros;
     if (shareLinks) {
-      const settled = await settledRun(share, runJson?.id ?? "");
-      links = await replayLinks(share, settled?.cases ?? runJson?.cases ?? []);
-      costMicros = settled?.costMicros ?? costMicros;
+      links = await replayLinks(share, await finalCases(share, runJson?.id ?? "") ?? runJson?.cases ?? []);
     }
-    await d.appendSummary(summaryBody({ report, practice, costMicros }));
-    await comment(finalBody({ workflowKey, report, links, buildUrl, practice, costMicros }));
+    await d.appendSummary(summaryBody({ report, practice }));
+    await comment(finalBody({ workflowKey, report, links, buildUrl, practice }));
   } else if (out.verdict === "setup") {
     const lines = setupLines(res.stderr);
     await d.appendSummary(summaryFor(out, lines.map((l) => `- ${l}`).join("\n") || "See the job log."));
