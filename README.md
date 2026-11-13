@@ -35,6 +35,7 @@ the proof: for tests a verdict, the failed step, console errors, failed network 
 | `/webagent:run <task>` | Any web task in a cloud browser |
 | `/webagent:engines` | List the engines, pick one, optionally save it to `.webagent/config.yaml` |
 | `/webagent:qa <what to test>` | Test your web app, fix, re-run the failures |
+| `/webagent:qa-triage [run id]` | Sort the failures of a run into app bug / test needs update / couldn't test; propose a `tests.yaml` edit or a bug report. Changes nothing without your yes |
 | `/webagent:qa-init` | Create `.webagent/product.md` and `tests.yaml` from your code; offers the GitHub Actions workflow (asks first) |
 | `/webagent:qa-ci` | Print the CI call (GitHub Actions snippet, plain CLI call, exit codes). Writes nothing |
 
@@ -61,6 +62,40 @@ Set another API URL in `/plugin configure webagent@webagent` when your team give
    a test waits up to 90 s) and `export WEBAGENT_API_KEY=...`.
 2. Paste [`codex/AGENTS.md`](codex/AGENTS.md) into your project's `AGENTS.md` (or `~/.codex/AGENTS.md`).
 3. Ask: `Smoke test the signup I just built.` Check with `codex mcp get webagent`.
+
+## Cursor
+
+Cursor takes a remote MCP server with a `url` and `headers`, and fills `${env:NAME}` from your shell, so the key stays out of the file.
+Add this to `.cursor/mcp.json` (one project) or `~/.cursor/mcp.json` (all projects), `export WEBAGENT_API_KEY=wa_<region>_...` in the shell that
+starts Cursor, restart Cursor, and check Settings, MCP:
+
+```json
+{
+  "mcpServers": {
+    "webagent": {
+      "url": "https://webagent-staging-in-api.lookover.ai/mcp",
+      "headers": { "Authorization": "Bearer ${env:WEBAGENT_API_KEY}" }
+    }
+  }
+}
+```
+
+QA only (the four QA tools: `qa_run`, `qa_status`, `qa_report`, `qa_quick_check`; no browse tools): use this URL instead, never both.
+```json
+{
+  "mcpServers": {
+    "webagent-qa": {
+      "url": "https://webagent-staging-in-api.lookover.ai/mcp/qa",
+      "headers": { "Authorization": "Bearer ${env:WEBAGENT_API_KEY}" }
+    }
+  }
+}
+```
+Use a **member** or full API key. A key limited to CI is refused on `/mcp/qa`. Paste the QA workflow of [`codex/AGENTS.md`](codex/AGENTS.md)
+into your Cursor rules if you want the same behaviour as the Claude Code plugin.
+
+**Claude and ChatGPT apps** (no coding agent): add the connector URL `<API URL>/mcp/qa` as a custom connector and sign in; no key is
+needed. Steps are in the webagent docs ("Connect Claude", "Connect ChatGPT"). The default API URL is the beta staging host above.
 
 ## What testing does
 
