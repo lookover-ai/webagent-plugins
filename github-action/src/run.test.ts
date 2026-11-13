@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { type CliResult, type Deps, run, workflowKeyOf } from "./run.js";
 
-const REPORT = `# Checkout: FAIL
+// The report is the API's `report.md`; the words follow CLI 0.2.0 / contracts 0.45.0 (Passed, Failed, Couldn't test).
+const REPORT = `# Checkout: Failed
 
-Lookover QA · FAIL · 1 passed · 1 failed · 0 flaky · 0 could not test · 20 s · $0.00 AI
+Lookover QA · Failed · 1 passed · 1 failed
+Took 20.0 s · Cost: $0.12
 
 - Dashboard: https://dash.test/workflow-runs/wfr_1
 `;
@@ -106,7 +108,7 @@ describe("run", () => {
     const r = rig({ cli: { code: 0, stdout: JSON.stringify({ id: "wfr_1", verdict: "pass", counts: { flaky: 2 }, cases: [] }) } });
     expect(await run(r.deps)).toBe(0);
     expect(r.outputs).toEqual({ verdict: "pass", "run-id": "wfr_1", "run-url": "https://dash.test/workflow-runs/wfr_1", flaky: "2" });
-    expect(r.summary.join("")).toContain("Lookover QA · FAIL"); // the fake report text, shown as is
+    expect(r.summary.join("")).toContain("Lookover QA · Failed · 1 passed · 1 failed"); // the fake report text, shown as is
     const writes = r.gh.filter((c) => c.method !== "GET");
     expect(writes).toHaveLength(2);
     expect(writes[0]?.body?.body).toContain(`${MARK}\nLookover QA · RUNNING`);
@@ -479,20 +481,28 @@ describe("headline words and cost", () => {
     expect(`${r.summary.join("")}${lastComment(r)}`).not.toContain("COULD NOT TEST");
   });
 
-  it("adds a Cost line from the run's costMicros", async () => {
-    const r = rig({ runJson: { id: "wfr_1", verdict: "fail", counts: {}, costMicros: 1_234_567, cases: [] } });
+  it("adds no Cost line of its own: the report's single cost line is all there is", async () => {
+    const r = rig({
+      runJson: { id: "wfr_1", verdict: "fail", counts: {}, costMicros: 1_234_567, cases: [] },
+      finalRun: { id: "wfr_1", costMicros: 420_000, cases: [] },
+    });
     await run(r.deps);
-    expect(r.summary.join("")).toContain("Cost: $1.23");
-    expect(lastComment(r)).toContain("Cost: $1.23");
+    for (const text of [r.summary.join(""), lastComment(r)]) {
+      expect(text.match(/Cost: \$/g)).toHaveLength(1); // the one in the CLI report
+      expect(text).toContain("Cost: $0.12");
+      expect(text).not.toContain("Cost: $1.23");
+      expect(text).not.toContain("Cost: $0.42");
+    }
   });
 
-  it("the settled run's cost wins; no cost field means no Cost line", async () => {
-    const a = rig({ runJson: { id: "wfr_1", verdict: "fail", counts: {}, costMicros: 10, cases: [] }, finalRun: { id: "wfr_1", costMicros: 420_000, cases: [] } });
-    await run(a.deps);
-    expect(lastComment(a)).toContain("Cost: $0.42");
-    const b = rig({});
-    await run(b.deps);
-    expect(lastComment(b)).not.toContain("Cost:");
-    expect(b.summary.join("")).not.toContain("Cost:");
+  it("matches nothing on the old verdict words: the verdict comes from the exit code", async () => {
+    // A report with any wording (old or new) changes neither the outputs nor the exit code.
+    const old = rig({ cli: { code: 1, report: "# Checkout: FAIL\n\nLookover QA · FAIL · 1 passed\n- Dashboard: https://dash.test/workflow-runs/wfr_1\n" } });
+    expect(await run(old.deps)).toBe(1);
+    expect(old.outputs.verdict).toBe("fail");
+    expect(old.outputs["run-url"]).toBe("https://dash.test/workflow-runs/wfr_1");
+    const pass = rig({ cli: { code: 0, stdout: JSON.stringify({ id: "wfr_1", verdict: "pass", counts: {}, cases: [] }), report: "# Checkout: Passed\n\nLookover QA · Passed · 2 passed\n" } });
+    expect(await run(pass.deps)).toBe(0);
+    expect(pass.outputs.verdict).toBe("pass");
   });
 });

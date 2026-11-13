@@ -31,14 +31,6 @@ const SEVEN_DAYS = 7 * 86_400;
  * `undefined` when the read fails or has no `cases` (the caller falls back to the CLI's JSON). Never throws.
  */
 export async function finalCases(d: ShareDeps, runId: string): Promise<RunCase[] | undefined> {
-  return (await settledRun(d, runId))?.cases;
-}
-
-/** The settled run as the API has it (`cases`, `costMicros`); `undefined` when the read fails. Never throws. */
-export async function settledRun(
-  d: ShareDeps,
-  runId: string,
-): Promise<{ cases?: RunCase[]; costMicros?: number } | undefined> {
   if (!runId) return undefined;
   try {
     const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/workflow-runs/${encodeURIComponent(runId)}`, {
@@ -46,21 +38,11 @@ export async function settledRun(
       headers: { authorization: `Bearer ${d.apiKey}` },
     });
     if (!res.ok) return undefined;
-    const body = (await res.json()) as { cases?: unknown; costMicros?: unknown };
-    return {
-      ...(Array.isArray(body.cases) ? { cases: body.cases as RunCase[] } : {}),
-      ...(typeof body.costMicros === "number" ? { costMicros: body.costMicros } : {}),
-    };
+    const body = (await res.json()) as { cases?: unknown };
+    return Array.isArray(body.cases) ? (body.cases as RunCase[]) : undefined;
   } catch {
     return undefined;
   }
-}
-
-/** `Cost: $0.42` from micro-USD (contracts `WorkflowRun.costMicros`); `""` when the run has no cost field. */
-export function costLine(costMicros: number | undefined): string {
-  return typeof costMicros === "number" && Number.isFinite(costMicros) && costMicros >= 0
-    ? `Cost: $${(costMicros / 1_000_000).toFixed(2)}`
-    : "";
 }
 
 /** Shown on top of the summary and the comment in `mode: practice`. */
@@ -98,24 +80,19 @@ export interface BodyParts {
   buildUrl: string;
   /** `mode: practice`: the banner goes on top. */
   practice?: boolean;
-  /** Micro-USD of the run, when known: adds a `Cost: $x.xx` line. */
-  costMicros?: number;
 }
 
 const footer = (buildUrl: string): string =>
   `Re-run: push a commit, or "Re-run jobs" in Actions${buildUrl ? ` · [This job](${buildUrl})` : ""}`;
 
-/** Job summary text of a finished run: the report with the practice banner on top and the cost line below. */
-export function summaryBody(p: Pick<BodyParts, "report" | "practice" | "costMicros">): string {
-  const cost = costLine(p.costMicros);
-  return `${p.practice ? `${PRACTICE_BANNER}\n\n` : ""}${p.report.trimEnd()}\n${cost ? `\n${cost}\n` : ""}`;
+/** Job summary text of a finished run: the report (it carries the cost and time line itself) with the practice banner on top. */
+export function summaryBody(p: Pick<BodyParts, "report" | "practice">): string {
+  return `${p.practice ? `${PRACTICE_BANNER}\n\n` : ""}${p.report.trimEnd()}\n`;
 }
 
 /** The sticky comment once the run is over. */
 export function finalBody(p: BodyParts): string {
-  const cost = costLine(p.costMicros);
   const lines = [marker(p.workflowKey), ...(p.practice ? [PRACTICE_BANNER, ""] : []), p.report.trimEnd(), ""];
-  if (cost) lines.push(cost, "");
   if (p.links.length > 0) {
     lines.push(
       "Replays (anyone with the link can watch, 7 days):",

@@ -7,8 +7,6 @@ export interface RunLike {
   id?: string;
   verdict?: string;
   counts?: { flaky?: number };
-  /** Model spend of the run in micro-USD (contracts `WorkflowRun.costMicros`). */
-  costMicros?: number;
 }
 
 export interface Outcome {

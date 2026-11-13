@@ -16,13 +16,13 @@ import { outcomeFor, type RunLike, type VerdictOutput } from "./outcome.js";
 import {
   dashboardUrl,
   finalBody,
+  finalCases,
   noticeForFork,
   notRunBody,
   type RunCase,
   replayLinks,
   runningBody,
   setupLines,
-  settledRun,
   summaryBody,
   summaryFor,
 } from "./report.js";
@@ -181,15 +181,12 @@ export async function run(d: Deps): Promise<number> {
   if (report) {
     let links: { caseId: string; url: string }[] = [];
     const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
-    let costMicros = runJson?.costMicros;
     if (shareLinks) {
       // Links follow the settled run (a retried case's LAST attempt), not the CLI's copy; the CLI's JSON is the fallback.
-      const settled = await settledRun(share, runJson?.id ?? "");
-      links = await replayLinks(share, settled?.cases ?? runJson?.cases ?? []);
-      costMicros = settled?.costMicros ?? costMicros;
+      links = await replayLinks(share, (await finalCases(share, runJson?.id ?? "")) ?? runJson?.cases ?? []);
     }
-    await d.appendSummary(summaryBody({ report, practice, costMicros }));
-    await comment(finalBody({ workflowKey, report, links, buildUrl, practice, costMicros }));
+    await d.appendSummary(summaryBody({ report, practice }));
+    await comment(finalBody({ workflowKey, report, links, buildUrl, practice }));
   } else if (out.verdict === "setup") {
     const lines = setupLines(res.stderr);
     await d.appendSummary(summaryFor(out, lines.map((l) => `- ${l}`).join("\n") || "See the job log."));
