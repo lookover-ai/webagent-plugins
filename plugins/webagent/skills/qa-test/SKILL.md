@@ -8,7 +8,7 @@ argument-hint: [what to test]
 
 You know the code, so you decide **what** to test. webagent decides **how** (cloud browser, engine) and keeps the
 evidence. The tools are the MCP server `webagent` (Claude Code lists them as `mcp__plugin_webagent_webagent__<tool>`;
-below they are bare names). Tool table, report fields, error codes, `tests.yaml` format (priorities 1 to 5, `checks`, `url` shorthand): [reference.md](reference.md).
+below they are bare names). Two tools have a second name on the QA endpoint: `qa_report` = `get_report`, `qa_quick_check` = `smoke_test`; use whichever is in your tool list. Tool table, report fields, error codes, `tests.yaml` format (priorities 1 to 5, `checks`, `url` shorthand): [reference.md](reference.md).
 
 Hard rules, always:
 - Never paste a secret (API key, password, token, `.env` value) into a tool call, a step, a goal or your answer. Goal and
@@ -85,7 +85,7 @@ nothing. Args, goal template, `engineId`: reference.md. For a `signedIn` case us
 (ngrok "You are about to visit", Cloudflare "Just a moment"). If the report says so, or the screenshot or `finalUrl` suggests it, the
 case is `error` (could not test): add the ngrok header (C) or use cloudflared, re-run.
 
-**Fallback, only when `qa_run` is NOT in your tool list (older server): one `smoke_test` per case.** Mapping and args: reference.md.
+**Fallback, only when `qa_run` is NOT in your tool list (older server): one `smoke_test` (or `qa_quick_check`) per case.** Mapping and args: reference.md.
 Never say a tool exists that you do not see.
 
 **Tell the user where to watch, once per run.** Every run answer has a `Watch live: <url>` line (and `structuredContent.dashboardUrl`). Give
@@ -131,6 +131,7 @@ Next `allowedDevOrigins`). Use `$URL` as the target. **When done, always: `kill 
 process), also after a failed run.
 
 ## 8. Final summary (always, short)
+Failures the user wants sorted (app bug, test to update, could not test) or filed as a bug: `/webagent:qa-triage`.
 Use the template in reference.md (`Final summary template`). Passed cases: one line each. **Every failed case gets a block** (from its
 `qa_status`): page URL, step, expected vs actual, first 1-2 console errors (trimmed), failed requests (method, URL, status), screenshot
 link, then one line "Likely cause" with `file:line` if the repo is open (else "not checked: no repo"). A field the report does not

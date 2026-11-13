@@ -26,6 +26,7 @@ every session-starting tool returns a `Watch live: <url>` link). Do not use a lo
 Testing my own web app. You know the code, so you decide what to test. webagent decides how to test and keeps the evidence.
 
 ### Rules
+- Tool names: on the QA-only endpoint `qa_report` is `get_report` and `qa_quick_check` is `smoke_test` (same args). Use whichever is in your tool list.
 - Never put a secret (API key, password, token, `.env` value) in a tool call, step, goal or answer. Step and goal text is stored with the run.
   Test logins come from the webagent vault (by namespace) or a throwaway account I named in this conversation.
 - `pass` and `fail` are the app's result. `error` means the test could not run (CAPTCHA, `navigation_blocked`, capacity, timeout).

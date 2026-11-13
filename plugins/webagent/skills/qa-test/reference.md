@@ -4,13 +4,14 @@ Checked against the webagent api (A96, commit d27cb2e, `src/modules/mcp/qa-tools
 on 2026-11-12, and against a real run through a tunnel. If a call is refused with `invalid_input`, trust the error text over this file.
 
 ## Tools you use for QA
+The QA endpoint (`/mcp/qa`) names two of them differently: `qa_report` is `get_report`, `qa_quick_check` is `smoke_test` (same args, same answers). Use whichever is in your tool list. The plugin's own server (`/mcp`) keeps `get_report` / `smoke_test`; a project set up for testing may list the QA names there too. `qa_list_runs` and `qa_file_bug` are not live yet: use them only if they are in your tool list (`/webagent:qa-triage`).
 | Tool | Args (real names) | Waits | Returns |
 |---|---|---|---|
 | `qa_run` | see "`qa_run`" below | up to `waitSeconds` (default 60) | rollup text + failed cases (max 5) + `Watch live:` line; whole `WorkflowRun` (`wfr_...`) in `structuredContent` |
 | `qa_status` | `id` (`wfr_`, `run_` or `tsk_`), `caseId?` (with `wfr_`), `waitSeconds` (0-90, default 30) | up to `waitSeconds` | the run, or with `caseId` that case's whole report |
-| `smoke_test` (fallback: only when `qa_run` is absent) | `url` (required), `steps[]` (max 30, each 500 chars), `expectText`, `expectUrl`, `expectNoText`, `maxLinks` (0-200, default 50), `strictLinks` (default true), `waitSeconds` (1-90, default 60), `session` (`headers`, `proxyUrl`, `allowHosts`, ...; `credentials` is refused; recording is always on) | up to `waitSeconds` | text summary + failed steps; whole RunReport in `structuredContent` |
+| `smoke_test` = `qa_quick_check` (fallback: only when `qa_run` is absent) | `url` (required), `steps[]` (max 30, each 500 chars), `expectText`, `expectUrl`, `expectNoText`, `maxLinks` (0-200, default 50), `strictLinks` (default true), `waitSeconds` (1-90, default 60), `session` (`headers`, `proxyUrl`, `allowHosts`, ...; `credentials` is refused; recording is always on) | up to `waitSeconds` | text summary + failed steps; whole RunReport in `structuredContent` |
 | `run_task` | `goal`, `maxSteps` (1-50), `startUrl`, `engineId`, `engineVersion`, `record`, `headers`, `proxyUrl`, `allowHosts`, `credentials` (`true` or `{namespace, autoSubmit}`), `mode` (`auto` default or `full_auto`), `keepOpen`, `sessionId`, `waitSeconds` (1-90, default 90) | up to 90 s | text (`Task finished|stopped (<stoppedBy>) ...`), `structuredContent {sessionId, sessionClosed, task}`; still running: `{sessionId, taskId, status: running}` |
-| `get_report` | `id` (`run_...` or `tsk_...`), `waitSeconds` (0-90, default 30) | up to `waitSeconds` | the RunReport (text + `structuredContent`) |
+| `get_report` = `qa_report` | `id` (`run_...` or `tsk_...`), `waitSeconds` (0-90, default 30) | up to `waitSeconds` | the RunReport (text + `structuredContent`) |
 | `get_task` | `sessionId`, `taskId?`, `waitSeconds` | up to 90 s | raw task record; use `get_report` instead |
 | `create_session` | `startUrl`, `engineId`, `record`, `headers`, `credentials`, `proxyUrl`, `allowHosts`, ... | no | session record + token |
 | `stop_session` | `sessionId` | no | session record (safe to repeat) |
