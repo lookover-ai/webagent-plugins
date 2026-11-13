@@ -141,8 +141,9 @@ for i in $(seq 1 30); do grep -q '^{' "$LOG" && break; kill -0 $(cat "$LOG.pid")
    extra ports (the API next to the web app), `localApp.deviceId` only if it names several machines. A `tests.yaml` `local` target works the same (still pass `url`).
    Say to the user: "testing http://<alias>:<port>/ through your connected machine", never "the cloud browser opened localhost".
 5. A "Blocked request" / "Invalid Host header" / 403 or a `notes` entry about the host name: the dev server refuses the alias. Say the fix once and re-run after
-   they reload: **Your dev server refused the host name `<alias>`. Allow it in its config (Vite: `server.allowedHosts`, webpack-dev-server: `allowedHosts`, Next: `allowedDevOrigins`, Angular: `allowedHosts`) and reload.**
-   That case is `error` (could not test), not `fail`.
+   they reload: **Your dev server refused the host name `<alias>`. Allow the alias ending once, for any device (Vite `server.allowedHosts: [".local-app.invalid"]`,
+   webpack-dev-server `devServer.allowedHosts: [".local-app.invalid"]`, Angular `allowedHosts: [".local-app.invalid"]`, Next.js `allowedDevOrigins: ["*.local-app.invalid"]`), or
+   only this alias (`"<alias>"` in the same setting), and reload.** Never suggest `true` or `all`. That case is `error` (could not test), not `fail`.
 6. A laptop that sleeps, loses wifi or a `connect` that exited mid-run: those cases are `error` (could not test), never `fail`. Offer to start `connect` again once.
 7. **When done, always: `kill $(cat "$LOG.pid")`**, also after a failed run. Never leave it connected.
 

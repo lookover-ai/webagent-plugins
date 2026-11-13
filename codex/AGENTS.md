@@ -53,8 +53,8 @@ stdout line `{"alias","urls","ports","status":"connected"}` (optional `notes`: p
 exposes (only those ports on this computer, to my own cloud test sessions; pages, API answers and secrets the app shows are kept as test evidence; dev tools on those ports are reachable; stop with Ctrl+C), ask me
 yes/no in chat, and only on a yes run it again with `--yes`. Then `qa_run` with `url: "http://localhost:<port>"` (the server swaps it for the alias; `localApp: { ports: [<more>] }` only for extra ports,
 `localApp.deviceId` only with several machines). Say "testing http://<alias>:<port>/ through your connected machine", never that the cloud browser opened localhost. A dev server "Blocked request" / "Invalid Host header" / 403
-or a note about the host name: tell me once "Your dev server refused the host name <alias>. Allow it in its config (Vite: `server.allowedHosts`, webpack-dev-server: `allowedHosts`,
-Next: `allowedDevOrigins`, Angular: `allowedHosts`) and reload." and mark the case could-not-test, never fail; the same when my laptop sleeps or the connection drops. Kill the `connect` process when done, also after a failure.
+or a note about the host name: tell me once "Your dev server refused the host name <alias>. Allow the alias ending once, for any device (Vite `server.allowedHosts`, webpack-dev-server `devServer.allowedHosts`
+and Angular `allowedHosts`: `".local-app.invalid"`; Next.js `allowedDevOrigins`: `"*.local-app.invalid"`), or only this alias, and reload." Never suggest `true` or `all`. Mark the case could-not-test, never fail; the same when my laptop sleeps or the connection drops. Kill the `connect` process when done, also after a failure.
 Tunnel (any other private host, or when the connect gate fails): tell me in one line that a tunnel exposes the dev server to the internet while it runs (use test data),
 then run `cloudflared tunnel --url http://localhost:<port>` in the background (default, no account), wait about 10 s, read the
 `https://...trycloudflare.com` address from its output, and use that. Second choice `ngrok http <port>` (its free plan needs header

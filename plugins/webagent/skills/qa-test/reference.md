@@ -113,6 +113,16 @@ stop any time with Ctrl+C or by removing the device in the dashboard.
 | `ports must be 1 to 8…` / `… is a mail, database or remote-access port` (exit 2) | Port not allowed | Another port, or tunnel |
 | `Nothing is listening on port N yet. Start your app; this stays connected.` (a `notes` entry) | App not running | Start the app (or ask), then run |
 | `Your dev server refused the host name <alias>. Allow it in its config (Vite: server.allowedHosts, webpack-dev-server: allowedHosts, Next: allowedDevOrigins, Angular: allowedHosts) and reload.` | The dev server checks the Host header (400/403/421) | Tell the user this line; after the reload, run |
+
+Say the fix with the suffix, the recommended form because it covers every device and alias (a leading dot means the domain and all its subdomains; in Next.js `*` is exactly one name part, which matches `d-<12 letters>.local-app.invalid`; `.invalid` can never resolve in DNS, so it is safe to allow). Never `true` or `all` (DNS rebinding).
+
+| Tool | Recommended: any alias | Alternative: this alias only |
+|---|---|---|
+| Vite (`vite.config.ts`) | `server: { allowedHosts: [".local-app.invalid"] }` | `server: { allowedHosts: ["<alias>"] }` |
+| webpack-dev-server | `devServer: { allowedHosts: [".local-app.invalid"] }` | `devServer: { allowedHosts: ["<alias>"] }` |
+| Angular (`angular.json`, `serve` options; it passes the value to Vite) | `"allowedHosts": [".local-app.invalid"]` | `"allowedHosts": ["<alias>"]` |
+| Next.js (`next.config.js`) | `allowedDevOrigins: ["*.local-app.invalid"]` (host name only, no scheme or port) | `allowedDevOrigins: ["<alias>"]` |
+
 `qa_run` side: `url: "http://localhost:<port>"` (also `127.0.0.1`, `[::1]`) is swapped for the alias of the connected machine; `localApp: { deviceId?, ports? }`
 adds a machine pick or more ports. Errors are `invalid_input` with the next step in the text (no machine online, several machines online: pass `localApp.deviceId`, port below 1024).
 Do not send the alias URL yourself. In the answer, say "tested through your connected machine", and never that the cloud browser opened localhost.
