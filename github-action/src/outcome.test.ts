@@ -22,3 +22,14 @@ describe("outcomeFor", () => {
     }
   });
 });
+
+describe("outcomeFor mode", () => {
+  it("practice turns a failed case (exit 1) into a green job but keeps the verdict", () => {
+    expect(outcomeFor(1, { verdict: "fail" }, "fail", "practice")).toMatchObject({ verdict: "fail", exitCode: 0, level: "warning" });
+    expect(outcomeFor(1, { verdict: "fail" }, "fail", "enforce")).toMatchObject({ verdict: "fail", exitCode: 1 });
+  });
+  it("practice leaves could-not-test and setup problems alone", () => {
+    expect(outcomeFor(2, undefined, "fail", "practice")).toMatchObject({ verdict: "error", exitCode: 2 });
+    expect(outcomeFor(3, undefined, "fail", "practice")).toMatchObject({ verdict: "setup", exitCode: 3 });
+  });
+});

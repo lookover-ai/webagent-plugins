@@ -85,6 +85,20 @@ async function upsertComment(d, pr, mark, body) {
     return { status: "skipped", reason: why(e) };
   }
 }
+async function changedFiles(d, pr, max) {
+  const out = [];
+  try {
+    for (let page = 1; out.length < max && page <= Math.ceil(max / 100) + 1; page++) {
+      const list = await call(d, "GET", `/repos/${d.repo}/pulls/${pr}/files?per_page=100&page=${page}`);
+      if (!Array.isArray(list)) return [];
+      for (const f of list) if (typeof f.filename === "string" && f.filename !== "") out.push(f.filename);
+      if (list.length < 100) break;
+    }
+  } catch {
+    return [];
+  }
+  return out.slice(0, max);
+}
 async function pullForCommit(d, sha) {
   try {
     const pulls = await call(
@@ -125,6 +139,7 @@ function readInputs(env) {
     retries: input(env, "retries"),
     onError: input(env, "on-error").toLowerCase() || "block",
     failOn: input(env, "fail-on").toLowerCase() || "fail",
+    mode: input(env, "mode").toLowerCase() || "enforce",
     comment: input(env, "comment").toLowerCase() || "true",
     shareLinks: input(env, "share-links").toLowerCase(),
     githubToken: input(env, "github-token")
@@ -178,6 +193,9 @@ function mapToCliArgs(i, sync, fileExists, reports) {
   if (i.failOn !== "fail" && i.failOn !== "never") {
     throw new InputError(`input "fail-on" must be fail or never, got "${i.failOn}"`);
   }
+  if (i.mode !== "enforce" && i.mode !== "practice") {
+    throw new InputError(`input "mode" must be enforce or practice, got "${i.mode}"`);
+  }
   const args = ["test", "--json", "--markdown", reports.markdown];
   const flag = (name, value) => {
     if (value !== "") args.push(`--${name}`, value);
@@ -201,7 +219,7 @@ function mapToCliArgs(i, sync, fileExists, reports) {
 }
 
 // src/outcome.ts
-function outcomeFor(cliCode, run2, failOn) {
+function outcomeFor(cliCode, run2, failOn, mode = "enforce") {
   if (cliCode === 0) {
     if (run2?.verdict === "error" || run2?.verdict === "running") {
       return {
@@ -214,6 +232,14 @@ function outcomeFor(cliCode, run2, failOn) {
     return { verdict: "pass", exitCode: 0, level: "notice" };
   }
   if (cliCode === 1) {
+    if (mode === "practice") {
+      return {
+        verdict: "fail",
+        exitCode: 0,
+        level: "warning",
+        message: "A required case failed. The job passes because mode is practice (this check does not block merging yet)."
+      };
+    }
     return failOn === "never" ? {
       verdict: "fail",
       exitCode: 0,
@@ -248,7 +274,7 @@ function dashboardUrl(markdown) {
 }
 var MAX_LINKS = 10;
 var SEVEN_DAYS = 7 * 86400;
-async function finalCases(d, runId) {
+async function settledRun(d, runId) {
   if (!runId) return void 0;
   try {
     const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/workflow-runs/${encodeURIComponent(runId)}`, {
@@ -257,11 +283,18 @@ async function finalCases(d, runId) {
     });
     if (!res.ok) return void 0;
     const body = await res.json();
-    return Array.isArray(body.cases) ? body.cases : void 0;
+    return {
+      ...Array.isArray(body.cases) ? { cases: body.cases } : {},
+      ...typeof body.costMicros === "number" ? { costMicros: body.costMicros } : {}
+    };
   } catch {
     return void 0;
   }
 }
+function costLine(costMicros) {
+  return typeof costMicros === "number" && Number.isFinite(costMicros) && costMicros >= 0 ? `Cost: $${(costMicros / 1e6).toFixed(2)}` : "";
+}
+var PRACTICE_BANNER = "Practice mode: this check does not block merging yet.";
 async function replayLinks(d, cases) {
   const out = [];
   const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && c.sessionId);
@@ -281,8 +314,19 @@ async function replayLinks(d, cases) {
   return out;
 }
 var footer = (buildUrl) => `Re-run: push a commit, or "Re-run jobs" in Actions${buildUrl ? ` \xB7 [This job](${buildUrl})` : ""}`;
+function summaryBody(p) {
+  const cost = costLine(p.costMicros);
+  return `${p.practice ? `${PRACTICE_BANNER}
+
+` : ""}${p.report.trimEnd()}
+${cost ? `
+${cost}
+` : ""}`;
+}
 function finalBody(p) {
-  const lines = [marker(p.workflowKey), p.report.trimEnd(), ""];
+  const cost = costLine(p.costMicros);
+  const lines = [marker(p.workflowKey), ...p.practice ? [PRACTICE_BANNER, ""] : [], p.report.trimEnd(), ""];
+  if (cost) lines.push(cost, "");
   if (p.links.length > 0) {
     lines.push(
       "Replays (anyone with the link can watch, 7 days):",
@@ -293,9 +337,10 @@ function finalBody(p) {
   lines.push(footer(p.buildUrl), "");
   return lines.join("\n");
 }
-function runningBody(workflowKey, url, sha, buildUrl) {
+function runningBody(workflowKey, url, sha, buildUrl, practice = false) {
   return [
     marker(workflowKey),
+    ...practice ? [PRACTICE_BANNER, ""] : [],
     `Lookover QA \xB7 RUNNING${url ? ` \xB7 testing ${url}` : ""}${sha ? ` \xB7 commit ${sha.slice(0, 7)}` : ""}`,
     "",
     `The result replaces this comment when the run ends.${buildUrl ? ` [Watch the job](${buildUrl})` : ""}`,
@@ -330,9 +375,9 @@ function setupLines(stderr) {
 }
 var noticeForFork = "Lookover QA was skipped: this pull request comes from a fork (or Dependabot), so GitHub does not give the job the API key secret. Nothing was tested and nothing failed. The check runs when a maintainer pushes the branch to this repo.";
 var HEADING = {
-  pass: "PASS",
-  fail: "FAIL",
-  error: "COULD NOT TEST (not an app failure)",
+  pass: "Passed",
+  fail: "Failed",
+  error: "Couldn't test (not an app failure)",
   setup: "NOT RUN (setup problem, your app was not tested)",
   skipped: "SKIPPED"
 };
@@ -341,6 +386,31 @@ function summaryFor(o, text) {
 
 ${text}
 `;
+}
+
+// src/context.ts
+var MAX_TITLE = 200;
+var MAX_BODY2 = 2e3;
+var MAX_PATH = 300;
+var MAX_FILES = 300;
+function clip(s, max) {
+  return Array.from(s.replace(/\0/g, "")).slice(0, max).join("");
+}
+async function prContextEnv(gh, ctx) {
+  if (ctx.eventName !== "pull_request" && ctx.eventName !== "pull_request_target") return {};
+  if (secretsWithheld(ctx)) return {};
+  const pr = ctx.event.pull_request;
+  const out = {};
+  const title = clip(pr?.title ?? "", MAX_TITLE);
+  const body = clip(pr?.body ?? "", MAX_BODY2);
+  if (title !== "") out.WEBAGENT_CI_TITLE = title;
+  if (body !== "") out.WEBAGENT_CI_BODY = body;
+  const number = pr?.number ?? ctx.event.number;
+  if (number !== void 0 && gh.repo !== "" && gh.token !== "") {
+    const files = (await changedFiles(gh, number, MAX_FILES)).map((p) => clip(p.replace(/[\r\n]+/g, " "), MAX_PATH)).filter((p) => p !== "");
+    if (files.length > 0) out.WEBAGENT_CI_CHANGED_FILES = files.join("\n");
+  }
+  return out;
 }
 
 // src/run.ts
@@ -385,6 +455,19 @@ ${noticeForFork}
     return finish("setup", 3);
   }
   d.log(`::add-mask::${inputs.apiKey}`);
+  if (ctx.eventName === "deployment_status" && inputs.url === "") {
+    const ds = d.event.deployment_status;
+    if (ds?.state !== "success") {
+      const msg = `Lookover QA skipped: the deployment is not ready (state: ${ds?.state ?? "unknown"}). The check runs when the deployment succeeds.`;
+      d.log(`::notice title=Lookover QA skipped::${esc(msg)}`);
+      await d.appendSummary(`### Lookover QA \xB7 skipped
+
+${msg}
+`);
+      return finish("skipped", 0);
+    }
+    inputs.url = (ds.environment_url || ds.target_url || "").trim();
+  }
   const reportPath = `${d.tmpDir}/report.md`;
   let mapped;
   let shareLinks;
@@ -426,32 +509,35 @@ ${noticeForFork}
       d.log(`::notice title=Lookover QA comment skipped::${esc(`No PR comment: ${res2.reason}.`)}`);
     }
   };
-  await comment(runningBody(workflowKey, inputs.url, sha, buildUrl));
+  const practice = inputs.mode === "practice";
+  await comment(runningBody(workflowKey, inputs.url, sha, buildUrl, practice));
   const env = { ...d.env, WEBAGENT_API_KEY: inputs.apiKey };
   if (inputs.apiUrl) env.WEBAGENT_API_URL = inputs.apiUrl;
+  Object.assign(env, await prContextEnv(gh, ctx));
   const res = await d.runCli(mapped.args, env);
   const runJson = parseRun(res.stdout);
   const report = await d.readText(reportPath);
-  const out = outcomeFor(res.code, runJson, inputs.failOn);
+  const out = outcomeFor(res.code, runJson, inputs.failOn, inputs.mode);
   const url = report ? dashboardUrl(report) : "";
   if (report) {
     let links = [];
+    const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
+    let costMicros = runJson?.costMicros;
     if (shareLinks) {
-      const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
-      const settled = await finalCases(share, runJson?.id ?? "");
-      links = await replayLinks(share, settled ?? runJson?.cases ?? []);
+      const settled = await settledRun(share, runJson?.id ?? "");
+      links = await replayLinks(share, settled?.cases ?? runJson?.cases ?? []);
+      costMicros = settled?.costMicros ?? costMicros;
     }
-    await d.appendSummary(`${report.trimEnd()}
-`);
-    await comment(finalBody({ workflowKey, report, links, buildUrl }));
+    await d.appendSummary(summaryBody({ report, practice, costMicros }));
+    await comment(finalBody({ workflowKey, report, links, buildUrl, practice, costMicros }));
   } else if (out.verdict === "setup") {
     const lines = setupLines(res.stderr);
     await d.appendSummary(summaryFor(out, lines.map((l) => `- ${l}`).join("\n") || "See the job log."));
     await comment(notRunBody(workflowKey, lines, buildUrl));
   } else {
-    const text = "# Lookover QA \xB7 could not test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
-    await d.appendSummary(text);
-    await comment(finalBody({ workflowKey, report: text, links: [], buildUrl }));
+    const text = "# Lookover QA \xB7 Couldn't test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
+    await d.appendSummary(summaryBody({ report: text, practice }));
+    await comment(finalBody({ workflowKey, report: text, links: [], buildUrl, practice }));
   }
   if (out.message) {
     d.log(`::${ANNOTATE[out.level]} title=Lookover QA::${esc(out.message)}`);

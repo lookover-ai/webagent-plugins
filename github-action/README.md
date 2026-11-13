@@ -90,6 +90,30 @@ jobs:
           url: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
 ```
 
+You can leave `url` out on a `deployment_status` event: the action then takes `environment_url` (else `target_url`) from the event
+itself, and skips with a notice (verdict `skipped`, job passes) when the deployment state is not `success`:
+
+```yaml
+name: Lookover QA
+on: deployment_status
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  qa:
+    name: Lookover QA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lookover-ai/webagent-plugins/github-action@v1
+        with:
+          api-key: ${{ secrets.WEBAGENT_API_KEY }}     # no url: the deployment's URL is used
+```
+
+An explicit `url` always wins. `wait-for-url` applies to the deployment URL as usual.
+
 The comment goes to the PR that owns the deployed commit. If your preview is behind Vercel's login page (Deployment Protection), the
 cloud browser sees the login page, not your app: use a staging URL, or turn protection off for previews you test.
 
@@ -127,13 +151,14 @@ on: pull_request
 | `retries` | the API default (1 for CI) | Extra tries for a failed case, 0 to 2. A case that passes on a retry is "flaky": it passes the job and is flagged |
 | `on-error` | `block` | `block`: could not test fails the job (exit 2). `neutral`: it passes with a warning |
 | `fail-on` | `fail` | `never`: report only, a result never fails the job (run it a week as a non-required check, then require it) |
+| `mode` | `enforce` | `enforce`: a failed required case fails the job. `practice`: it does not (see "Practice mode") |
 | `comment` | `true` | Keep one PR comment |
 | `share-links` | on for private repos, off for public | A 7-day replay link per failed case in the comment. Anyone with the link can watch, so it is off by default on public repos |
 | `github-token` | `${{ github.token }}` | For the PR comment |
 
 | Output | Value |
 |---|---|
-| `verdict` | `pass`, `fail`, `error` (could not test), `setup` (not run: setup problem), `skipped` (fork PR without the secret) |
+| `verdict` | `pass`, `fail`, `error` (could not test), `setup` (not run: setup problem), `skipped` (fork PR without the secret, or a `deployment_status` that is not `success` yet) |
 | `run-id` | the run id (empty when no run started) |
 | `run-url` | dashboard page of the run |
 | `flaky` | how many cases passed only on a retry |
@@ -160,8 +185,30 @@ Use outputs in a later step: `if: steps.qa.outputs.verdict == 'fail'` (give the 
 | 2 | could not test: not an app failure |
 | 3 | setup problem: your configuration (`fail-on: never` does not hide these) |
 
+The summary and the comment end the report with one `Cost: $x.xx` line (the run's model spend) when the API reports it. The words the action itself writes are "Passed", "Failed" and "Couldn't test"; the report text in the middle comes from the CLI.
+
 Failed cases show the replay link only when `share-links` allows it; the dashboard link works for every member of your project.
 The status check is the job: name it `Lookover QA`. GitHub only blocks merging on checks you mark **required** (Settings, Branches).
+
+### Practice mode
+
+`mode: practice` is for the first week: the check runs and reports, but a failed case does not fail the job, so it cannot block a merge.
+
+- A failed case (CLI exit 1): the step succeeds. The `verdict` output stays `fail` (the real result), the job summary and the PR comment
+  start with "Practice mode: this check does not block merging yet." and the log has one warning.
+- Could not test follows `on-error` as always (`block` fails with exit 2, `neutral` passes).
+- Setup problems (exit 3: bad key, bad file, bad input such as `mode: soft`) still fail the job, and `mode` accepts only `enforce` or `practice`.
+
+Switch to `mode: enforce` (the default, or leave the input out) when you trust the checks, then mark `Lookover QA` as required.
+`fail-on: never` is the older, blunter switch: it also passes on could not test.
+
+### Pull request context
+
+On `pull_request` and `pull_request_target` runs (not from forks) the action sends the PR title (200 characters), the PR description
+(2000 characters) and the paths of the changed files (up to 300 paths, 300 characters each, paths only, read with your `github-token`)
+to the CLI as the environment variables `WEBAGENT_CI_TITLE`, `WEBAGENT_CI_BODY` and `WEBAGENT_CI_CHANGED_FILES` (one path per line),
+as untrusted context for Lookover: used once the bundled CLI supports it. The text is never printed in the log, summary or comment.
+If GitHub's file list cannot be read, the paths are left out and the job is not affected.
 
 ## 6. Fork pull requests
 
