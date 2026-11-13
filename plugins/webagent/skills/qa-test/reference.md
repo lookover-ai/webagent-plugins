@@ -30,6 +30,7 @@ Give **exactly one** of `cases`, `testsFile`, `testsYaml`, `workflowId`.
 | `testsYaml` | The raw text of `.webagent/tests.yaml`, at most 64 KB, exactly as the file reads (the server parses it: do not re-write it as JSON). Same as `testsFile` otherwise. A YAML mistake: `invalid_input` with line and column. Runs **every** case of the file (max 20): no case selection. |
 | `testsFile` | The parsed `.webagent/tests.yaml` (object with `cases` and `targets` or `url`, optional `name`, `engine`, `concurrency`, `maxCostUsdPerCase`) or just the list of cases. Filter `cases` first, then send (the way to run some cases of a file). `signedIn` cases are left out and named in a `Warning:` line. The file's `maxCostUsdPerCase` is applied. |
 | `url` | The site under test. Required with `cases`. With `testsFile` / `testsYaml`: replaces the chosen target's address (use it for a tunnel). A file with no `targets`/`url` takes it as its site. |
+| `localApp` | `{ deviceId?, ports? }`, only on servers that list it: pick the connected machine / open more ports of it. See "Local app: connect". |
 | `target` | With `testsFile` / `testsYaml`: which target of the file (default its `defaultTarget`). With `workflowId`: the saved target. Unknown name: `invalid_input` listing the known ones. |
 | `session` | Every run kind: `headers` (host-scoped; joined with the target's own), `proxyUrl`, `allowHosts`. Allowed with `workflowId` too. Recording is always on. |
 | `engineId` | Slug or id. With `testsFile` / `testsYaml` the file's `engine` is used when you omit it. Refused with `workflowId`. |
@@ -70,7 +71,8 @@ steps) for every case you can write as steps; `run_task` to explore, with its an
 ## Errors that are not the app's fault
 | You see | Meaning | Do |
 |---|---|---|
-| `navigation_blocked` | The browser may not open that address (localhost, private IP, `.internal`) | Use a tunnel or a public URL |
+| `navigation_blocked` | The browser may not open that address (localhost, private IP, `.internal`) | Local app: connect (SKILL 7A) or a tunnel; else a public URL |
+| Dev server page "Blocked request" / "Invalid Host header" / 403 | The dev server refuses the alias or tunnel host name | `error`; give the allowedHosts line (SKILL 7A step 5), re-run after the reload |
 | `capacity_exceeded`, `capacity_timeout` | All browsers of the plan are busy | Wait 30 s, retry once with fewer parallel cases, else COULD NOT TEST |
 | `rate_limited` / 429 | 600 requests per minute per key | Slow down; you should never hit this |
 | 401 `invalid API key`, 421 `wrong_region` | Key wrong or for another region | Tell the user (new key from the right dashboard) |
@@ -83,6 +85,37 @@ Which engine: `tests.yaml` `engine` (read by the server on a `testsFile` / `test
 (`qa`, `general`, `research`, `forms`, `monitor`, `careful`) or a full id as `engineId`: the server resolves a built-in slug for your region.
 `list_engines` shows the real ones (forks too; only built-ins have a `slug`, a fork is used by its `id`). A slug that is not built in and not an id is refused with `invalid_input`: ask the user,
 never invent an id. For non-QA work, the `browse` skill covers engines.
+
+## Local app: connect (`webagent-device connect`)
+Checked against the device client's `connect` command (runtime R82) and `qa_run` (api A162). Not live for everyone yet: the SKILL gate decides
+(tool installed, `qa_run` has `localApp`, machine paired); when it fails, say "Local-app mode is coming soon; using a tunnel" and use the tunnels below.
+```
+webagent-device connect <PORT>... [--code CODE --api URL] [--yes] [--json]
+```
+| Part | What it does |
+|---|---|
+| `<PORT>...` | 1 to 8 different ports, 1024-65535 (`3000 5173` or `3000,5173`). Refused: mail, database, SSH, remote-desktop ports (for example 3306, 5432, 6379, 9200, 27017). Below 1024 is never shared. |
+| `--code CODE --api URL` | Only the first time (pairing). The code must be made for a local app; the user types it in their own terminal, you never do. Without it: `First time: webagent-device connect <port> --code <PAIRING CODE> --api <URL>` (exit 2). A code for a browser exit: `That pairing code was not made for a local app` (exit 2). |
+| consent question | Asked when this machine is new or the ports differ from last time. It reads a terminal: with no terminal (your shell) it answers no: `Nothing shared.` and exit 1. |
+| `--yes` | Skips only the question; the consent text is still printed (stderr with `--json`). Add it only after the user said yes in this chat. |
+| `--json` | Once connected, ONE line on stdout: `{"alias","urls","ports","status":"connected"}` plus `notes` (strings) when the probe found something. All other text goes to stderr. Without `--json`, one line per port on stdout: `local-app alias=<alias> url=http://<alias>:<port>/`. |
+| it keeps running | The process stays connected (reconnects by itself) until you kill it. Ctrl+C or the dashboard also stops it. |
+`urls[i]` = `http://<alias>:<ports[i]>/`. The alias is derived from the paired device (`d-<12 letters>.local-app.invalid`), never typed by anyone.
+**Consent summary to show the user before `--yes`** (their own words are fine, keep the facts): only the ports listed on THIS computer open, only to the cloud
+browser sessions that you start, never as the open internet; pages, API answers and data or secrets the app shows or sends during a test (cookies, tokens, personal data) are
+visible to Lookover and kept as test evidence, so use test data; dev tools and admin routes on those ports can be used by the test; nothing else on the machine or network is reachable;
+stop any time with Ctrl+C or by removing the device in the dashboard.
+| `connect` says | Meaning | Do |
+|---|---|---|
+| `Nothing shared.` (exit 1) | Question not answered yes | Ask in chat, then `--yes` (SKILL 7A step 3) |
+| `First time: … --code …` (exit 2) | Not paired | User pairs in their own terminal; no code available: tunnel |
+| `This device is paired as an exit node…` (exit 2) | The machine is a browser exit, not a local app | Tell the user once; tunnel |
+| `ports must be 1 to 8…` / `… is a mail, database or remote-access port` (exit 2) | Port not allowed | Another port, or tunnel |
+| `Nothing is listening on port N yet. Start your app; this stays connected.` (a `notes` entry) | App not running | Start the app (or ask), then run |
+| `Your dev server refused the host name <alias>. Allow it in its config (Vite: server.allowedHosts, webpack-dev-server: allowedHosts, Next: allowedDevOrigins, Angular: allowedHosts) and reload.` | The dev server checks the Host header (400/403/421) | Tell the user this line; after the reload, run |
+`qa_run` side: `url: "http://localhost:<port>"` (also `127.0.0.1`, `[::1]`) is swapped for the alias of the connected machine; `localApp: { deviceId?, ports? }`
+adds a machine pick or more ports. Errors are `invalid_input` with the next step in the text (no machine online, several machines online: pass `localApp.deviceId`, port below 1024).
+Do not send the alias URL yourself. In the answer, say "tested through your connected machine", and never that the cloud browser opened localhost.
 
 ## Tunnels
 | | cloudflared quick tunnel (default) | ngrok free |
@@ -147,7 +180,7 @@ Full description: `docs/WEBAGENT-FOLDER.md` in the plugin repo; templates in `${
 version: 1                       # optional
 name: My app smoke tests         # optional; key: <slug> lets CI update the same workflow
 targets:                         # one per environment (or `url: https://...` for a single site; never both)
-  local:   http://localhost:3000                   # local URLs get a tunnel
+  local:   http://localhost:3000                   # local URLs: connect your machine, else a tunnel
   staging: { url: https://staging.example.com, credentials: staging }  # credentials = vault namespace
 defaultTarget: staging           # optional, default the first target
 engine: qa                       # optional: engine slug or id for run_task cases (default: config.yaml engine, else the project default engine)
@@ -188,5 +221,5 @@ FAIL  <case id> - <title>
 COULD NOT TEST  <case id> - <why>. To unblock: <one step>
 Watch live / replay: <dashboardUrl>. Report <reportSignedUrl> (expires <urlsExpireAt>), recording (needs your key)
 Warnings: <the Warning: lines, e.g. signedIn cases skipped>
-Changed: <files>, tests.yaml: <cases added/edited>. Skipped: <cases>. Tunnel: closed.
+Changed: <files>, tests.yaml: <cases added/edited>. Skipped: <cases>. Tunnel / connect: closed.
 ```

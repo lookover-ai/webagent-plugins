@@ -13,7 +13,7 @@ What to test: $ARGUMENTS
 
 Default path: read `.webagent/tests.yaml`, pick the cases, and run them in ONE `qa_run`: every case, send the file's raw text as `testsYaml`
 (not re-written as JSON); only some cases, send `testsFile` filtered to those cases (`caseIds` / `tags` do not work with a file); add `target` and,
-for a local app, the tunnel `url`. No `tests.yaml`: send `cases`. Do not fill ids, paths or steps. Give the user the
+for a local app, the tunnel `url` (or, if the skill's local-app gate passes, `url: "http://localhost:<port>"` after `webagent-device connect`, section 7A; if not, one line "Local-app mode is coming soon; using a tunnel"). No `tests.yaml`: send `cases`. Do not fill ids, paths or steps. Give the user the
 `Watch live:` link once and pass on any `Warning:` lines. `smoke_test` (or `qa_quick_check`) only when `qa_run` is not in your tool list.
 Failures to sort out or file as a bug: `/webagent:qa-triage`.
 
