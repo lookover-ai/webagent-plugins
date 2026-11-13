@@ -2,7 +2,7 @@
 
 Plugins and snippets that put webagent QA inside the user's own coding agent (Lookover suite, task prefix `K`).
 First product: the Claude Code plugin `webagent` (general connector: `/webagent:run`, `/webagent:engines`; QA is the headline use case: `/webagent:qa`) plus a Codex snippet. Public repo planned
-(`lookover-ai/webagent-plugins`); until the CTO creates it there is no remote: do not add one, do not push.
+(`lookover-ai/webagent-plugins`); remote `origin` exists; changes go by PR into `development` (see Branches).
 Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hub/ENGINES.md` (the `qa` engine).
 
 > **Managed from the hub.** This file wins inside this repo. Hub product rules still bind: no CAPTCHA solving, no
@@ -40,6 +40,15 @@ docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs
    add one. Codex keeps `WEBAGENT_API_KEY`.
 6. Bump `version` in `plugin.json` on every change users should receive (Claude Code caches by version).
 
+## Branches (hub D80)
+- New work starts from `origin/staging` (`git fetch origin && git switch -c <type>/<task-id>-<slug> origin/staging`), never from `main` or `development`, even if asked.
+- Names: `<type>/<task-id>-<slug>`, lowercase kebab-case (`feat/a64-org-limits`, `fix/w118-runs-empty-state`); types in the hub rules.
+- Every change lands by PR into `development` (`gh pr create --base development`) with `.github/pull_request_template.md` filled in; the merge queue squash-merges it.
+- Never commit, merge, rebase or force-push on `main`, `staging` or `development`. The only local way onto `development`/`staging` is `git cherry-pick -x` plus a fast-forward push (hub GIT-FLOW Rule 3). Update your branch with `git rebase origin/staging`.
+- Staging deploys from the `staging` branch; production deploys from `main` tags (`vYYYY.MM.DD`; newest = primary, previous = secondary).
+- This repo is public: its GitHub default branch stays `main` (the marketplace and Action consumers read it); PRs still target `development`.
+- Full rules: `../webagent/hub/GIT-FLOW.md`.
+
 ## Check (before every commit)
 ```
 claude plugin validate .                         # marketplace
@@ -49,5 +58,5 @@ claude -p --plugin-dir plugins/webagent --output-format stream-json --verbose "h
 H=$(mktemp -d) && cp codex/config.toml "$H" && CODEX_HOME="$H" codex mcp get webagent   # Codex parses the TOML
 python3 scripts/check-templates.py   # templates parse and match the format (WEBAGENT_CONTRACTS_DIST=../webagent-contracts/dist adds the contract reader)
 ```
-The plugin has no build and no dependencies. `github-action/` does: `cd github-action && VITEST_MAX_WORKERS=4 flock /tmp/claude-1000/webagent-heavy.lock pnpm check` (typecheck, tests, build; commit `dist/`; re-vendor `dist/webagent.cjs` from `../webagent-contracts/cli/dist/webagent.cjs` after `pnpm -C cli build` there). The Action only maps inputs to the CLI's flags: the CLI and the api own behaviour. No dev server. Commits: one block, check green; no remote yet (DEV MODE applies once it exists).
+The plugin has no build and no dependencies. `github-action/` does: `cd github-action && VITEST_MAX_WORKERS=4 flock /tmp/claude-1000/webagent-heavy.lock pnpm check` (typecheck, tests, build; commit `dist/`; re-vendor `dist/webagent.cjs` from `../webagent-contracts/cli/dist/webagent.cjs` after `pnpm -C cli build` there). The Action only maps inputs to the CLI's flags: the CLI and the api own behaviour. No dev server. Commits: one block, check green, then a PR into `development` (see Branches).
 PROGRESS.md entry per task (max 10 lines: `## <date> <id> done`, `Done:`, `Next:`, `Gotchas:`).
