@@ -53,6 +53,10 @@ inputs:
     description: "`fail` (default): a failed required case fails the job. `never`: report only, the job never fails because of a result (setup problems still fail it)."
     required: false
     default: fail
+  mode:
+    description: "`enforce` (default): a failed required case fails the job. `practice`: a failed case does not fail the job (the verdict output still says `fail`, and the summary and comment say the check does not block merging yet); could-not-test still follows `on-error`, setup problems still fail the job."
+    required: false
+    default: enforce
   comment:
     description: "Keep one comment on the pull request, updated in place on every push. Needs `pull-requests: write`."
     required: false

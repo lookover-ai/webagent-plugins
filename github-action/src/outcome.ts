@@ -7,6 +7,8 @@ export interface RunLike {
   id?: string;
   verdict?: string;
   counts?: { flaky?: number };
+  /** Model spend of the run in micro-USD (contracts `WorkflowRun.costMicros`). */
+  costMicros?: number;
 }
 
 export interface Outcome {
@@ -19,7 +21,12 @@ export interface Outcome {
 }
 
 /** CLI exit code (0 pass, 1 fail, 2 could not test, 3 setup; anything else is a crash = 3) to the job outcome. */
-export function outcomeFor(cliCode: number | null, run: RunLike | undefined, failOn: "fail" | "never"): Outcome {
+export function outcomeFor(
+  cliCode: number | null,
+  run: RunLike | undefined,
+  failOn: "fail" | "never",
+  mode: "enforce" | "practice" = "enforce",
+): Outcome {
   if (cliCode === 0) {
     if (run?.verdict === "error" || run?.verdict === "running") {
       return {
@@ -32,6 +39,14 @@ export function outcomeFor(cliCode: number | null, run: RunLike | undefined, fai
     return { verdict: "pass", exitCode: 0, level: "notice" };
   }
   if (cliCode === 1) {
+    if (mode === "practice") {
+      return {
+        verdict: "fail",
+        exitCode: 0,
+        level: "warning",
+        message: "A required case failed. The job passes because mode is practice (this check does not block merging yet).",
+      };
+    }
     return failOn === "never"
       ? {
           verdict: "fail",

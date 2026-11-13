@@ -63,6 +63,7 @@ describe("mapToCliArgs", () => {
   it.each([
     [{ "on-error": "maybe" }, /on-error/],
     [{ "fail-on": "always" }, /fail-on/],
+    [{ mode: "soft" }, /mode.*enforce or practice/],
     [{ retries: "3" }, /retries/],
     [{ retries: "x" }, /retries/],
     [{ "timeout-minutes": "0" }, /timeout-minutes/],
@@ -70,6 +71,15 @@ describe("mapToCliArgs", () => {
   ])("rejects bad input %j", (o, re) => {
     expect(() => mapToCliArgs(inputs(o), false, true, md)).toThrow(InputError);
     expect(() => mapToCliArgs(inputs(o), false, true, md)).toThrow(re);
+  });
+});
+
+describe("mode input", () => {
+  it("defaults to enforce, reads practice in any case, and is not a CLI flag", () => {
+    expect(inputs().mode).toBe("enforce");
+    expect(inputs({ mode: "Practice" }).mode).toBe("practice");
+    const args = mapToCliArgs(inputs({ mode: "practice" }), false, true, md).args;
+    expect(args).not.toContain("practice");
   });
 });
 

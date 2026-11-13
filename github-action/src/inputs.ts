@@ -25,6 +25,8 @@ export interface Inputs {
   retries: string;
   onError: string;
   failOn: string;
+  /** `enforce` (default) or `practice` (a failed case does not fail the job). */
+  mode: string;
   comment: string;
   /** `""` means auto: on for private repos only. */
   shareLinks: string;
@@ -54,6 +56,7 @@ export function readInputs(env: Env): Inputs {
     retries: input(env, "retries"),
     onError: input(env, "on-error").toLowerCase() || "block",
     failOn: input(env, "fail-on").toLowerCase() || "fail",
+    mode: input(env, "mode").toLowerCase() || "enforce",
     comment: input(env, "comment").toLowerCase() || "true",
     shareLinks: input(env, "share-links").toLowerCase(),
     githubToken: input(env, "github-token"),
@@ -65,7 +68,14 @@ export interface GithubEvent {
   number?: number;
   pull_request?: {
     number?: number;
+    title?: string | null;
+    body?: string | null;
     head?: { sha?: string; repo?: { full_name?: string; fork?: boolean } | null };
+  };
+  deployment_status?: {
+    state?: string;
+    environment_url?: string | null;
+    target_url?: string | null;
   };
   repository?: { private?: boolean; default_branch?: string; full_name?: string };
 }
@@ -150,6 +160,9 @@ export function mapToCliArgs(
   }
   if (i.failOn !== "fail" && i.failOn !== "never") {
     throw new InputError(`input "fail-on" must be fail or never, got "${i.failOn}"`);
+  }
+  if (i.mode !== "enforce" && i.mode !== "practice") {
+    throw new InputError(`input "mode" must be enforce or practice, got "${i.mode}"`);
   }
   const args = ["test", "--json", "--markdown", reports.markdown];
   const flag = (name: string, value: string) => {

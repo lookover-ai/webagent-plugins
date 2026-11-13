@@ -16,15 +16,17 @@ import { outcomeFor, type RunLike, type VerdictOutput } from "./outcome.js";
 import {
   dashboardUrl,
   finalBody,
-  finalCases,
   noticeForFork,
   notRunBody,
   type RunCase,
   replayLinks,
   runningBody,
   setupLines,
+  settledRun,
+  summaryBody,
   summaryFor,
 } from "./report.js";
+import { prContextEnv } from "./context.js";
 
 /** Same constant as the CLI's `src/constants.ts` (staging until production exists): change both together. */
 export const DEFAULT_API_URL = "https://webagent-staging-in-api.lookover.ai";
@@ -105,6 +107,18 @@ export async function run(d: Deps): Promise<number> {
   }
   d.log(`::add-mask::${inputs.apiKey}`);
 
+  // A preview deployment event: test the URL it carries when `url` is empty, and wait for a successful deployment.
+  if (ctx.eventName === "deployment_status" && inputs.url === "") {
+    const ds = d.event.deployment_status;
+    if (ds?.state !== "success") {
+      const msg = `Lookover QA skipped: the deployment is not ready (state: ${ds?.state ?? "unknown"}). The check runs when the deployment succeeds.`;
+      d.log(`::notice title=Lookover QA skipped::${esc(msg)}`);
+      await d.appendSummary(`### Lookover QA · skipped\n\n${msg}\n`);
+      return finish("skipped", 0);
+    }
+    inputs.url = (ds.environment_url || ds.target_url || "").trim();
+  }
+
   const reportPath = `${d.tmpDir}/report.md`;
   let mapped: ReturnType<typeof mapToCliArgs>;
   let shareLinks: boolean;
@@ -150,35 +164,40 @@ export async function run(d: Deps): Promise<number> {
     }
   };
 
-  await comment(runningBody(workflowKey, inputs.url, sha, buildUrl));
+  const practice = inputs.mode === "practice";
+  await comment(runningBody(workflowKey, inputs.url, sha, buildUrl, practice));
 
   const env: Record<string, string | undefined> = { ...d.env, WEBAGENT_API_KEY: inputs.apiKey };
   if (inputs.apiUrl) env.WEBAGENT_API_URL = inputs.apiUrl;
+  // Untrusted PR text and changed paths for the CLI (never logged or echoed here).
+  Object.assign(env, await prContextEnv(gh, ctx));
   const res = await d.runCli(mapped.args, env);
 
   const runJson = parseRun(res.stdout);
   const report = await d.readText(reportPath);
-  const out = outcomeFor(res.code, runJson, inputs.failOn as "fail" | "never");
+  const out = outcomeFor(res.code, runJson, inputs.failOn as "fail" | "never", inputs.mode as "enforce" | "practice");
   const url = report ? dashboardUrl(report) : "";
 
   if (report) {
     let links: { caseId: string; url: string }[] = [];
+    const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
+    let costMicros = runJson?.costMicros;
     if (shareLinks) {
-      const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
       // Links follow the settled run (a retried case's LAST attempt), not the CLI's copy; the CLI's JSON is the fallback.
-      const settled = await finalCases(share, runJson?.id ?? "");
-      links = await replayLinks(share, settled ?? runJson?.cases ?? []);
+      const settled = await settledRun(share, runJson?.id ?? "");
+      links = await replayLinks(share, settled?.cases ?? runJson?.cases ?? []);
+      costMicros = settled?.costMicros ?? costMicros;
     }
-    await d.appendSummary(`${report.trimEnd()}\n`);
-    await comment(finalBody({ workflowKey, report, links, buildUrl }));
+    await d.appendSummary(summaryBody({ report, practice, costMicros }));
+    await comment(finalBody({ workflowKey, report, links, buildUrl, practice, costMicros }));
   } else if (out.verdict === "setup") {
     const lines = setupLines(res.stderr);
     await d.appendSummary(summaryFor(out, lines.map((l) => `- ${l}`).join("\n") || "See the job log."));
     await comment(notRunBody(workflowKey, lines, buildUrl));
   } else {
-    const text = "# Lookover QA · could not test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
-    await d.appendSummary(text);
-    await comment(finalBody({ workflowKey, report: text, links: [], buildUrl }));
+    const text = "# Lookover QA · Couldn't test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
+    await d.appendSummary(summaryBody({ report: text, practice }));
+    await comment(finalBody({ workflowKey, report: text, links: [], buildUrl, practice }));
   }
 
   if (out.message) {
