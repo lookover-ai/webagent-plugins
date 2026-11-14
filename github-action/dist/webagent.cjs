@@ -27082,7 +27082,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// ../dist/chunk-V7IXF2BL.js
+// ../dist/chunk-YZ7JNNZ7.js
 var webagentEnvSchema = external_exports.enum(["local", "staging", "production"]);
 var regionCodeSchema = external_exports.enum(["us", "in"]);
 var hosts = {
@@ -27145,7 +27145,9 @@ var idPrefixes = {
   /** QA notes (0.43.0, D82): app notes and known issues. */
   qaNote: "qan",
   /** QA proposals (0.44.0): a proposed change to an existing test, waiting for a person. */
-  qaProposal: "qap"
+  qaProposal: "qap",
+  /** QA shared steps (0.48.2, qa-next W1-2): one immutable version row of a project's shared steps. */
+  qaSharedStep: "qss"
 };
 var REGION_ALT = regionCodeSchema.options.join("|");
 function idSchema(kind) {
@@ -28577,8 +28579,64 @@ var attachFilesRequestSchema = external_exports.object({
   /** Snapshot generation the ref came from (stale refs are refused). */
   generation: external_exports.number().int().optional()
 });
+var qaDebugSkillSchema = external_exports.object({
+  name: external_exports.string().regex(/^[a-z][a-z0-9-]*$/),
+  version: external_exports.string().min(1),
+  /** sha256 of the skill package. */
+  digest: external_exports.string(),
+  /** Presigned GET of the package, valid for the lease. */
+  packageUrl: external_exports.string().url()
+});
+var qaDebugLeaseSchema = external_exports.object({
+  /**
+   * The step the person wants to stand on (1-based, the test's written steps). Steps 1..replayTo-1 run
+   * again first; `1` replays nothing (the start page only).
+   */
+  replayTo: external_exports.number().int().min(1).max(60),
+  skill: qaDebugSkillSchema,
+  /**
+   * The `qa-case` inputs a normal run of this test would get (`url`, `path`, `steps`, ...), built by the
+   * api. The runner keeps `steps` 1..replayTo-1 and drops every expectation, check and teardown.
+   */
+  inputs: external_exports.record(external_exports.string(), external_exports.unknown())
+});
+var qaExploreLeaseSchema = external_exports.object({
+  /** The environment's origin (`https://host[:port]`): the only origin the session may load as a top-level page. */
+  appOrigin: external_exports.string().max(300).regex(/^https?:\/\/[^/?#\s]+$/)
+});
+var QA_RUN_STATE_MAX_BYTES = 512 * 1024;
+var QA_RUN_STATE_MAX_COOKIES = 150;
+var originStorageSchema = external_exports.record(
+  external_exports.string().max(300),
+  external_exports.record(external_exports.string().max(1024), external_exports.string())
+);
+var qaRunStateSchema = external_exports.object({
+  cookies: external_exports.array(cookieParamSchema).max(QA_RUN_STATE_MAX_COOKIES),
+  localStorage: originStorageSchema.optional(),
+  sessionStorage: originStorageSchema.optional()
+});
+var qaRunStatePutRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  state: qaRunStateSchema
+});
+var qaRunStatePutResponseSchema = external_exports.object({
+  ok: external_exports.literal(true),
+  cookies: external_exports.number().int().nonnegative(),
+  localStorageKeys: external_exports.number().int().nonnegative(),
+  sessionStorageKeys: external_exports.number().int().nonnegative(),
+  dropped: external_exports.number().int().nonnegative(),
+  bytes: external_exports.number().int().nonnegative()
+});
+var qaRunStateFetchRequestSchema = external_exports.object({ sessionId: idSchema("session") });
+var qaRunStateFetchResponseSchema = qaRunStateSchema.extend({
+  expiresAt: external_exports.iso.datetime()
+});
+var qaSharedLoginLeaseSchema = external_exports.object({
+  mode: external_exports.enum(["export", "import"]),
+  origin: external_exports.string().url().max(300)
+});
 var poolSchema = external_exports.enum(["shared", "job", "isolated", "dedicated"]);
-var sessionKindSchema = external_exports.enum(["live", "job", "quick"]);
+var sessionKindSchema = external_exports.enum(["live", "job", "quick", "http"]);
 var planSchema = external_exports.enum(["free", "starter", "pro", "enterprise"]);
 var sinksSchema = external_exports.object({
   events: external_exports.object({
@@ -28777,13 +28835,25 @@ var placeRequestFieldsSchema = external_exports.object({
   qaRun: external_exports.object({
     attempt: external_exports.number().int().min(1),
     firstRunOfVersion: external_exports.boolean(),
-    onDemandVideo: external_exports.boolean()
+    onDemandVideo: external_exports.boolean(),
+    /**
+     * Log in once per run (0.47.0, qa-next C4): `export` = the run's setup session, `import` = fetch the
+     * run's login state before the first navigation. Absent: the case signs in itself.
+     */
+    sharedLogin: qaSharedLoginLeaseSchema.optional()
   }).optional(),
+  /**
+   * Debug live (qa-next W2-2): a `live` session that replays a test's steps 1..replayTo-1 and then records
+   * the person's actions as plain-word steps. The api sets it only for `POST /v1/qa/debug`.
+   */
+  qaDebug: qaDebugLeaseSchema.optional(),
   /**
    * Save the browser profile when the session closes (public `persistProfile`): after the browser
    * exits, the runner packs the user data dir and PUTs it to `internalRoutes.homeApi.profileArchiveSave`.
    * The API decides the target (the lease's `profile`, or a new profile); the runner sends only bytes.
    */
+  /** Explorer (qa-next W2-3): run this job session read-only, locked to `appOrigin`. Same carry rule as `qaRun`. */
+  qaExplore: qaExploreLeaseSchema.optional(),
   persistProfile: external_exports.boolean().optional(),
   /** Present when the session loads uploaded extensions (at most 10; the API dedupes). */
   extensions: external_exports.array(extensionLoadSchema).max(10).optional(),
@@ -28798,11 +28868,11 @@ var placeRequestFieldsSchema = external_exports.object({
 });
 function checkKindPayload(v, ctx) {
   checkSessionOptions(v.options, ctx, ["options"]);
-  if (v.kind === "job" !== (v.skill !== void 0)) {
+  if ((v.kind === "job" || v.kind === "http") !== (v.skill !== void 0)) {
     ctx.addIssue({
       code: "custom",
       path: ["skill"],
-      message: "skill is required for kind job only"
+      message: "skill is required for kind job or http only"
     });
   }
   if (v.kind === "quick" !== (v.quick !== void 0)) {
@@ -29119,7 +29189,15 @@ var runnerInfoSchema = external_exports.object({
   /** How per-session CPU is capped on this host (0.26.0). */
   cpuCap: external_exports.enum(["cgroup", "affinity", "renice"]).optional(),
   /** Finishing its sessions, taking no new ones (0.26.0). */
-  draining: external_exports.boolean().optional()
+  draining: external_exports.boolean().optional(),
+  /**
+   * CPU busy share for placement (0.47.0, qa-next C3): sessions inside a step, averaged over the last
+   * heartbeat window (HEARTBEAT_INTERVAL_S). A session waiting on a model call or a page wait counts 0, so
+   * 2.5 = on average two and a half sessions were burning CPU. Absent: an older runner; place by `slots`.
+   */
+  busySessions: external_exports.number().nonnegative().optional(),
+  /** Open sessions on the QA profile (0.47.0), for the orchestrator's per-node `maxQaConcurrent` cap. */
+  qaSessions: external_exports.number().int().nonnegative().optional()
 });
 var originSchema = external_exports.string().url().refine((o) => {
   try {
@@ -29138,6 +29216,12 @@ var credentialLookupResponseSchema = external_exports.object({
   /** Current 6-digit code when the credential has TOTP; valid until its 30 s step ends. */
   totpCode: external_exports.string().regex(/^\d{6}$/).optional()
 });
+var credentialSecretRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  origin: originSchema,
+  name: external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/)
+});
+var credentialSecretResponseSchema = external_exports.object({ value: external_exports.string().min(1).max(2e3) });
 var presignRequestSchema = external_exports.object({
   sessionId: idSchema("session"),
   name: external_exports.string().min(1).max(200),
@@ -29958,7 +30042,9 @@ var eventSchema = external_exports.discriminatedUnion("type", [
       reportKey: external_exports.string().optional(),
       /** One-line summary and counters (steps, failedSteps, assertions, findings…) for run lists. */
       summary: external_exports.string().optional(),
-      counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).optional()
+      counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).optional(),
+      /** A case with the run's shared login landed on a sign-in page (0.47.0, qa-next C4): the api retries it once with a fresh login. */
+      signInWall: external_exports.boolean().optional()
     })
   }),
   /**
@@ -30134,6 +30220,13 @@ var inboxWaitRequestSchema = external_exports.object({
   since: external_exports.number().int().nonnegative(),
   from: external_exports.string().max(320).optional(),
   subject: external_exports.string().max(300).optional(),
+  /**
+   * Only mail sent to this exact address (0.48.3, qa-next W1-2), compared case-insensitively against the
+   * address AS SENT, plus-tag included (`qa+r7k2@in.example`), so parallel sign-ups on one run inbox never read
+   * each other's codes. The runner sets it to the case's frozen `{{unique.email}}` when the case uses one.
+   */
+  // WATCH(qa-next): the api must keep the as-sent recipient when it strips the plus-tag to route to the inbox.
+  to: external_exports.string().max(320).optional(),
   /** Long-poll up to this long, 1 s to 60 s (the api may cap it; the runner asks again). */
   timeoutMs: external_exports.number().int().min(1e3).max(6e4)
 });
@@ -30149,6 +30242,177 @@ var leaseSchema = placeRequestFieldsSchema.omit({ requestId: true }).extend({
   /** Hard stop: the runner ends the session at this time whatever the limits say. */
   expiresAt: external_exports.iso.datetime()
 }).superRefine(checkKindPayload);
+var QA_STEPS_WRITTEN_MAX = 30;
+var QA_STEPS_EXPANDED_MAX = 60;
+var QA_HOOK_STEPS_MAX = 10;
+var QA_STEP_TEXT_MAX = 500;
+var QA_EXPECT_ITEMS_MAX = 20;
+var QA_AI_CHECKS_MAX = 3;
+var QA_ASSERTIONS_MAX = 100;
+var qaVariableNameSchema = external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/, "letters, digits and _; not a digit first");
+var qaVariablesSchema = external_exports.record(qaVariableNameSchema, external_exports.string().max(1e3)).refine((v) => Object.keys(v).length <= 50, { message: "at most 50 variables" });
+var qaGeneratedValuesSchema = external_exports.object({
+  "unique.email": external_exports.string().max(254).optional(),
+  "unique.name": external_exports.string().max(200).optional(),
+  "unique.id": external_exports.string().max(100).optional(),
+  "run.id": external_exports.string().max(100).optional(),
+  today: external_exports.string().max(40).optional()
+}).strict();
+var qaAiCheckSchema = external_exports.object({ ai: external_exports.string().trim().min(1).max(300) }).strict();
+var qaExpectItemSchema = external_exports.union([external_exports.string().trim().min(1).max(300), qaAiCheckSchema]);
+var qaExpectSchema = external_exports.union([
+  external_exports.string().max(1e3),
+  external_exports.array(qaExpectItemSchema).min(1).max(QA_EXPECT_ITEMS_MAX).refine((items) => items.filter((i) => typeof i !== "string").length <= QA_AI_CHECKS_MAX, {
+    message: `at most ${QA_AI_CHECKS_MAX} AI checks per test`
+  })
+]);
+var qaRequiredExpectSchema = qaExpectSchema.refine(
+  (e) => typeof e === "string" ? e.trim().length > 0 : true,
+  { message: "expect is empty" }
+);
+var qaHttpMethodSchema = external_exports.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]);
+var FORBIDDEN_HEADER = /^(host|connection|content-length|transfer-encoding|upgrade|te|trailer|keep-alive|proxy-.*)$/i;
+var qaApiHeadersSchema = external_exports.record(
+  external_exports.string().regex(/^[A-Za-z0-9-]{1,64}$/, "header name: letters, digits and -"),
+  external_exports.string().max(1e3)
+).refine((h) => Object.keys(h).length <= 20, { message: "at most 20 headers" }).refine((h) => Object.keys(h).every((k) => !FORBIDDEN_HEADER.test(k)), {
+  message: "Host, Proxy-*, Connection and framing headers cannot be set"
+});
+var QA_API_BODY_MAX = 16384;
+var qaApiBodySchema = external_exports.union([external_exports.string(), external_exports.record(external_exports.string(), external_exports.unknown()), external_exports.array(external_exports.unknown())]).refine((b) => (typeof b === "string" ? b : JSON.stringify(b)).length <= QA_API_BODY_MAX, {
+  message: `body is at most ${QA_API_BODY_MAX} chars`
+});
+var qaApiStepSchema = external_exports.object({
+  kind: external_exports.literal("api"),
+  method: qaHttpMethodSchema,
+  url: external_exports.string().min(1).max(2e3).refine((u) => u.startsWith("/") || /^https?:\/\//i.test(u), {
+    message: "a path starting with / or an http(s) URL"
+  }),
+  headers: qaApiHeadersSchema.optional(),
+  body: qaApiBodySchema.optional(),
+  /** Send the browser's cookies for that origin (reuse the test's login). Absent: false. */
+  withCookies: external_exports.boolean().optional(),
+  /** e.g. `status 200, body has "Acme"`. Compiled into assertions with `at` pointing here. */
+  expect: qaExpectSchema.optional()
+}).refine((s) => s.body === void 0 || s.method !== "GET" && s.method !== "HEAD", {
+  message: "GET and HEAD calls have no body",
+  path: ["body"]
+});
+var qaSharedStepNameSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
+var qaUseStepSchema = external_exports.object({
+  kind: external_exports.literal("use"),
+  name: qaSharedStepNameSchema,
+  version: external_exports.number().int().min(1).optional()
+});
+var qaTypedStepSchema = external_exports.discriminatedUnion("kind", [qaApiStepSchema, qaUseStepSchema]);
+var qaStepSchema = external_exports.union([external_exports.string().min(1).max(QA_STEP_TEXT_MAX), qaTypedStepSchema]);
+var qaStepListSchema = external_exports.array(qaStepSchema).max(QA_STEPS_WRITTEN_MAX);
+var qaHookStepListSchema = external_exports.array(qaStepSchema).max(QA_HOOK_STEPS_MAX);
+var qaAssertionTargetSchema = external_exports.object({
+  /** ARIA role, e.g. `row`, `button`. Absent: any role with that exact name. */
+  role: external_exports.string().min(1).max(40).optional(),
+  name: external_exports.string().min(1).max(200)
+});
+var qaAssertionAtSchema = external_exports.object({
+  phase: external_exports.enum(["before", "steps", "after"]),
+  index: external_exports.number().int().min(0)
+});
+var assertionBase = {
+  /** The phrase as the author wrote it, shown on the report. */
+  source: external_exports.string().max(300),
+  at: qaAssertionAtSchema.optional()
+};
+var qaAssertionSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({ kind: external_exports.literal("text_visible"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("text_absent"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("url_contains"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("title_is"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("count"),
+    target: qaAssertionTargetSchema,
+    n: external_exports.number().int().min(0).max(1e3),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("state"),
+    target: qaAssertionTargetSchema,
+    state: external_exports.enum(["visible", "enabled", "disabled"]),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("field_value"),
+    label: external_exports.string().min(1).max(200),
+    value: external_exports.string().max(300),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("no_console_errors"), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("request_status"),
+    path: external_exports.string().min(1).max(500),
+    status: external_exports.number().int().min(100).max(599),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("download"), name: external_exports.string().min(1).max(200), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("status_is"),
+    status: external_exports.number().int().min(100).max(599),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("body_contains"),
+    text: external_exports.string().min(1).max(300),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("ai"), prompt: external_exports.string().min(1).max(300), ...assertionBase })
+]);
+var qaCompiledExpectSchema = external_exports.object({
+  compilerVersion: external_exports.number().int().min(1),
+  assertions: external_exports.array(qaAssertionSchema).max(QA_ASSERTIONS_MAX)
+});
+var qaAssertionOutcomeSchema = external_exports.enum(["pass", "fail", "ambiguous", "error"]);
+var qaAssertionResultSchema = external_exports.object({
+  /** Position in `compiled.assertions`. */
+  index: external_exports.number().int().min(0).max(QA_ASSERTIONS_MAX - 1),
+  kind: external_exports.enum(
+    qaAssertionSchema.options.map((o) => o.shape.kind.value)
+  ),
+  /** The phrase as written (the assertion's `source`). */
+  source: external_exports.string().max(300),
+  outcome: qaAssertionOutcomeSchema,
+  /** What it saw, plain words: "2 matches for row \"Project\"", "status 404", "no such text". Not on a pass. */
+  saw: external_exports.string().max(500).optional(),
+  /**
+   * Set only for `kind: "ai"`: label the result **AI-judged**, show `reasoning`, put `costMicros` on the
+   * report. Never cached.
+   */
+  // WATCH(qa-next): "a person can mark it wrong" (spec §5.2) has no shape yet; it lands with triage (B1-B3).
+  aiJudged: external_exports.object({
+    reasoning: external_exports.string().max(500),
+    costMicros: external_exports.number().int().nonnegative(),
+    model: external_exports.string().max(80).optional()
+  }).optional()
+});
+var qaAssertionResultListSchema = external_exports.array(qaAssertionResultSchema).max(QA_ASSERTIONS_MAX);
+var qaHookOutcomeSchema = external_exports.object({
+  before: external_exports.enum(["pass", "failed"]).optional(),
+  after: external_exports.enum(["pass", "failed", "timed_out", "skipped"]).optional(),
+  failedSteps: external_exports.array(
+    external_exports.object({
+      phase: external_exports.enum(["before", "after"]),
+      index: external_exports.number().int().min(0).max(QA_HOOK_STEPS_MAX - 1),
+      saw: external_exports.string().max(500).optional()
+    })
+  ).max(2).optional()
+});
+var qaLaneSchema = external_exports.enum(["browser", "http"]);
+var qaApiPhaseSchema = external_exports.enum(["before", "steps", "after"]);
+var qaApiCallSchema = external_exports.object({
+  phase: qaApiPhaseSchema,
+  index: external_exports.number().int().min(0).max(59),
+  step: qaApiStepSchema
+});
+var qaApiCallsSchema = external_exports.array(qaApiCallSchema).max(60);
+var qaApiCallHostsSchema = external_exports.array(external_exports.string().max(300)).min(1).max(6);
 var unixMs4 = external_exports.number().int().nonnegative();
 var PROXY_DEVICE_STATUSES = ["online", "offline", "paused", "disabled"];
 var proxyDeviceStatusSchema = external_exports.enum(PROXY_DEVICE_STATUSES);
@@ -30715,6 +30979,10 @@ var credentialSourceRequestSchema = external_exports.object({
 var credentialSourceSchema = credentialSourceRequestSchema.extend({
   provider: secretProviderKindSchema
 });
+var CREDENTIAL_SECRETS_MAX = 20;
+var credentialSecretsSchema = external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3)).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
+  message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
+});
 var credentialInfoSchema = external_exports.object({
   id: external_exports.string(),
   /**
@@ -30729,6 +30997,8 @@ var credentialInfoSchema = external_exports.object({
   label: external_exports.string(),
   username: external_exports.string(),
   hasTotp: external_exports.boolean(),
+  /** Names of the credential's secrets (0.48.2), never the values. Absent: none. */
+  secretNames: external_exports.array(qaVariableNameSchema).max(CREDENTIAL_SECRETS_MAX).optional(),
   source: credentialSourceSchema.optional(),
   lastResolvedAt: external_exports.number().optional(),
   resolveError: external_exports.string().optional(),
@@ -30747,7 +31017,9 @@ var createCredentialRequestSchema = external_exports.object({
   source: credentialSourceRequestSchema.optional(),
   namespace: external_exports.string().min(1).max(64).optional(),
   label: external_exports.string().max(200).optional(),
-  totpSecret: external_exports.string().max(200).optional()
+  totpSecret: external_exports.string().max(200).optional(),
+  /** Named secrets (0.48.2), see `credentialSecretsSchema`. */
+  secrets: credentialSecretsSchema.optional()
 }).superRefine((v, ctx) => {
   if (v.anyOrigin && v.origin !== void 0) {
     ctx.addIssue({
@@ -30765,7 +31037,10 @@ var patchCredentialRequestSchema = external_exports.object({
   password: external_exports.string().min(1).max(5e3).optional(),
   source: credentialSourceRequestSchema.optional(),
   label: external_exports.string().max(200).optional(),
-  totpSecret: external_exports.string().max(200).nullable().optional()
+  totpSecret: external_exports.string().max(200).nullable().optional(),
+  secrets: external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3).nullable()).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
+    message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
+  }).optional()
 });
 var secretProviderInfoSchema = external_exports.object({
   id: external_exports.string(),
@@ -31299,10 +31574,128 @@ var QA_AUDIT_ACTIONS = [
   "qa.alerts.update",
   "qa.tests.status",
   "qa.tracker.update",
-  "qa.proposal.create"
+  "qa.proposal.create",
+  "qa.state.write",
+  "qa.state.read"
 ];
 var qaAuditActionSchema = external_exports.enum(QA_AUDIT_ACTIONS);
-var qaTriageSchema = external_exports.enum(["new", "bug_filed", "known_issue", "needs_update"]);
+var QA_NOT_COVERED_MAX = 50;
+var qaNotCoveredPageSchema = external_exports.object({
+  /** Normalised path, e.g. `/orders/:id`. */
+  path: external_exports.string().max(500),
+  /** One real address the crawl found for it (no query string). */
+  url: external_exports.string().max(2e3),
+  /** When a Quick check last saw it. */
+  crawledAt: external_exports.iso.datetime()
+});
+var QA_DAILY_DAYS = 28;
+var qaDailySchema = external_exports.object({
+  /** `YYYY-MM-DD`, UTC. */
+  date: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
+  /** Runs that settled this day. */
+  runs: external_exports.number().int().nonnegative(),
+  passed: external_exports.number().int().nonnegative(),
+  failed: external_exports.number().int().nonnegative(),
+  /** "Couldn't test": never counted as a fail. */
+  error: external_exports.number().int().nonnegative(),
+  /** Tests that passed only on a retry this day (distinct tests). */
+  flaky: external_exports.number().int().nonnegative(),
+  /** Median wall time of the day's runs, ms. Absent: no run settled. */
+  medianRunMs: external_exports.number().int().nonnegative().optional(),
+  /** What the day's results cost, micro-USD. */
+  costMicros: external_exports.number().int().nonnegative()
+});
+var qaReleaseGateSchema = external_exports.object({
+  ready: external_exports.boolean(),
+  requiredTotal: external_exports.number().int().nonnegative(),
+  requiredPassed: external_exports.number().int().nonnegative(),
+  couldntTest: external_exports.number().int().nonnegative(),
+  text: external_exports.string().max(200)
+});
+var qaFlakyReasonSchema = external_exports.enum(["retry", "shared_login", "ai_check"]);
+function qaFlakyText(reasons, attempts) {
+  const list2 = reasons && reasons.length > 0 ? reasons : ["retry"];
+  const tries = attempts && attempts > 1 ? attempts : 2;
+  return list2.map(
+    (r) => r === "retry" ? `passed on try ${tries} of ${tries}` : r === "shared_login" ? "passed after signing in again" : "passed on an AI check"
+  ).join("; ");
+}
+var QA_TRACE_MAX_STEPS = 200;
+var QA_TRACE_MAX_REQUESTS_PER_STEP = 150;
+var QA_TRACE_MAX_CONSOLE_PER_STEP = 50;
+var QA_TRACE_MAX_PAGE_CHARS = 3e4;
+var qaTraceRequestSchema = external_exports.object({
+  method: external_exports.string().max(16),
+  url: external_exports.string().max(2e3),
+  status: external_exports.number().int().min(0).max(999).optional(),
+  /** `document`, `xhr`, `fetch`, `script`, `image`, ... as the browser names it. */
+  resourceType: external_exports.string().max(40).optional(),
+  mimeType: external_exports.string().max(120).optional(),
+  durationMs: external_exports.number().int().nonnegative().optional(),
+  /** Why the request failed (`net::ERR_...`, `blocked`); absent: it got a response. */
+  failed: external_exports.string().max(200).optional(),
+  fromCache: external_exports.boolean().optional(),
+  /** Request headers (credential values redacted). Absent: not kept. */
+  requestHeaders: external_exports.record(external_exports.string().max(200), external_exports.string().max(2e3)).optional(),
+  /** Response headers (credential values redacted). */
+  responseHeaders: external_exports.record(external_exports.string().max(200), external_exports.string().max(2e3)).optional(),
+  /** Something in this entry was replaced with `[redacted]`. */
+  redacted: external_exports.boolean().optional()
+});
+var qaTraceConsoleSchema = external_exports.object({
+  text: external_exports.string().max(2e3),
+  url: external_exports.string().max(2e3).optional(),
+  /** Epoch ms. */
+  at: external_exports.number().int().nonnegative(),
+  redacted: external_exports.boolean().optional()
+});
+var qaTracePageSchema = external_exports.object({
+  url: external_exports.string().max(2e3).optional(),
+  title: external_exports.string().max(500).optional(),
+  text: external_exports.string().max(QA_TRACE_MAX_PAGE_CHARS),
+  /** The text was cut at `QA_TRACE_MAX_PAGE_CHARS`. */
+  truncated: external_exports.boolean().optional(),
+  redacted: external_exports.boolean().optional()
+});
+var qaStepTraceSchema = external_exports.object({
+  index: external_exports.number().int().nonnegative(),
+  label: external_exports.string().max(300),
+  ok: external_exports.boolean(),
+  /** Epoch ms the step started and ended. */
+  startedAt: external_exports.number().int().nonnegative(),
+  endedAt: external_exports.number().int().nonnegative(),
+  network: external_exports.array(qaTraceRequestSchema).max(QA_TRACE_MAX_REQUESTS_PER_STEP),
+  /** More requests happened than were kept. */
+  networkCut: external_exports.number().int().nonnegative().optional(),
+  console: external_exports.array(qaTraceConsoleSchema).max(QA_TRACE_MAX_CONSOLE_PER_STEP),
+  page: qaTracePageSchema.optional()
+});
+var qaTraceKeptBecauseSchema = external_exports.enum(["failed", "retry", "sampled", "recorded"]);
+var qaAttemptTraceSchema = external_exports.object({
+  version: external_exports.literal(1),
+  runId: idSchema("skillRun"),
+  sessionId: idSchema("session"),
+  keptBecause: qaTraceKeptBecauseSchema,
+  /** What the runner redacted, in words the drawer can show as is. */
+  redaction: external_exports.object({
+    /** Request bodies are never captured. */
+    requestBodies: external_exports.literal("off"),
+    rules: external_exports.array(external_exports.string().max(120)).max(20)
+  }),
+  steps: external_exports.array(qaStepTraceSchema).max(QA_TRACE_MAX_STEPS)
+});
+var qaBlockedRequestsSchema = external_exports.object({
+  analytics: external_exports.number().int().nonnegative(),
+  media: external_exports.number().int().nonnegative()
+});
+var qaTriageSchema = external_exports.enum([
+  "new",
+  "bug_filed",
+  "known_issue",
+  "needs_update",
+  "real_bug",
+  "environment"
+]);
 var qaTriageGuessKindSchema = external_exports.enum(["app_changed", "test_stale", "env_error", "bug"]);
 var qaTriageGuessSchema = external_exports.object({
   kind: qaTriageGuessKindSchema,
@@ -31418,7 +31811,11 @@ var runReportSchema = external_exports.object({
     finalScreenshotUrl: external_exports.string().url().optional()
   }),
   /** What is missing and why, one sentence each. */
-  notes: external_exports.array(external_exports.string().max(300)).max(8)
+  notes: external_exports.array(external_exports.string().max(300)).max(8),
+  /** A QA case's assertion results (0.48.1, W1-1), the same list as the run case's `assertions`. */
+  assertions: qaAssertionResultListSchema.optional(),
+  /** A QA case's setup/teardown outcome (0.48.2, W1-2), as the runtime wrote it under `hooks`. Absent: no hooks. */
+  hooks: qaHookOutcomeSchema.optional()
 });
 var cronSchema = external_exports.string().trim().regex(/^\S+(\s+\S+){4}$/, "five cron fields: minute hour day month weekday");
 var scheduleTimezoneSchema = external_exports.string().min(1).max(64);
@@ -31552,6 +31949,40 @@ var skillRunDetailSchema = skillRunSummarySchema.extend({
   result: external_exports.record(external_exports.string(), external_exports.unknown()).nullable(),
   hasReport: external_exports.boolean()
 });
+var workflowStopAfterFailuresSchema = external_exports.number().int().min(1).max(500);
+var workflowRunNotRunReasonSchema = external_exports.enum(["stopped_early", "superseded"]);
+var workflowRunControlFields = {
+  stopAfterFailures: workflowStopAfterFailuresSchema.optional(),
+  /**
+   * Re-run an earlier run: the same cases (and the same target/url/environment unless this body sets them),
+   * frozen from the current workflow version. Unknown or other-project id: `invalid_input`.
+   */
+  rerunOf: idSchema("workflowRun").optional(),
+  /**
+   * Only the cases that did not pass in the earlier run (failed, errored or not run). The passes are carried
+   * over: listed on the new run with `carriedFrom` and the earlier verdict, not re-run, not billed.
+   * With `rerunOf`: that run. Without it: the latest ENDED run of the same workflow (ad-hoc runs: same
+   * `workflowKey`), of the same pull request when `ci.pr` is set; when there is none, every case runs and
+   * the run's `notes` say so. A carried-over case that no longer exists in the workflow is dropped.
+   */
+  failedOnly: external_exports.boolean().optional(),
+  /**
+   * C1: a newer commit cancels older open runs of the same pull request. Key: (workflow, or `workflowKey` for
+   * ad-hoc runs; `ci.repo`; `ci.pr`). A run started with a different `ci.sha` cancels the older ones still
+   * running: their running sessions stop, queued cases end `notRunReason: "superseded"`, the run gets
+   * `cancelled`. Only runs with `ci.pr` take part; default-branch, schedule and manual runs are never
+   * cancelled and never cancel. Absent: on when `ci.pr` is set. `false`: this run neither cancels nor
+   * can be cancelled.
+   */
+  cancelInProgress: external_exports.boolean().optional()
+};
+var workflowRunCancelledSchema = external_exports.object({
+  reason: external_exports.enum(["superseded"]),
+  /** The newer commit (`ci.sha` of the run that cancelled this one). */
+  bySha: external_exports.string().max(100).optional(),
+  byRunId: idSchema("workflowRun").optional(),
+  at: external_exports.iso.datetime()
+});
 var workflowSlugSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
 var WORKFLOW_MAX_CASES = 500;
 var workflowUrlSchema = external_exports.string().max(2e3).refine(
@@ -31580,7 +32011,8 @@ var workflowCaseOriginSchema = external_exports.enum([
   "repo",
   "agent",
   "chat",
-  "quick_check"
+  "quick_check",
+  "starter"
 ]);
 var workflowCaseSchema = external_exports.object({
   /**
@@ -31592,13 +32024,19 @@ var workflowCaseSchema = external_exports.object({
   title: external_exports.string().trim().min(1).max(200),
   /** Where the case starts, relative to the target url. */
   path: external_exports.string().max(2e3).regex(/^\//, "path starts with /"),
-  /** What to do, one instruction per item. */
-  steps: external_exports.array(external_exports.string().min(1).max(500)).max(30),
   /**
-   * Expected outcome in words. The api understands `shows "X"`, `address contains Y` and
-   * `does not show "Z"`; anything else is reported as "not checked".
+   * What to do, at most 30: plain sentences, or typed steps (0.48.0, `qa-test-shape.ts`: `api`, `use`).
+   * Show any step with `stepText`. Authored YAML shorthand goes through `normalizeQaCase` first.
    */
-  expect: external_exports.string().max(1e3).optional(),
+  steps: qaStepListSchema,
+  /**
+   * Expected outcome in words: one string, or a list of phrases and AI checks (0.48.0). Read it with
+   * `expectItems` / `expectText`. Before the W1-1 compiler the api understands `shows "X"`, `address
+   * contains Y` and `does not show "Z"`; anything else is reported as "not checked".
+   */
+  expect: qaExpectSchema.optional(),
+  /** Compiled `expect` (0.48.0), set by the api at save; ignored on input. Absent: not compiled (runs as before). */
+  compiled: qaCompiledExpectSchema.optional(),
   checks: workflowCaseChecksSchema.optional(),
   tags: external_exports.array(workflowSlugSchema).max(20).default([]),
   /** 1 (most important) to 5. Ordering only, it never decides the verdict. */
@@ -31616,6 +32054,11 @@ var workflowCaseSchema = external_exports.object({
   area: external_exports.string().trim().min(1).max(60).optional(),
   /** Person or team that looks after the test (0.43.0). Free text. */
   owner: external_exports.string().trim().min(1).max(120).optional(),
+  /**
+   * Always sign in inside this case (0.47.0, qa-next C4): skips the run's shared login. Set it on a test of
+   * login itself. Part of the test version. Absent: the case may use the run's shared login.
+   */
+  freshLogin: external_exports.boolean().optional(),
   /** Tickets, specs or docs the test relates to (0.43.0). */
   links: external_exports.array(external_exports.object({ label: external_exports.string().trim().min(1).max(60), url: workflowUrlSchema })).max(10).optional()
 });
@@ -31657,6 +32100,24 @@ function uniqueCaseIds(cases, ctx) {
     seen.add(c.id);
   });
 }
+var workflowTestShapeFields = {
+  /** Plain values, `{{vars.NAME}}`; win over the environment's variables of the same name. Never secrets. */
+  variables: qaVariablesSchema.optional(),
+  before: qaHookStepListSchema.optional(),
+  after: qaHookStepListSchema.optional()
+};
+function checkExpandedSteps(v, ctx) {
+  const hooks = (v.before?.length ?? 0) + (v.after?.length ?? 0);
+  v.cases.forEach((c, i) => {
+    if (c.steps.length + hooks > QA_STEPS_EXPANDED_MAX) {
+      ctx.addIssue({
+        code: "custom",
+        message: `a case runs at most ${QA_STEPS_EXPANDED_MAX} steps with before and after`,
+        path: ["cases", i, "steps"]
+      });
+    }
+  });
+}
 var workflowFieldsSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(200),
   description: external_exports.string().max(1e3).optional(),
@@ -31694,7 +32155,8 @@ var workflowFieldsSchema = external_exports.object({
   /** Set by CI when it upserts from a repo file (0.39.0). Absent: owned by the dashboard. */
   managedBy: workflowManagedBySchema.optional(),
   /** Time budget for a run of this workflow (0.43.0). Absent: derived by the api. */
-  timeoutMs: workflowRunTimeoutMsSchema.optional()
+  timeoutMs: workflowRunTimeoutMsSchema.optional(),
+  ...workflowTestShapeFields
 });
 function checkWorkflowFields(v, ctx) {
   const keys = Object.keys(v.targets);
@@ -31727,6 +32189,7 @@ function checkWorkflowFields(v, ctx) {
     });
   }
   uniqueCaseIds(v.cases, ctx);
+  checkExpandedSteps(v, ctx);
 }
 var createWorkflowRequestSchema = workflowFieldsSchema.extend({ managedBy: workflowManagedBySchema.nullable().optional() }).superRefine(checkWorkflowFields);
 var workflowSchema = workflowFieldsSchema.extend({
@@ -31781,7 +32244,9 @@ var startWorkflowRunRequestSchema = external_exports.object({
   /** Overrides `Workflow.timeoutMs` for this run (0.43.0). */
   timeoutMs: workflowRunTimeoutMsSchema.optional(),
   trigger: workflowTriggerSchema.default("api"),
-  ci: workflowCiSchema.optional()
+  ci: workflowCiSchema.optional(),
+  /** Fail-fast, re-run failed and cancel-superseded (0.47.0); see `workflow-run-control.ts`. */
+  ...workflowRunControlFields
 });
 var startAdhocWorkflowRunRequestSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(200).optional(),
@@ -31813,8 +32278,19 @@ var startAdhocWorkflowRunRequestSchema = external_exports.object({
    */
   baselineRunId: idSchema("workflowRun").optional(),
   trigger: workflowTriggerSchema.default("api"),
-  ci: workflowCiSchema.optional()
-}).superRefine((v, ctx) => uniqueCaseIds(v.cases, ctx));
+  ci: workflowCiSchema.optional(),
+  /**
+   * Fail-fast, re-run failed and cancel-superseded (0.47.0); see `workflow-run-control.ts`. With
+   * `failedOnly`, `cases` still lists every case; the api runs only those that did not pass in the earlier
+   * run (matched by `caseId`) and carries the passes over.
+   */
+  ...workflowRunControlFields,
+  /** Variables, setup and teardown for these cases (0.48.0). */
+  ...workflowTestShapeFields
+}).superRefine((v, ctx) => {
+  uniqueCaseIds(v.cases, ctx);
+  checkExpandedSteps(v, ctx);
+});
 var workflowRunCaseFailureSchema = external_exports.object({
   step: external_exports.string().max(300).optional(),
   title: external_exports.string().max(300).optional(),
@@ -31839,6 +32315,12 @@ var workflowRunCaseAssuranceSchema = external_exports.object({
   checked: external_exports.array(external_exports.string().max(300)).max(20),
   notUnderstood: external_exports.array(external_exports.string().max(300)).max(20)
 });
+var workflowRunCaseCouldntTestReasonSchema = external_exports.enum([
+  "sign_in_failed",
+  "setup_failed",
+  "data_change_refused",
+  "secret_missing"
+]);
 var workflowRunCaseSchema = external_exports.object({
   caseId: workflowSlugSchema,
   title: external_exports.string().max(200),
@@ -31849,8 +32331,13 @@ var workflowRunCaseSchema = external_exports.object({
   failure: workflowRunCaseFailureSchema.optional(),
   /** Tries used, 1 when never retried (0.39.0). */
   attempts: external_exports.number().int().min(1).optional(),
-  /** Passed on a retry (0.39.0). The verdict stays `pass`. */
+  /**
+   * Passed, but the pass is shaky (0.39.0 retry; qa-next B1 adds shared login and AI check, see
+   * `qaFlakyReasons`). The verdict stays `pass`; show **Flaky**, never a plain green.
+   */
   flaky: external_exports.boolean().optional(),
+  /** Why it is flaky (qa-next B1); set with `flaky: true`. Absent on older runs: read it as `retry`. */
+  flakyReasons: external_exports.array(qaFlakyReasonSchema).max(3).optional(),
   /** Echo of the case's `required` (0.39.0). Absent: required. */
   required: external_exports.boolean().optional(),
   /** Findings the baseline run had on this case that are gone now (0.41.3); only with `baselineRunId`. */
@@ -31881,7 +32368,57 @@ var workflowRunCaseSchema = external_exports.object({
   /** AI guess only (0.44.0, see `qaTriageGuessSchema`): label it as one, never show it as a decision. */
   triageGuess: qaTriageGuessSchema.optional(),
   /** What the verdict rests on, in plain words (0.45.0). Absent: the api did not say. */
-  assurance: workflowRunCaseAssuranceSchema.optional()
+  assurance: workflowRunCaseAssuranceSchema.optional(),
+  /** The case did not run (0.47.0); `verdict` is then `error`. Show "Not run (...)", never Couldn't test. */
+  notRunReason: workflowRunNotRunReasonSchema.optional(),
+  /**
+   * Carried over by a `failedOnly` re-run (0.47.0): the case passed in this earlier run and was not re-run.
+   * `verdict` is that run's `pass`; `runId`/`reportPath` point at that run's evidence. Show "Passed in an
+   * earlier run, not re-run". Not billed, not counted again in stats.
+   */
+  carriedFrom: idSchema("workflowRun").optional(),
+  /**
+   * Why a case could not be tested (0.47.0), with `verdict: "error"`. `sign_in_failed`: the run's shared
+   * login failed, so the case was not started (shown once per case, with the setup session's evidence).
+   * Not run cases use `notRunReason` instead.
+   * 0.48.2 (W1-2): `setup_failed` = the test's `before` steps failed, so its own steps did not run (the
+   * setup's failed step is on the report); `data_change_refused` = the environment says tests may not change
+   * data (`canChangeData: false`) and the test has a write API step (POST/PUT/PATCH/DELETE), so it was not
+   * started; `secret_missing` = a `{{secret.NAME}}` the test uses is not a field of the test account for
+   * that origin.
+   */
+  couldntTestReason: workflowRunCaseCouldntTestReasonSchema.optional(),
+  /**
+   * With `couldntTestReason: "secret_missing"` (qa-next B2 retro): the `{{secret.NAME}}` name(s) the test
+   * account lacks, comma separated (`PASSWORD, OTP_SEED`). Show it as is; never parse the summary.
+   */
+  missingSecret: external_exports.string().max(300).optional(),
+  /** The case started signed in from the run's shared login (0.47.0); `freshLogin` after a sign-in wall re-signed in itself. */
+  sharedLogin: external_exports.enum(["used", "fresh_login"]).optional(),
+  /** Where the case ran (0.48.0): `http` = "Checked over HTTP. No page was rendered." Absent: `browser`. */
+  lane: qaLaneSchema.optional(),
+  /** The test version that ran (0.48.0), see `qaTestVersionSchema.version`. Absent: not known (inline cases). */
+  testVersion: external_exports.number().int().min(1).optional(),
+  /**
+   * One result per compiled assertion (0.48.1, W1-1), in `compiled.assertions` order. Any `fail` or
+   * `ambiguous` fails the case; any `error` makes it Couldn't test. Absent: the case had no compiled
+   * expectation (saved before the compiler, runs as Smoke).
+   */
+  assertions: qaAssertionResultListSchema.optional(),
+  /**
+   * The test's `after` (teardown) steps failed, timed out or could not run (0.48.2, W1-2). The verdict is
+   * kept; the report shows the issue "cleanup failed, test data may remain". Absent: false.
+   */
+  cleanupFailed: external_exports.boolean().optional(),
+  /** Built-in values this case ran with (0.48.2, W1-2), frozen at queue time, e.g. the sign-up email. */
+  generated: qaGeneratedValuesSchema.optional(),
+  /**
+   * Step trace of the case's last attempt (qa-next W1-5/W2-1): `GET` this api path for a `QaAttemptTrace` (network,
+   * console and page per step, redacted in the runner). Absent: no trace was kept (passes are sampled 1 in N).
+   */
+  tracePath: external_exports.string().max(500).optional(),
+  /** What the QA profile blocked in the case's session (qa-next C6); see `qaBlockedRequestsText`. */
+  blocked: qaBlockedRequestsSchema.optional()
 });
 var workflowRunCountsSchema = external_exports.object({
   cases: external_exports.number().int().nonnegative(),
@@ -31889,10 +32426,14 @@ var workflowRunCountsSchema = external_exports.object({
   failed: external_exports.number().int().nonnegative(),
   errored: external_exports.number().int().nonnegative(),
   running: external_exports.number().int().nonnegative(),
-  /** Cases that passed on a retry (0.39.0). */
+  /** Cases that passed but are flaky (0.39.0 retry; qa-next B1 also shared login and AI check). */
   flaky: external_exports.number().int().nonnegative().optional(),
   /** Optional cases (`required: false`) that failed or errored; they do not change the verdict (0.39.0). */
-  optionalFailed: external_exports.number().int().nonnegative().optional()
+  optionalFailed: external_exports.number().int().nonnegative().optional(),
+  /** Cases with a `notRunReason` (0.47.0). They are inside `errored` too, so older readers add up. */
+  notRun: external_exports.number().int().nonnegative().optional(),
+  /** Cases with `carriedFrom` (0.47.0). They are inside `passed` too. */
+  carriedOver: external_exports.number().int().nonnegative().optional()
 });
 var workflowRunSchema = external_exports.object({
   id: idSchema("workflowRun"),
@@ -31923,6 +32464,31 @@ var workflowRunSchema = external_exports.object({
     newFindings: external_exports.number().int().min(0),
     fixedFindings: external_exports.number().int().min(0)
   }).nullable().optional(),
+  /** Fail-fast threshold this run used (0.47.0). Absent: off. */
+  stopAfterFailures: workflowStopAfterFailuresSchema.optional(),
+  /** The run this one re-ran (0.47.0), from `rerunOf` or the one `failedOnly` picked. */
+  rerunOf: idSchema("workflowRun").optional(),
+  /** True when only the cases that did not pass were re-run (0.47.0). */
+  failedOnly: external_exports.boolean().optional(),
+  /**
+   * Set when the run was cancelled (0.47.0). The verdict is then `error` (or what the finished required cases
+   * already decided: a `fail` stays `fail`), the summary starts "Cancelled: newer commit <sha7>", the
+   * unfinished cases carry `notRunReason: "superseded"`, and the not-run part is not billed.
+   */
+  cancelled: workflowRunCancelledSchema.optional(),
+  /**
+   * Log in once per run (0.47.0, qa-next C4). `used` = the setup signed in and cases used it; `failed` = the
+   * setup could not sign in (cases end `couldntTestReason: "sign_in_failed"`); `fell_back` = too many cases hit
+   * a sign-in wall, so the rest signed in themselves. `cases` used it, `fellBack` re-signed in. Absent: not used.
+   */
+  sharedLogin: external_exports.object({
+    status: external_exports.enum(["used", "failed", "fell_back"]),
+    cases: external_exports.number().int().nonnegative(),
+    fellBack: external_exports.number().int().nonnegative(),
+    /** The setup's skill run and session, so a reader can link its report ("Signed in once for the run"). */
+    setupRunId: idSchema("skillRun").optional(),
+    setupSessionId: idSchema("session").optional()
+  }).optional(),
   engineRef: engineRefSchema.optional(),
   /** The model routes the run used when the workflow or request overrode them (0.37.0). */
   models: modelRoutesOverrideSchema.optional(),
@@ -31953,67 +32519,6 @@ var listWorkflowRunsQuerySchema = pageQuerySchema.extend({
 var listWorkflowRunsResponseSchema = external_exports.object({
   runs: external_exports.array(workflowRunListItemSchema),
   ...pageNextField
-});
-var qaEnvironmentNameSchema = external_exports.string().trim().min(1).max(100);
-var qaAccountRefSchema = external_exports.object({
-  /** What the account is for, e.g. `admin`, `customer`. Unique within the environment. */
-  role: external_exports.string().trim().min(1).max(64),
-  credentialId: idSchema("credential")
-});
-var qaVariablesSchema = external_exports.record(
-  external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/, "letters, digits and _; not a digit first"),
-  external_exports.string().max(1e3)
-).refine((v) => Object.keys(v).length <= 50, { message: "at most 50 variables" });
-var qaAppNotesSchema = external_exports.string().max(6e3);
-var qaSignInStepsSchema = external_exports.array(external_exports.string().trim().min(1).max(300)).max(20);
-var accountRefsSchema = external_exports.array(qaAccountRefSchema).max(10).superRefine((refs, ctx) => {
-  const seen = /* @__PURE__ */ new Set();
-  refs.forEach((r, i) => {
-    if (seen.has(r.role)) {
-      ctx.addIssue({ code: "custom", message: `duplicate role "${r.role}"`, path: [i, "role"] });
-    }
-    seen.add(r.role);
-  });
-});
-var qaPreviewPatternSchema = external_exports.string().max(300).refine((p) => /^https?:\/\//i.test(p), { message: "must start with http:// or https://" });
-var qaEnvironmentSchema = external_exports.object({
-  id: idSchema("qaEnvironment"),
-  projectId: idSchema("project"),
-  name: qaEnvironmentNameSchema,
-  baseUrl: workflowUrlSchema,
-  /** The environment runs use when none is named. Exactly one per project. */
-  isDefault: external_exports.boolean(),
-  accountRefs: accountRefsSchema,
-  variables: qaVariablesSchema,
-  appNotes: qaAppNotesSchema.optional(),
-  previewPattern: qaPreviewPatternSchema.optional(),
-  /** How to sign in here (0.44.0). Absent or empty: "Sign in" has no expansion. */
-  signInSteps: qaSignInStepsSchema.optional()
-});
-var createQaEnvironmentRequestSchema = external_exports.object({
-  name: qaEnvironmentNameSchema,
-  baseUrl: workflowUrlSchema,
-  isDefault: external_exports.boolean().optional(),
-  accountRefs: accountRefsSchema.default([]),
-  variables: qaVariablesSchema.default({}),
-  appNotes: qaAppNotesSchema.optional(),
-  previewPattern: qaPreviewPatternSchema.optional(),
-  signInSteps: qaSignInStepsSchema.optional()
-});
-var updateQaEnvironmentRequestSchema = external_exports.object({
-  name: qaEnvironmentNameSchema,
-  baseUrl: workflowUrlSchema,
-  isDefault: external_exports.boolean(),
-  accountRefs: accountRefsSchema,
-  variables: qaVariablesSchema,
-  appNotes: qaAppNotesSchema.nullable(),
-  previewPattern: qaPreviewPatternSchema.nullable(),
-  signInSteps: qaSignInStepsSchema
-}).partial().refine((v) => Object.values(v).some((x) => x !== void 0), {
-  message: "send at least one field"
-});
-var listQaEnvironmentsResponseSchema = external_exports.object({
-  environments: external_exports.array(qaEnvironmentSchema)
 });
 var qaTestRefSchema = external_exports.object({
   workflowId: idSchema("workflow"),
@@ -32095,24 +32600,177 @@ var qaTestStatusActionSchema = external_exports.object({
 }).refine((v) => v.status !== void 0 || v.quarantined !== void 0, {
   message: "send at least one of status, quarantined"
 });
-var qaNoteKindSchema = external_exports.enum(["app_note", "known_issue"]);
-var noteFields = {
-  kind: qaNoteKindSchema,
-  text: external_exports.string().trim().min(1).max(2e3),
-  /** Person or team that owns it. Free text. */
-  owner: external_exports.string().trim().min(1).max(120).optional(),
-  /** When the note stops applying. Absent: until deleted. */
-  expiresAt: external_exports.iso.datetime().optional(),
-  /** The test this note is about. Absent: the whole app. */
-  testRef: qaTestRefSchema.optional()
-};
-var qaNoteSchema = external_exports.object({
-  id: idSchema("qaNote"),
-  projectId: idSchema("project"),
-  ...noteFields
+var qaProposalStatusSchema = external_exports.enum(["pending", "applied", "rejected"]);
+var qaProposalChangeSchema = external_exports.object({
+  title: external_exports.string().trim().min(1).max(200).optional(),
+  steps: qaStepListSchema.min(1).optional(),
+  expect: qaRequiredExpectSchema.optional()
+}).refine((v) => v.title !== void 0 || v.steps !== void 0 || v.expect !== void 0, {
+  message: "send at least one of title, steps, expect"
 });
-var createQaNoteRequestSchema = external_exports.object(noteFields);
-var listQaNotesResponseSchema = external_exports.object({ notes: external_exports.array(qaNoteSchema) });
+var qaProposalSchema = external_exports.object({
+  id: idSchema("qaProposal"),
+  testRef: qaTestRefSchema,
+  change: qaProposalChangeSchema,
+  /** Who proposed it: `agent` (MCP) or `chat`, rarely `dashboard`. */
+  origin: workflowCaseOriginSchema,
+  status: qaProposalStatusSchema,
+  createdAt: external_exports.iso.datetime(),
+  /** Identity subject or grant id of the proposer. Free text. */
+  createdBy: external_exports.string().min(1).max(200).optional()
+});
+var qaListProposalsResponseSchema = external_exports.object({
+  proposals: external_exports.array(qaProposalSchema),
+  ...pageNextField
+});
+var QA_DEBUG_ACTIONS_MAX = 30;
+var qaOpenDebugLiveRequestSchema = external_exports.object({
+  testRef: qaTestRefSchema,
+  /** 1-based written step to stand on (the failed or couldn't-test one). */
+  step: external_exports.number().int().min(1).max(60),
+  /** The environment to replay against; absent: the project's default environment. */
+  environmentId: idSchema("qaEnvironment").optional()
+});
+var qaDebugSessionSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  testRef: qaTestRefSchema,
+  /** The step the person stands on once the replay is done. */
+  step: external_exports.number().int().min(1),
+  /** Written steps of the test (the banner says "step 4 of 9"). */
+  totalSteps: external_exports.number().int().min(0),
+  createdAt: external_exports.iso.datetime(),
+  /** The session ends here (15 minutes after it opened). */
+  expiresAt: external_exports.iso.datetime(),
+  /** The live view warns from here (minute 12). */
+  warnAt: external_exports.iso.datetime(),
+  /** This month's use of the organization's allowance, this session included. */
+  allowance: external_exports.object({ used: external_exports.number().int().min(0), limit: external_exports.number().int().min(0) })
+});
+var qaDebugReplayStateSchema = external_exports.object({
+  state: external_exports.enum(["replaying", "ready", "failed"]),
+  /** Steps replayed so far (0..of). */
+  done: external_exports.number().int().min(0),
+  /** Steps to replay (replayTo - 1). */
+  of: external_exports.number().int().min(0),
+  /** The step the person will stand on. */
+  replayTo: external_exports.number().int().min(1),
+  /** Plain words: why a replay failed. Never page text with a secret: masked like the run report. */
+  message: external_exports.string().max(500).optional(),
+  /** The page the replay ended on (credential parameters masked). */
+  url: external_exports.string().max(2e3).optional()
+});
+var qaRecordedActionKindSchema = external_exports.enum(["click", "type", "select", "check", "press"]);
+var qaRecordedActionSchema = external_exports.object({
+  /** Runner-local order id (`a1`, `a2`, ...). */
+  id: external_exports.string().min(1).max(20),
+  /** Unix ms. */
+  at: external_exports.number().int().nonnegative(),
+  kind: qaRecordedActionKindSchema,
+  role: external_exports.string().max(60),
+  name: external_exports.string().max(120),
+  /** The step in plain words. */
+  step: external_exports.string().min(1).max(QA_STEP_TEXT_MAX),
+  url: external_exports.string().max(2e3),
+  /** The value was a secret and the step names a placeholder instead (`account.password`). */
+  placeholder: external_exports.literal("account.password").optional()
+});
+var qaDebugLiveStateSchema = external_exports.object({
+  replay: qaDebugReplayStateSchema,
+  /** Recording runs once the replay is `ready`. */
+  recording: external_exports.boolean(),
+  actions: external_exports.array(qaRecordedActionSchema).max(QA_DEBUG_ACTIONS_MAX),
+  /** Sensitive fields typed that are not a password: left out, the person writes that step by hand. */
+  skipped: external_exports.number().int().min(0)
+});
+var qaDebugSaveStepRequestSchema = external_exports.object({
+  actions: external_exports.array(qaRecordedActionSchema).min(1).max(QA_DEBUG_ACTIONS_MAX),
+  dryRun: external_exports.boolean().default(true)
+});
+var qaDebugStepDiffSchema = external_exports.object({
+  testRef: qaTestRefSchema,
+  /** The written step that is replaced (1-based); past the end = the steps are added at the end. */
+  step: external_exports.number().int().min(1),
+  before: qaStepListSchema,
+  after: qaStepListSchema,
+  /** Only with `dryRun: false`. */
+  proposal: qaProposalSchema.optional()
+});
+var qaDebugLinkInputSchema = external_exports.object({
+  testRef: qaTestRefSchema,
+  step: external_exports.number().int().min(1).max(60)
+});
+var qaEnvironmentNameSchema = external_exports.string().trim().min(1).max(100);
+var qaAccountRefSchema = external_exports.object({
+  /** What the account is for, e.g. `admin`, `customer`. Unique within the environment. */
+  role: external_exports.string().trim().min(1).max(64),
+  credentialId: idSchema("credential")
+});
+var qaAppNotesSchema = external_exports.string().max(6e3);
+var qaSignInStepsSchema = external_exports.array(external_exports.string().trim().min(1).max(300)).max(20);
+var accountRefsSchema = external_exports.array(qaAccountRefSchema).max(10).superRefine((refs, ctx) => {
+  const seen = /* @__PURE__ */ new Set();
+  refs.forEach((r, i) => {
+    if (seen.has(r.role)) {
+      ctx.addIssue({ code: "custom", message: `duplicate role "${r.role}"`, path: [i, "role"] });
+    }
+    seen.add(r.role);
+  });
+});
+var qaPreviewPatternSchema = external_exports.string().max(300).refine((p) => /^https?:\/\//i.test(p), { message: "must start with http:// or https://" });
+var qaCanChangeDataSchema = external_exports.boolean();
+var qaApiHostsSchema = external_exports.array(
+  external_exports.string().max(300).refine((o) => /^https?:\/\/[^/?#\s]+\/?$/i.test(o), {
+    message: "an origin like https://api.example.com (no path)"
+  }).transform((o) => o.replace(/\/$/, "").toLowerCase())
+).max(5);
+var qaEnvironmentSchema = external_exports.object({
+  id: idSchema("qaEnvironment"),
+  projectId: idSchema("project"),
+  name: qaEnvironmentNameSchema,
+  baseUrl: workflowUrlSchema,
+  /** The environment runs use when none is named. Exactly one per project. */
+  isDefault: external_exports.boolean(),
+  accountRefs: accountRefsSchema,
+  variables: qaVariablesSchema,
+  appNotes: qaAppNotesSchema.optional(),
+  previewPattern: qaPreviewPatternSchema.optional(),
+  /** How to sign in here (0.44.0). Absent or empty: "Sign in" has no expansion. */
+  signInSteps: qaSignInStepsSchema.optional(),
+  /** "Can tests change data here?" (0.48.2). See `qaCanChangeDataSchema`. */
+  canChangeData: qaCanChangeDataSchema.optional(),
+  /** Origins API steps may call besides `baseUrl` (W1-3, at most 5; the Free plan: none). See `qaApiHostsSchema`. */
+  apiHosts: qaApiHostsSchema.optional()
+});
+var createQaEnvironmentRequestSchema = external_exports.object({
+  name: qaEnvironmentNameSchema,
+  baseUrl: workflowUrlSchema,
+  isDefault: external_exports.boolean().optional(),
+  accountRefs: accountRefsSchema.default([]),
+  variables: qaVariablesSchema.default({}),
+  appNotes: qaAppNotesSchema.optional(),
+  previewPattern: qaPreviewPatternSchema.optional(),
+  signInSteps: qaSignInStepsSchema.optional(),
+  canChangeData: qaCanChangeDataSchema.optional(),
+  apiHosts: qaApiHostsSchema.optional()
+});
+var updateQaEnvironmentRequestSchema = external_exports.object({
+  name: qaEnvironmentNameSchema,
+  baseUrl: workflowUrlSchema,
+  isDefault: external_exports.boolean(),
+  accountRefs: accountRefsSchema,
+  variables: qaVariablesSchema,
+  appNotes: qaAppNotesSchema.nullable(),
+  previewPattern: qaPreviewPatternSchema.nullable(),
+  signInSteps: qaSignInStepsSchema,
+  canChangeData: qaCanChangeDataSchema,
+  /** `[]` clears it. */
+  apiHosts: qaApiHostsSchema
+}).partial().refine((v) => Object.values(v).some((x) => x !== void 0), {
+  message: "send at least one field"
+});
+var listQaEnvironmentsResponseSchema = external_exports.object({
+  environments: external_exports.array(qaEnvironmentSchema)
+});
 var QA_QUICK_CHECK_DEFAULT_PAGES = 10;
 var QA_QUICK_CHECK_MAX_PAGES = 25;
 var QA_QUICK_CHECK_MAX_SUGGESTIONS = 8;
@@ -32153,6 +32811,167 @@ var qaQuickCheckResultSchema = external_exports.object({
   pages: external_exports.array(qaQuickCheckPageSchema).max(QA_QUICK_CHECK_MAX_PAGES),
   suggestions: external_exports.array(qaQuickCheckSuggestionSchema).max(QA_QUICK_CHECK_MAX_SUGGESTIONS)
 });
+var QA_EXPLORE_DEFAULT_PAGES = 30;
+var QA_EXPLORE_DEFAULT_ACTIONS = 150;
+var QA_EXPLORE_DEFAULT_COST_USD = 1;
+var QA_EXPLORE_HARD_COST_USD = 3;
+var QA_EXPLORE_DEFAULT_MINUTES = 20;
+var qaExploreBudgetsSchema = external_exports.object({
+  maxPages: external_exports.number().int().min(1).max(QA_EXPLORE_DEFAULT_PAGES).default(QA_EXPLORE_DEFAULT_PAGES),
+  maxActions: external_exports.number().int().min(1).max(QA_EXPLORE_DEFAULT_ACTIONS).default(QA_EXPLORE_DEFAULT_ACTIONS),
+  maxCostUsd: external_exports.number().positive().max(QA_EXPLORE_HARD_COST_USD).default(QA_EXPLORE_DEFAULT_COST_USD),
+  maxMinutes: external_exports.number().int().min(1).max(QA_EXPLORE_DEFAULT_MINUTES).default(QA_EXPLORE_DEFAULT_MINUTES)
+});
+var qaExploreRequestSchema = external_exports.object({
+  environmentId: idSchema("qaEnvironment").optional(),
+  focus: external_exports.string().trim().min(1).max(500).optional(),
+  budgets: qaExploreBudgetsSchema.partial().optional()
+});
+var qaExploreStartResponseSchema = external_exports.object({
+  runId: idSchema("skillRun"),
+  /** Explorations left this month on the plan after this one. */
+  allowanceLeft: external_exports.number().int().nonnegative()
+});
+var qaExploreStatusSchema = external_exports.enum(["running", "done", "failed"]);
+var qaExploreVisitedSchema = external_exports.object({
+  url: external_exports.string().max(2e3),
+  /** HTTP status of the load; 0 when there was no response. */
+  status: external_exports.number().int().min(0).max(599),
+  title: external_exports.string().max(200).optional()
+});
+var qaExploreSkipReasonSchema = external_exports.enum([
+  "page_budget",
+  "time_budget",
+  "other_site",
+  "would_change_data",
+  "payment_site"
+]);
+var qaExploreNotVisitedSchema = external_exports.object({
+  url: external_exports.string().max(2e3),
+  reason: qaExploreSkipReasonSchema
+});
+var qaExploreRefusalReasonSchema = external_exports.enum([
+  "write_request",
+  "payment_site",
+  "deny_listed_click",
+  "unchecked_click",
+  "other_site"
+]);
+var qaExploreRefusalSchema = external_exports.object({
+  /** Web address without query or fragment. */
+  url: external_exports.string().max(2e3),
+  /** HTTP method of a refused request; `CLICK` for a refused click. */
+  method: external_exports.string().max(10),
+  reason: qaExploreRefusalReasonSchema,
+  /** The accessible name of a refused click target (page text: untrusted). */
+  name: external_exports.string().max(120).optional()
+});
+var qaExploreObservationKindSchema = external_exports.enum([
+  "broken_page",
+  "error",
+  "accessibility",
+  "layout",
+  "security",
+  "content",
+  "explorer_note"
+]);
+var qaExploreObservationStatusSchema = external_exports.enum(["observed", "bug", "not_reproduced"]);
+var QA_EXPLORE_MAX_OBSERVATIONS = 50;
+var QA_EXPLORE_MAX_PROPOSED = 20;
+var QA_EXPLORE_MAX_NOT_VISITED = 50;
+var QA_EXPLORE_MAX_REFUSALS = 50;
+var qaExploreObservationSchema = external_exports.object({
+  /** Stable within the run (`obs-1`, ...). */
+  id: external_exports.string().regex(/^obs-\d{1,3}$/),
+  kind: qaExploreObservationKindSchema,
+  severity: severitySchema,
+  /** One line for a person. Page text inside it is untrusted. */
+  title: external_exports.string().max(300),
+  url: external_exports.string().max(2e3),
+  ruleId: ruleIdSchema.optional(),
+  status: qaExploreObservationStatusSchema,
+  /** Times a generated test reproduced it, 0..2. */
+  reproduced: external_exports.number().int().min(0).max(2)
+});
+var qaExploreResultSchema = external_exports.object({
+  runId: idSchema("skillRun"),
+  status: qaExploreStatusSchema,
+  /** Why it `failed`, in plain words. Only with `status: "failed"`. */
+  error: external_exports.string().max(300).optional(),
+  /** Starts with what it visited and what it did not ("Visited 12 pages; did not visit 4: ..."). */
+  summary: external_exports.string().max(1e3),
+  environmentId: idSchema("qaEnvironment").optional(),
+  /** The app origin the exploration was locked to. */
+  origin: workflowUrlSchema,
+  visited: external_exports.array(qaExploreVisitedSchema).max(QA_EXPLORE_DEFAULT_PAGES),
+  notVisited: external_exports.array(qaExploreNotVisitedSchema).max(QA_EXPLORE_MAX_NOT_VISITED),
+  observations: external_exports.array(qaExploreObservationSchema).max(QA_EXPLORE_MAX_OBSERVATIONS),
+  /** Tests worth adding; nothing is saved until a person accepts one (they become `proposed`). */
+  proposedTests: external_exports.array(qaQuickCheckSuggestionSchema).max(QA_EXPLORE_MAX_PROPOSED),
+  refused: external_exports.array(qaExploreRefusalSchema).max(QA_EXPLORE_MAX_REFUSALS),
+  budgets: qaExploreBudgetsSchema,
+  /** Model cost so far, millionths of a USD; absent while unknown. */
+  costMicros: external_exports.number().int().nonnegative().optional()
+});
+var qaTriageFeedbackSchema = external_exports.enum(["real_bug", "test_wrong", "environment"]);
+var qaTriageCountsQuerySchema = external_exports.object({
+  days: external_exports.coerce.number().int().min(1).max(90).default(30)
+});
+var qaTriageCountsSchema = external_exports.object({
+  days: external_exports.number().int().min(1).max(90),
+  failed: external_exports.number().int().nonnegative(),
+  triaged: external_exports.number().int().nonnegative(),
+  realBug: external_exports.number().int().nonnegative(),
+  testWrong: external_exports.number().int().nonnegative(),
+  environment: external_exports.number().int().nonnegative(),
+  falseFail: external_exports.number().int().nonnegative(),
+  falsePass: external_exports.number().int().nonnegative()
+});
+var qaNoteKindSchema = external_exports.enum(["app_note", "known_issue"]);
+var noteFields = {
+  kind: qaNoteKindSchema,
+  text: external_exports.string().trim().min(1).max(2e3),
+  /** Person or team that owns it. Free text. */
+  owner: external_exports.string().trim().min(1).max(120).optional(),
+  /** When the note stops applying. Absent: until deleted. */
+  expiresAt: external_exports.iso.datetime().optional(),
+  /** The test this note is about. Absent: the whole app. */
+  testRef: qaTestRefSchema.optional()
+};
+var qaNoteSchema = external_exports.object({
+  id: idSchema("qaNote"),
+  projectId: idSchema("project"),
+  ...noteFields
+});
+var createQaNoteRequestSchema = external_exports.object(noteFields);
+var listQaNotesResponseSchema = external_exports.object({ notes: external_exports.array(qaNoteSchema) });
+var QA_STORY_MAX_CHARS = 4e3;
+var QA_STORY_MAX_TESTS = 10;
+var qaStoryTextSchema = external_exports.string().trim().min(1).max(QA_STORY_MAX_CHARS);
+var qaStoryRequestSchema = external_exports.object({
+  story: qaStoryTextSchema,
+  /** The environment the tests are for; absent: the project's default. Its origin is the only one placeholders may go to. */
+  environmentId: idSchema("qaEnvironment").optional(),
+  /** Where `save: true` puts the tests; absent: the project's default suite. */
+  suiteId: idSchema("workflow").optional(),
+  /** `false` (default): show the tests, save nothing. `true`: save them as `proposed`. */
+  save: external_exports.boolean().default(false)
+});
+var qaStoryTestSchema = external_exports.object({
+  title: external_exports.string().trim().min(1).max(200),
+  steps: qaStepListSchema.min(1),
+  expect: qaRequiredExpectSchema,
+  area: external_exports.string().trim().min(1).max(60).optional()
+});
+var qaStoryResultSchema = external_exports.object({
+  tests: external_exports.array(qaStoryTestSchema).max(QA_STORY_MAX_TESTS),
+  /** One sentence each ("a test went to another site with a secret, so it was left out"). */
+  warnings: external_exports.array(external_exports.string().max(300)).max(20),
+  /** What the model call cost, millionths of a USD (0 when no call was made). */
+  costMicros: external_exports.number().int().nonnegative(),
+  /** With `save: true`: where each test was saved, always `proposed`. */
+  saved: external_exports.array(external_exports.object({ workflowId: idSchema("workflow"), caseId: workflowSlugSchema })).max(QA_STORY_MAX_TESTS).optional()
+});
 var QA_MCP_TOOL_NAMES = [
   "qa_quick_check",
   "qa_create_tests",
@@ -32167,15 +32986,19 @@ var QA_MCP_TOOL_NAMES = [
   "qa_file_bug",
   "qa_add_note",
   "qa_review_list",
-  "qa_save_environment"
+  "qa_save_environment",
+  "qa_explore",
+  "qa_debug_link"
 ];
 var qaMcpToolNameSchema = external_exports.enum(QA_MCP_TOOL_NAMES);
 var suiteIdSchema = idSchema("workflow");
 var runIdSchema = idSchema("workflowRun");
 var qaNewTestSchema = external_exports.object({
   title: external_exports.string().trim().min(1).max(200),
-  steps: external_exports.array(external_exports.string().min(1).max(500)).min(1).max(30),
-  expect: external_exports.string().min(1).max(1e3),
+  /** Sentences or typed steps (0.48.0), see `qaStepSchema`. */
+  steps: qaStepListSchema.min(1),
+  /** One string or a list of phrases and AI checks (0.48.0). */
+  expect: qaRequiredExpectSchema,
   area: external_exports.string().trim().min(1).max(60).optional()
 });
 var QA_CREATE_TESTS_MAX = 50;
@@ -32184,10 +33007,16 @@ var qaCreateTestsInputSchema = external_exports.object({
   tests: external_exports.array(qaNewTestSchema).min(1).max(QA_CREATE_TESTS_MAX).optional(),
   yaml: external_exports.string().min(1).max(QA_CREATE_TESTS_YAML_MAX).optional(),
   suiteId: suiteIdSchema.optional(),
-  dryRun: external_exports.boolean().default(true)
-}).refine((v) => v.tests === void 0 !== (v.yaml === void 0), {
-  message: "send exactly one of tests or yaml"
-});
+  dryRun: external_exports.boolean().default(true),
+  /**
+   * Free text (qa-next W2-4): a story the api turns into tests with one cheap-model call (`qa-story.ts`).
+   * Send it INSTEAD of `tests` / `yaml`; the same `dryRun` rule applies and saved tests are `proposed`.
+   */
+  story: qaStoryTextSchema.optional()
+}).refine(
+  (v) => v.story !== void 0 ? v.tests === void 0 && v.yaml === void 0 : v.tests === void 0 !== (v.yaml === void 0),
+  { message: "send exactly one of tests or yaml" }
+);
 var qaCreateTestsResultSchema = external_exports.object({
   dryRun: external_exports.boolean(),
   tests: external_exports.array(
@@ -32204,8 +33033,8 @@ var qaCreateTestsResultSchema = external_exports.object({
 var qaUpdateTestInputSchema = external_exports.object({
   testRef: qaTestRefSchema,
   title: external_exports.string().trim().min(1).max(200).optional(),
-  steps: external_exports.array(external_exports.string().min(1).max(500)).min(1).max(30).optional(),
-  expect: external_exports.string().min(1).max(1e3).optional()
+  steps: qaStepListSchema.min(1).optional(),
+  expect: qaRequiredExpectSchema.optional()
 }).refine((v) => v.title !== void 0 || v.steps !== void 0 || v.expect !== void 0, {
   message: "send at least one of title, steps, expect"
 });
@@ -32222,7 +33051,13 @@ var qaRunInputSchema = external_exports.object({
   environmentId: idSchema("qaEnvironment").optional(),
   url: workflowUrlSchema.optional(),
   tags: external_exports.array(workflowSlugSchema).min(1).max(20).optional(),
-  dryRun: external_exports.boolean().optional()
+  dryRun: external_exports.boolean().optional(),
+  /** Fail-fast (0.47.0): stop after this many failed required tests. */
+  stopAfterFailures: workflowRunControlFields.stopAfterFailures,
+  /** Re-run this earlier run (0.47.0); with `failedOnly`, only its tests that did not pass. */
+  rerunOf: workflowRunControlFields.rerunOf,
+  /** Only the tests that did not pass last time (0.47.0); without `rerunOf`: the latest ended run of the suite. */
+  failedOnly: workflowRunControlFields.failedOnly
 }).refine((v) => v.suiteId === void 0 || v.tests === void 0, {
   message: "send suiteId or tests, not both"
 });
@@ -32260,7 +33095,9 @@ var qaReadinessSchema = external_exports.object({
   runId: idSchema("workflowRun").optional(),
   /** Commit that run tested, when CI said. */
   sha: external_exports.string().max(100).optional(),
-  environmentId: idSchema("qaEnvironment").optional()
+  environmentId: idSchema("qaEnvironment").optional(),
+  /** The release gate of that run (qa-next W2-5): required passed, couldn't test, and the sentence to show. */
+  gate: qaReleaseGateSchema.optional()
 });
 var qaTrendDaySchema = external_exports.object({
   /** `YYYY-MM-DD`, UTC. */
@@ -32284,34 +33121,69 @@ var qaOverviewSchema = external_exports.object({
   /** Highest flaky score; `value` = 0..1. */
   flaky: external_exports.array(qaTopTestSchema).max(QA_TOP_LIST_MAX),
   /** Slowest on average; `value` = milliseconds. */
-  slowest: external_exports.array(qaTopTestSchema).max(QA_TOP_LIST_MAX)
-});
-var qaProposalStatusSchema = external_exports.enum(["pending", "applied", "rejected"]);
-var qaProposalChangeSchema = external_exports.object({
-  title: external_exports.string().trim().min(1).max(200).optional(),
-  steps: external_exports.array(external_exports.string().min(1).max(500)).min(1).max(30).optional(),
-  expect: external_exports.string().min(1).max(1e3).optional()
-}).refine((v) => v.title !== void 0 || v.steps !== void 0 || v.expect !== void 0, {
-  message: "send at least one of title, steps, expect"
-});
-var qaProposalSchema = external_exports.object({
-  id: idSchema("qaProposal"),
-  testRef: qaTestRefSchema,
-  change: qaProposalChangeSchema,
-  /** Who proposed it: `agent` (MCP) or `chat`, rarely `dashboard`. */
-  origin: workflowCaseOriginSchema,
-  status: qaProposalStatusSchema,
-  createdAt: external_exports.iso.datetime(),
-  /** Identity subject or grant id of the proposer. Free text. */
-  createdBy: external_exports.string().min(1).max(200).optional()
-});
-var qaListProposalsResponseSchema = external_exports.object({
-  proposals: external_exports.array(qaProposalSchema),
-  ...pageNextField
+  slowest: external_exports.array(qaTopTestSchema).max(QA_TOP_LIST_MAX),
+  /** qa-next W2-5: the last 28 UTC days from the daily rollup, oldest first, quiet days as zeros. Local runs excluded. */
+  daily: external_exports.array(qaDailySchema).max(QA_DAILY_DAYS).optional(),
+  /** qa-next B3: pages a Quick check found that no test visited (normalised paths). Absent: never crawled. */
+  notCovered: external_exports.array(qaNotCoveredPageSchema).max(QA_NOT_COVERED_MAX).optional()
 });
 var qaStartRunRequestSchema = startWorkflowRunRequestSchema.extend({
   workflowId: idSchema("workflow"),
   environmentId: idSchema("qaEnvironment").optional()
+});
+var QA_SHARED_STEP_STEPS_MAX = 20;
+var qaSharedStepStepListSchema = external_exports.array(qaStepSchema).min(1).max(QA_SHARED_STEP_STEPS_MAX).refine((steps2) => steps2.every((s) => typeof s === "string" || s.kind !== "use"), {
+  message: "a shared step cannot use another shared step"
+});
+var qaSharedStepSchema = external_exports.object({
+  id: idSchema("qaSharedStep"),
+  projectId: idSchema("project"),
+  name: qaSharedStepNameSchema,
+  version: external_exports.number().int().min(1),
+  /** One line on what it does, shown in the "Shared steps" filter. */
+  description: external_exports.string().trim().max(200).optional(),
+  steps: qaSharedStepStepListSchema,
+  /** Active tests that use this name at any version ("used by 12 tests"). */
+  usedBy: external_exports.number().int().nonnegative(),
+  /** Active tests frozen on THIS version. */
+  usedByThisVersion: external_exports.number().int().nonnegative(),
+  /** True for the newest version of the name. */
+  latest: external_exports.boolean(),
+  createdAt: external_exports.iso.datetime(),
+  /** Identity subject or grant id of who saved it. Free text. */
+  createdBy: external_exports.string().min(1).max(200).optional()
+});
+var qaListSharedStepsResponseSchema = external_exports.object({
+  sharedSteps: external_exports.array(qaSharedStepSchema)
+});
+var qaGetSharedStepQuerySchema = external_exports.object({
+  version: external_exports.coerce.number().int().min(1).optional()
+});
+var qaSaveSharedStepRequestSchema = external_exports.object({
+  name: qaSharedStepNameSchema,
+  description: external_exports.string().trim().max(200).optional(),
+  steps: qaSharedStepStepListSchema
+});
+var qaSaveSharedStepResponseSchema = external_exports.object({
+  sharedStep: qaSharedStepSchema,
+  /** Proposals opened for active tests on older versions (0 for a new name or an unused one). */
+  proposalsOpened: external_exports.number().int().nonnegative()
+});
+var QA_STARTER_TEST_IDS = [
+  "starter-sign-in-works",
+  "starter-sign-up-email-code",
+  "starter-search-returns-results"
+];
+var qaStarterTestIdSchema = external_exports.enum(QA_STARTER_TEST_IDS);
+var qaStarterOutcomeSchema = external_exports.enum(["added", "already_added", "needs_site"]);
+var qaAddStarterTestsResponseSchema = external_exports.object({
+  outcome: qaStarterOutcomeSchema,
+  tests: external_exports.array(
+    qaTestRefSchema.extend({
+      title: external_exports.string().max(200),
+      status: workflowCaseStatusSchema
+    })
+  )
 });
 var QA_TEST_VERSIONS_MAX = 50;
 var qaTestVersionSchema = external_exports.object({
@@ -32632,6 +33504,11 @@ var testsFileFieldsSchema = external_exports.object({
   concurrency: external_exports.number().int().min(1).max(10).optional(),
   maxCostUsdPerCase: external_exports.number().positive().max(100).optional(),
   retries: workflowRetriesSchema.optional(),
+  /**
+   * `variables`, `before`, `after` (0.48.3, qa-next W1-2): the same as on a workflow (`workflowTestShapeFields`).
+   * YAML may write `vars:`; readers run `normalizeQaWorkflowShorthand` before `readTestsFile`.
+   */
+  ...workflowTestShapeFields,
   cases: external_exports.array(testsFileCaseSchema).min(1).max(100)
 });
 function targetNames(v) {
@@ -32727,7 +33604,10 @@ function testsFileToWorkflowRequest(file2, opts = {}) {
     ...engineId !== void 0 ? { engineId } : {},
     ...file2.concurrency !== void 0 ? { concurrency: file2.concurrency } : {},
     ...file2.maxCostUsdPerCase !== void 0 ? { maxCostUsdPerCase: file2.maxCostUsdPerCase } : {},
-    ...file2.retries !== void 0 ? { retries: file2.retries } : {}
+    ...file2.retries !== void 0 ? { retries: file2.retries } : {},
+    ...file2.variables !== void 0 ? { variables: file2.variables } : {},
+    ...file2.before !== void 0 ? { before: file2.before } : {},
+    ...file2.after !== void 0 ? { after: file2.after } : {}
   });
   if (!parsed.success) {
     throw new TestsFileError(
@@ -32848,6 +33728,14 @@ var isPlain = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
 var str = (v) => typeof v === "string" ? v : void 0;
 var num = (v) => typeof v === "number" && Number.isFinite(v) ? v : void 0;
 var bool = (v) => typeof v === "boolean" ? v : void 0;
+function flakyReasonsOf(v) {
+  if (!Array.isArray(v)) return void 0;
+  const known = v.flatMap((r) => {
+    const p = qaFlakyReasonSchema.safeParse(r);
+    return p.success ? [p.data] : [];
+  });
+  return known.length > 0 ? known : void 0;
+}
 var ReplyError = class extends Error {
   constructor(what, problem) {
     super(`unexpected reply from ${what}: ${problem}`);
@@ -32870,6 +33758,8 @@ function readCase(raw, i, what) {
     summary: known ? str(raw.summary) ?? "" : `the API reported case "${caseId}" as ${describe3(raw.verdict)}, which this CLI does not know (update the CLI)`,
     attempts: num(raw.attempts),
     flaky: bool(raw.flaky),
+    flakyReasons: flakyReasonsOf(raw.flakyReasons),
+    missingSecret: str(raw.missingSecret),
     required: bool(raw.required),
     durationMs: num(raw.durationMs),
     modelSteps: num(raw.modelSteps),
@@ -33185,6 +34075,10 @@ Usage: webagent test [options]
   --json                     print the run as JSON on stdout (messages go to stderr)
   --ci-context <file.json>   pull request context as {"title","body","changedFiles":[...]}; wins over the
                              WEBAGENT_CI_* variables. Sent to the run for triage, never printed in reports
+  --stop-after <n>           stop early once n required cases failed; the rest show "Not run (stopped early)"
+  --failed-only              re-run only the cases that did not pass last time (same pull request in CI);
+                             the passes are listed as carried over, not re-run and not billed
+  --rerun-of <wfr_...>       re-run this earlier run (with --failed-only: only what did not pass in it)
 
 Environment: WEBAGENT_API_KEY (required), WEBAGENT_API_URL
 Pull request context (optional): WEBAGENT_CI_TITLE, WEBAGENT_CI_BODY, WEBAGENT_CI_CHANGED_FILES (one path per line)
@@ -33231,6 +34125,9 @@ function parseCli(argv) {
         markdown: { type: "string" },
         json: { type: "boolean" },
         "ci-context": { type: "string" },
+        "stop-after": { type: "string" },
+        "failed-only": { type: "boolean" },
+        "rerun-of": { type: "string" },
         help: { type: "boolean", short: "h" }
       }
     }));
@@ -33246,6 +34143,14 @@ function parseCli(argv) {
   if (timeoutMinutes <= 0) throw new SetupError("--timeout-minutes must be more than 0");
   const waitSeconds = number4("wait-for-url-timeout", values["wait-for-url-timeout"]) ?? 120;
   if (waitSeconds <= 0) throw new SetupError("--wait-for-url-timeout must be more than 0");
+  const stopAfter = number4("stop-after", values["stop-after"]);
+  if (stopAfter !== void 0 && (!Number.isInteger(stopAfter) || stopAfter < 1 || stopAfter > 500)) {
+    throw new SetupError("--stop-after must be a whole number from 1 to 500");
+  }
+  const rerunOf = values["rerun-of"];
+  if (rerunOf !== void 0 && !idSchema("workflowRun").safeParse(rerunOf).success) {
+    throw new SetupError(`--rerun-of needs a run id (wfr_...), got "${rerunOf}"`);
+  }
   const onError = values["on-error"] ?? "block";
   if (onError !== "block" && onError !== "neutral") {
     throw new SetupError(`--on-error must be "block" or "neutral", got "${onError}"`);
@@ -33268,7 +34173,10 @@ function parseCli(argv) {
       junit: values.junit,
       markdown: values.markdown,
       json: values.json === true,
-      ciContext: values["ci-context"]
+      ciContext: values["ci-context"],
+      stopAfter,
+      failedOnly: values["failed-only"] === true,
+      rerunOf
     }
   };
 }
@@ -33492,7 +34400,7 @@ function exitCodeFor(outcome, onError) {
 function caseLabel(c) {
   const optional2 = c.required === false;
   if (c.verdict === "pass") {
-    return c.flaky ? `Passed (flaky: passed on try ${c.attempts ?? 2})` : "Passed";
+    return c.flaky || (c.flakyReasons?.length ?? 0) > 0 ? `Flaky (${qaFlakyText(c.flakyReasons, c.attempts)})` : "Passed";
   }
   if (c.verdict === "running") return "Running";
   if (optional2) return "Warning (optional)";
@@ -33631,9 +34539,9 @@ function renderJunit(input2) {
       const optional2 = c.required === false;
       let inner = "";
       if (c.verdict === "pass") {
-        if (c.flaky)
+        if (c.flaky || (c.flakyReasons?.length ?? 0) > 0)
           inner = `
-      <system-out>flaky: passed on try ${c.attempts ?? 2}</system-out>`;
+      <system-out>flaky: ${xmlEscape(qaFlakyText(c.flakyReasons, c.attempts))}</system-out>`;
       } else if (optional2) {
         skipped++;
         inner = `
@@ -33763,7 +34671,7 @@ function loadTestsText(text2, path) {
     if (hint) lines.push(hint);
     throw new SetupError(`${path} is not valid YAML`, lines);
   }
-  const read = readTestsFile(stripOpaque(raw));
+  const read = readTestsFile(withoutKeys(stripOpaque(raw), OPAQUE_TOP));
   if (!read.success) {
     throw new SetupError(
       `${path} is not a valid tests file`,
@@ -33779,7 +34687,10 @@ function loadTestsText(text2, path) {
       // WATCH(qa-next): "known" is this build's `testsFileSchema.shape`; a key the contracts add later
       // is handled by the contracts converter, and a key that is both extra and set by the CLI loses
       // (the request builders in run-test.ts put the CLI's fields last).
-      extra: topLevelExtras(raw, Object.keys(testsFileSchema.shape)),
+      extra: topLevelExtras(
+        raw,
+        Object.keys(testsFileSchema.shape).filter((k) => !OPAQUE_TOP.includes(k))
+      ),
       engineSlug,
       warnings
     };
@@ -33787,6 +34698,11 @@ function loadTestsText(text2, path) {
     if (err instanceof TestsFileError) throw new SetupError(`${path} cannot run`, err.issues);
     throw err;
   }
+}
+var OPAQUE_TOP = ["variables", "vars", "before", "after"];
+function withoutKeys(raw, keys) {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return raw;
+  return Object.fromEntries(Object.entries(raw).filter(([k]) => !keys.includes(k)));
 }
 function chooseMode(opts, defaultFileExists) {
   if (opts.file === void 0 && !defaultFileExists && opts.workflow !== void 0) {
@@ -33820,7 +34736,12 @@ function filterCases(cases, opts) {
   const out = cases.filter(
     (c) => (opts.caseIds.length === 0 || opts.caseIds.includes(c.id)) && (opts.tags.length === 0 || c.tags.some((t) => opts.tags.includes(t)))
   );
-  if (out.length === 0) throw new SetupError("--case-ids / --tags match no case in the file");
+  if (out.length === 0) {
+    const noTag = opts.tags.length > 0 && !cases.some((c) => c.tags.some((t) => opts.tags.includes(t)));
+    throw new SetupError(
+      noTag ? `No tests have this tag: ${opts.tags.join(", ")}` : "--case-ids / --tags match no case in the file"
+    );
+  }
   return out;
 }
 
@@ -33842,7 +34763,10 @@ async function waitForUrl(url2, maxSeconds, deps, everyMs = 3e3) {
       last = "did not answer";
     }
     if (deps.now() + everyMs > deadline) {
-      return { ok: false, reason: `the preview ${last} for ${maxSeconds} s (${url2})` };
+      return {
+        ok: false,
+        reason: `preview never became ready: it ${last} for ${maxSeconds} s (${url2})`
+      };
     }
     await deps.sleep(everyMs, deps.signal);
   }
@@ -33893,7 +34817,11 @@ async function execute(opts, d2, log, setName) {
   const common = {
     trigger: "ci",
     ...ci ? { ci } : {},
-    ...opts.retries !== void 0 ? { retries: opts.retries } : {}
+    ...opts.retries !== void 0 ? { retries: opts.retries } : {},
+    // Fail-fast and re-run (contracts 0.47.0); the api picks the earlier run for `failedOnly` alone.
+    ...opts.stopAfter !== void 0 ? { stopAfterFailures: opts.stopAfter } : {},
+    ...opts.failedOnly ? { failedOnly: true } : {},
+    ...opts.rerunOf !== void 0 ? { rerunOf: opts.rerunOf } : {}
   };
   if (mode === "saved") {
     const key2 = opts.workflow;
