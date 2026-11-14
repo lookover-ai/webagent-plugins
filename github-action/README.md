@@ -144,7 +144,9 @@ on: pull_request
 | `file` | `.webagent/tests.yaml` | The tests file. If this default is missing and `workflow` is set, the saved workflow of that key runs (needs `url`) |
 | `workflow` | `key` in the file | Workflow key; also names the PR comment |
 | `target` | `defaultTarget` of the file | A target name from the file |
-| `tags` / `case-ids` | all cases | Comma-separated; run a subset |
+| `tags` / `case-ids` | all cases | Comma-separated; run a subset. A tag no test has stops the job as a setup problem ("No tests have this tag"), never a green empty run |
+| `failed-only` | off | `true`: only the cases that did not pass in the last finished run of this PR (or workflow). Passes are listed as carried over, not re-run, not billed |
+| `stop-after` | off | Stop early once this many required cases failed (1 to 500); the rest show "Not run (stopped early)". 3 suits pull requests |
 | `sync` | on for a push to the default branch, else off | Save the file as the workflow before running |
 | `wait-for-url` | `120` | Seconds (1 to 180) to wait for the URL to answer. `0` or `false`: do not wait |
 | `timeout-minutes` | `15` | Give up and cancel the run |
@@ -158,7 +160,7 @@ on: pull_request
 
 | Output | Value |
 |---|---|
-| `verdict` | `pass`, `fail`, `error` (could not test), `setup` (not run: setup problem), `skipped` (fork PR without the secret, or a `deployment_status` that is not `success` yet) |
+| `verdict` | `pass`, `fail`, `error` (could not test), `setup` (not run: setup problem), `skipped` (fork PR without the secret, a `deployment_status` that is not `success` yet, or a run a newer commit cancelled) |
 | `run-id` | the run id (empty when no run started) |
 | `run-url` | dashboard page of the run |
 | `flaky` | how many cases passed only on a retry |
@@ -177,6 +179,7 @@ Use outputs in a later step: `if: steps.qa.outputs.verdict == 'fail'` (give the 
 | Fork PR, or Dependabot (GitHub gives no secrets) | exit 0, one notice | none |
 | No `pull-requests: write` | unchanged | one notice in the log; the job summary still has the report |
 | Job cancelled (new push) | the cloud run is cancelled | updated to could not test (best effort) |
+| Newer commit pushed while the run was going (the API cancels the older run of the same PR) | exit 0, one notice | `Cancelled: newer commit abc1234`, replaced by the newer run's result |
 
 | Exit code | Meaning |
 |---|---|

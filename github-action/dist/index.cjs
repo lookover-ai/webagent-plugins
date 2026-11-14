@@ -133,6 +133,8 @@ function readInputs(env) {
     target: input(env, "target"),
     tags: input(env, "tags"),
     caseIds: input(env, "case-ids"),
+    failedOnly: input(env, "failed-only").toLowerCase(),
+    stopAfter: input(env, "stop-after"),
     sync: input(env, "sync").toLowerCase(),
     waitForUrl: input(env, "wait-for-url") || "120",
     timeoutMinutes: input(env, "timeout-minutes") || "15",
@@ -207,6 +209,8 @@ function mapToCliArgs(i, sync, fileExists, reports) {
   flag("tags", i.tags);
   flag("case-ids", i.caseIds);
   if (sync) args.push("--sync");
+  if (bool("failed-only", i.failedOnly) === true) args.push("--failed-only");
+  if (i.stopAfter !== "") args.push("--stop-after", String(intIn("stop-after", i.stopAfter, 1, 500)));
   if (i.retries !== "") args.push("--retries", String(intIn("retries", i.retries, 0, 2)));
   args.push("--timeout-minutes", String(intIn("timeout-minutes", i.timeoutMinutes, 1, 360)));
   args.push("--on-error", "block");
@@ -329,6 +333,18 @@ function runningBody(workflowKey, url, sha, buildUrl, practice = false) {
     ""
   ].join("\n");
 }
+function cancelledBody(workflowKey, bySha, buildUrl) {
+  const sha = bySha.slice(0, 7);
+  return [
+    marker(workflowKey),
+    `Lookover QA \xB7 Cancelled: newer commit${sha ? ` ${sha}` : ""}`,
+    "",
+    "A newer push started a run for this pull request, so this one stopped. Its result replaces this comment when it ends. The tests that did not run are not billed.",
+    "",
+    footer(buildUrl),
+    ""
+  ].join("\n");
+}
 function notRunBody(workflowKey, problem, buildUrl) {
   return [
     marker(workflowKey),
@@ -411,10 +427,12 @@ function parseRun(stdout) {
   if (typeof raw !== "object" || raw === null) return void 0;
   const r = raw;
   const flaky = r.counts?.flaky;
+  const superseded = r.cancelled?.reason === "superseded";
   return {
     id: typeof r.id === "string" ? r.id : "",
     flaky: typeof flaky === "number" && Number.isFinite(flaky) ? flaky : 0,
-    cases: Array.isArray(r.cases) ? r.cases : []
+    cases: Array.isArray(r.cases) ? r.cases : [],
+    ...superseded ? { supersededBy: typeof r.cancelled?.bySha === "string" ? r.cancelled.bySha : "" } : {}
   };
 }
 function workflowKeyOf(fileText) {
@@ -516,6 +534,14 @@ ${msg}
   );
   const url = report ? dashboardUrl(report) : "";
   const setup = out.verdict === "setup" ? setupLines(res.stderr) : [];
+  if (runJson?.supersededBy !== void 0 && res.code === 2) {
+    const sha2 = runJson.supersededBy;
+    if (report) await d.appendSummary(summaryBody({ report, practice }));
+    await comment(cancelledBody(workflowKey, sha2, buildUrl));
+    const msg = `Cancelled: newer commit${sha2 ? ` ${sha2.slice(0, 7)}` : ""}. The newer run reports on this pull request.`;
+    d.log(`::notice title=Lookover QA::${esc(msg)}`);
+    return finish("skipped", 0, runJson.id, url, runJson.flaky);
+  }
   if (report) {
     let links = [];
     const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };

@@ -18,6 +18,10 @@ export interface Inputs {
   target: string;
   tags: string;
   caseIds: string;
+  /** `true` re-runs only what did not pass last time (CLI `--failed-only`); `""` or `false`: off. */
+  failedOnly: string;
+  /** Fail-fast threshold (CLI `--stop-after`), 1..500; `""`: off. */
+  stopAfter: string;
   /** `""` means auto: on only for a push to the default branch. */
   sync: string;
   waitForUrl: string;
@@ -50,6 +54,8 @@ export function readInputs(env: Env): Inputs {
     target: input(env, "target"),
     tags: input(env, "tags"),
     caseIds: input(env, "case-ids"),
+    failedOnly: input(env, "failed-only").toLowerCase(),
+    stopAfter: input(env, "stop-after"),
     sync: input(env, "sync").toLowerCase(),
     waitForUrl: input(env, "wait-for-url") || "120",
     timeoutMinutes: input(env, "timeout-minutes") || "15",
@@ -175,6 +181,8 @@ export function mapToCliArgs(
   flag("tags", i.tags);
   flag("case-ids", i.caseIds);
   if (sync) args.push("--sync");
+  if (bool("failed-only", i.failedOnly) === true) args.push("--failed-only");
+  if (i.stopAfter !== "") args.push("--stop-after", String(intIn("stop-after", i.stopAfter, 1, 500)));
   if (i.retries !== "") args.push("--retries", String(intIn("retries", i.retries, 0, 2)));
   args.push("--timeout-minutes", String(intIn("timeout-minutes", i.timeoutMinutes, 1, 360)));
   // `on-error: neutral` is applied by `outcomeFor` from the CLI's exit 2, so the CLI always runs with `block`: its exit 0
