@@ -12,7 +12,7 @@ import {
   resolveSync,
   secretsWithheld,
 } from "./inputs.js";
-import { outcomeFor, type RunLike, type VerdictOutput } from "./outcome.js";
+import { outcomeFor, type VerdictOutput } from "./outcome.js";
 import {
   dashboardUrl,
   finalBody,
@@ -61,14 +61,34 @@ const ANNOTATE = { notice: "notice", warning: "warning", error: "error" } as con
 /** `%`, CR and LF in a workflow-command message must be escaped. */
 const esc = (s: string): string => s.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
 
-function parseRun(stdout: string): (RunLike & { cases?: RunCase[] }) | undefined {
+/** What the Action takes from the CLI's `--json` output: the run id (outputs), the flaky count and the cases (share links). */
+interface RunFacts {
+  id: string;
+  flaky: number;
+  cases: RunCase[];
+}
+
+/**
+ * The CLI prints the API's reply as it came. It is NOT validated here and NEVER gives the verdict (the exit code does):
+ * each field is read only if it has the expected type, anything else is left out. Not JSON: `undefined`.
+ */
+function parseRun(stdout: string): RunFacts | undefined {
   const text = stdout.trim();
   if (!text.startsWith("{")) return undefined;
+  let raw: unknown;
   try {
-    return JSON.parse(text) as RunLike & { cases?: RunCase[] };
+    raw = JSON.parse(text);
   } catch {
     return undefined;
   }
+  if (typeof raw !== "object" || raw === null) return undefined;
+  const r = raw as { id?: unknown; counts?: { flaky?: unknown } | null; cases?: unknown };
+  const flaky = r.counts?.flaky;
+  return {
+    id: typeof r.id === "string" ? r.id : "",
+    flaky: typeof flaky === "number" && Number.isFinite(flaky) ? flaky : 0,
+    cases: Array.isArray(r.cases) ? (r.cases as RunCase[]) : [],
+  };
 }
 
 /** `key:` of the tests file (a plain top-level line), which names the sticky comment. */
@@ -175,8 +195,14 @@ export async function run(d: Deps): Promise<number> {
 
   const runJson = parseRun(res.stdout);
   const report = await d.readText(reportPath);
-  const out = outcomeFor(res.code, runJson, inputs.failOn as "fail" | "never", inputs.mode as "enforce" | "practice");
+  const out = outcomeFor(
+    res.code,
+    inputs.failOn as "fail" | "never",
+    inputs.onError as "block" | "neutral",
+    inputs.mode as "enforce" | "practice",
+  );
   const url = report ? dashboardUrl(report) : "";
+  const setup = out.verdict === "setup" ? setupLines(res.stderr) : [];
 
   if (report) {
     let links: { caseId: string; url: string }[] = [];
@@ -188,9 +214,8 @@ export async function run(d: Deps): Promise<number> {
     await d.appendSummary(summaryBody({ report, practice }));
     await comment(finalBody({ workflowKey, report, links, buildUrl, practice }));
   } else if (out.verdict === "setup") {
-    const lines = setupLines(res.stderr);
-    await d.appendSummary(summaryFor(out, lines.map((l) => `- ${l}`).join("\n") || "See the job log."));
-    await comment(notRunBody(workflowKey, lines, buildUrl));
+    await d.appendSummary(summaryFor(out, setup.map((l) => `- ${l}`).join("\n") || "See the job log."));
+    await comment(notRunBody(workflowKey, setup, buildUrl));
   } else {
     const text = "# Lookover QA · Couldn't test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
     await d.appendSummary(summaryBody({ report: text, practice }));
@@ -198,7 +223,9 @@ export async function run(d: Deps): Promise<number> {
   }
 
   if (out.message) {
-    d.log(`::${ANNOTATE[out.level]} title=Lookover QA::${esc(out.message)}`);
+    // Exit 3: the CLI's sentence (often the server's own, for a refused steps/expect) is in the annotation, not only the log above it.
+    const message = out.verdict === "setup" && setup.length > 0 ? `Setup problem: ${setup.join(" · ")}` : out.message;
+    d.log(`::${ANNOTATE[out.level]} title=Lookover QA::${esc(message)}`);
   }
-  return finish(out.verdict, out.exitCode, runJson?.id ?? "", url, runJson?.counts?.flaky ?? 0);
+  return finish(out.verdict, out.exitCode, runJson?.id ?? "", url, runJson?.flaky ?? 0);
 }

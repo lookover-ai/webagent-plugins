@@ -209,7 +209,7 @@ Switch to `mode: enforce` (the default, or leave the input out) when you trust t
 On `pull_request` and `pull_request_target` runs (not from forks) the action sends the PR title (200 characters), the PR description
 (2000 characters) and the paths of the changed files (up to 300 paths, 300 characters each, paths only, read with your `github-token`)
 to the CLI as the environment variables `WEBAGENT_CI_TITLE`, `WEBAGENT_CI_BODY` and `WEBAGENT_CI_CHANGED_FILES` (one path per line),
-as untrusted context for Lookover (the bundled CLI 0.2.0 reads exactly these three names and sends them with the run). The text is never
+as untrusted context for Lookover (the bundled CLI, 0.2.0 and later, reads exactly these three names and sends them with the run). The text is never
 printed in the log, summary or comment.
 If GitHub's file list cannot be read, the paths are left out and the job is not affected.
 
@@ -231,6 +231,14 @@ VITEST_MAX_WORKERS=4 pnpm check     # typecheck, tests, build (dist/index.cjs + 
 `webagent-contracts/cli/dist/webagent.cjs` (build contracts, `sdk` and `cli` there first; `WEBAGENT_CLI_BUNDLE` points elsewhere): re-vendor it when the
 CLI changes. `src/cli-contract.test.ts` reads the committed bundle and fails if the `WEBAGENT_CI_*` names differ from what the Action sets.
 
-**Vendored now:** `@lookover-ai/webagent-cli` **0.2.0**, built from contracts tag `v0.45.0-rc.1` (tag object `91e8d6b`, commit `cb74dd4`),
+**Vendored now:** `@lookover-ai/webagent-cli` **0.3.0**, built from contracts `development` commit `722e5b8` (PR #22),
 bundle 1.29 MB. Re-vendor from a release tag before moving the Action's `v1` tag. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
 writes the summary, outputs and the sticky comment (hidden marker `<!-- lookover-qa:<workflow key> -->`).
+`CLI-SOURCE` records which CLI version and contracts commit the vendored bundle is (a test checks it).
+
+Rules the Action keeps so a newer API or tests file never breaks a published `@v1`:
+- It never parses or validates `steps`, `expect` or case keys of the tests file: the CLI sends them untouched and the server decides.
+  A refusal is exit 3 with the server's sentence (and the failing paths) in the log, the job summary and the PR comment.
+- The job's pass or fail comes from the CLI's exit code only. The run reply is read just for the run id, the flaky count and the
+  failed cases' replay links; a verdict it does not know is "could not test" (exit 2), never a pass. `on-error: neutral` is applied by
+  the Action (it starts the CLI with `--on-error block`), so a CLI exit 0 always means pass.

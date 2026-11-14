@@ -209,7 +209,7 @@ function mapToCliArgs(i, sync, fileExists, reports) {
   if (sync) args.push("--sync");
   if (i.retries !== "") args.push("--retries", String(intIn("retries", i.retries, 0, 2)));
   args.push("--timeout-minutes", String(intIn("timeout-minutes", i.timeoutMinutes, 1, 360)));
-  args.push("--on-error", i.onError);
+  args.push("--on-error", "block");
   let waitSeconds = 0;
   if (i.waitForUrl !== "false" && i.waitForUrl !== "0") {
     waitSeconds = intIn("wait-for-url", i.waitForUrl === "true" ? "120" : i.waitForUrl, 1, 180);
@@ -219,18 +219,8 @@ function mapToCliArgs(i, sync, fileExists, reports) {
 }
 
 // src/outcome.ts
-function outcomeFor(cliCode, run2, failOn, mode = "enforce") {
-  if (cliCode === 0) {
-    if (run2?.verdict === "error" || run2?.verdict === "running") {
-      return {
-        verdict: "error",
-        exitCode: 0,
-        level: "warning",
-        message: "Could not test (not an app failure). The job passes because on-error is neutral."
-      };
-    }
-    return { verdict: "pass", exitCode: 0, level: "notice" };
-  }
+function outcomeFor(cliCode, failOn, onError, mode = "enforce") {
+  if (cliCode === 0) return { verdict: "pass", exitCode: 0, level: "notice" };
   if (cliCode === 1) {
     if (mode === "practice") {
       return {
@@ -248,12 +238,15 @@ function outcomeFor(cliCode, run2, failOn, mode = "enforce") {
     } : { verdict: "fail", exitCode: 1, level: "error", message: "A required case failed." };
   }
   if (cliCode === 2) {
-    return failOn === "never" ? {
-      verdict: "error",
-      exitCode: 0,
-      level: "warning",
-      message: "Could not test (not an app failure). The job passes because fail-on is never."
-    } : {
+    if (failOn === "never" || onError === "neutral") {
+      return {
+        verdict: "error",
+        exitCode: 0,
+        level: "warning",
+        message: `Could not test (not an app failure). The job passes because ${failOn === "never" ? "fail-on is never" : "on-error is neutral"}.`
+      };
+    }
+    return {
       verdict: "error",
       exitCode: 2,
       level: "error",
@@ -291,10 +284,10 @@ async function finalCases(d, runId) {
 var PRACTICE_BANNER = "Practice mode: this check does not block merging yet.";
 async function replayLinks(d, cases) {
   const out = [];
-  const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && c.sessionId);
+  const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && typeof c.sessionId === "string" && c.sessionId !== "");
   for (const c of bad.slice(0, MAX_LINKS)) {
     try {
-      const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/sessions/${c.sessionId}/share`, {
+      const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/sessions/${encodeURIComponent(c.sessionId ?? "")}/share`, {
         method: "POST",
         headers: { authorization: `Bearer ${d.apiKey}`, "content-type": "application/json" },
         body: JSON.stringify({ kind: "replay", ttlSeconds: SEVEN_DAYS })
@@ -409,11 +402,20 @@ var esc = (s) => s.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0
 function parseRun(stdout) {
   const text = stdout.trim();
   if (!text.startsWith("{")) return void 0;
+  let raw;
   try {
-    return JSON.parse(text);
+    raw = JSON.parse(text);
   } catch {
     return void 0;
   }
+  if (typeof raw !== "object" || raw === null) return void 0;
+  const r = raw;
+  const flaky = r.counts?.flaky;
+  return {
+    id: typeof r.id === "string" ? r.id : "",
+    flaky: typeof flaky === "number" && Number.isFinite(flaky) ? flaky : 0,
+    cases: Array.isArray(r.cases) ? r.cases : []
+  };
 }
 function workflowKeyOf(fileText) {
   return fileText ? /^key:\s*["']?([A-Za-z0-9_-]{1,64})["']?\s*(#.*)?$/m.exec(fileText)?.[1] : void 0;
@@ -506,8 +508,14 @@ ${msg}
   const res = await d.runCli(mapped.args, env);
   const runJson = parseRun(res.stdout);
   const report = await d.readText(reportPath);
-  const out = outcomeFor(res.code, runJson, inputs.failOn, inputs.mode);
+  const out = outcomeFor(
+    res.code,
+    inputs.failOn,
+    inputs.onError,
+    inputs.mode
+  );
   const url = report ? dashboardUrl(report) : "";
+  const setup = out.verdict === "setup" ? setupLines(res.stderr) : [];
   if (report) {
     let links = [];
     const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
@@ -517,18 +525,18 @@ ${msg}
     await d.appendSummary(summaryBody({ report, practice }));
     await comment(finalBody({ workflowKey, report, links, buildUrl, practice }));
   } else if (out.verdict === "setup") {
-    const lines = setupLines(res.stderr);
-    await d.appendSummary(summaryFor(out, lines.map((l) => `- ${l}`).join("\n") || "See the job log."));
-    await comment(notRunBody(workflowKey, lines, buildUrl));
+    await d.appendSummary(summaryFor(out, setup.map((l) => `- ${l}`).join("\n") || "See the job log."));
+    await comment(notRunBody(workflowKey, setup, buildUrl));
   } else {
     const text = "# Lookover QA \xB7 Couldn't test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
     await d.appendSummary(summaryBody({ report: text, practice }));
     await comment(finalBody({ workflowKey, report: text, links: [], buildUrl, practice }));
   }
   if (out.message) {
-    d.log(`::${ANNOTATE[out.level]} title=Lookover QA::${esc(out.message)}`);
+    const message = out.verdict === "setup" && setup.length > 0 ? `Setup problem: ${setup.join(" \xB7 ")}` : out.message;
+    d.log(`::${ANNOTATE[out.level]} title=Lookover QA::${esc(message)}`);
   }
-  return finish(out.verdict, out.exitCode, runJson?.id ?? "", url, runJson?.counts?.flaky ?? 0);
+  return finish(out.verdict, out.exitCode, runJson?.id ?? "", url, runJson?.flaky ?? 0);
 }
 
 // src/main.ts

@@ -5,7 +5,7 @@ import { prContextEnv } from "./context.js";
 import type { GithubDeps } from "./github.js";
 import { readContext } from "./inputs.js";
 
-// The names the Action sets must be exactly the ones the vendored CLI (dist/webagent.cjs, CLI 0.2.0) reads.
+// The names the Action sets must be exactly the ones the vendored CLI (dist/webagent.cjs, CLI 0.2.0 and later) reads.
 // Reading the bundle itself means a future re-vendor that renames them fails here, not silently in CI.
 const bundle = readFileSync(join(__dirname, "..", "dist", "webagent.cjs"), "utf8");
 const CLI_NAMES = ["WEBAGENT_CI_TITLE", "WEBAGENT_CI_BODY", "WEBAGENT_CI_CHANGED_FILES"] as const;

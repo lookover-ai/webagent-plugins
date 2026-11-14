@@ -177,7 +177,9 @@ export function mapToCliArgs(
   if (sync) args.push("--sync");
   if (i.retries !== "") args.push("--retries", String(intIn("retries", i.retries, 0, 2)));
   args.push("--timeout-minutes", String(intIn("timeout-minutes", i.timeoutMinutes, 1, 360)));
-  args.push("--on-error", i.onError);
+  // `on-error: neutral` is applied by `outcomeFor` from the CLI's exit 2, so the CLI always runs with `block`: its exit 0
+  // then means "the CLI saw a pass", never "could not test, made neutral".
+  args.push("--on-error", "block");
   let waitSeconds = 0;
   if (i.waitForUrl !== "false" && i.waitForUrl !== "0") {
     waitSeconds = intIn("wait-for-url", i.waitForUrl === "true" ? "120" : i.waitForUrl, 1, 180);
