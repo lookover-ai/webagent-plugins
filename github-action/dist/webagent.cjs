@@ -977,13 +977,13 @@ var require_Collection = __commonJS({
 var require_stringifyComment = __commonJS({
   "../node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/stringify/stringifyComment.js"(exports2) {
     "use strict";
-    var stringifyComment = (str) => str.replace(/^(?!$)(?: $)?/gm, "#");
+    var stringifyComment = (str2) => str2.replace(/^(?!$)(?: $)?/gm, "#");
     function indentComment(comment, indent) {
       if (/^\n+$/.test(comment))
         return comment.substring(1);
       return indent ? comment.replace(/^(?! *$)/gm, indent) : comment;
     }
-    var lineComment = (str, indent, comment) => str.endsWith("\n") ? indentComment(comment, indent) : comment.includes("\n") ? "\n" + indentComment(comment, indent) : (str.endsWith(" ") ? "" : " ") + comment;
+    var lineComment = (str2, indent, comment) => str2.endsWith("\n") ? indentComment(comment, indent) : comment.includes("\n") ? "\n" + indentComment(comment, indent) : (str2.endsWith(" ") ? "" : " ") + comment;
     exports2.indentComment = indentComment;
     exports2.lineComment = lineComment;
     exports2.stringifyComment = stringifyComment;
@@ -997,14 +997,14 @@ var require_foldFlowLines = __commonJS({
     var FOLD_FLOW = "flow";
     var FOLD_BLOCK = "block";
     var FOLD_QUOTED = "quoted";
-    function foldFlowLines(text, indent, mode = "flow", { indentAtStart, lineWidth = 80, minContentWidth = 20, onFold, onOverflow } = {}) {
+    function foldFlowLines(text2, indent, mode = "flow", { indentAtStart, lineWidth = 80, minContentWidth = 20, onFold, onOverflow } = {}) {
       if (!lineWidth || lineWidth < 0)
-        return text;
+        return text2;
       if (lineWidth < minContentWidth)
         minContentWidth = 0;
       const endStep = Math.max(1 + minContentWidth, 1 + lineWidth - indent.length);
-      if (text.length <= endStep)
-        return text;
+      if (text2.length <= endStep)
+        return text2;
       const folds = [];
       const escapedFolds = {};
       let end = lineWidth - indent.length;
@@ -1021,14 +1021,14 @@ var require_foldFlowLines = __commonJS({
       let escStart = -1;
       let escEnd = -1;
       if (mode === FOLD_BLOCK) {
-        i = consumeMoreIndentedLines(text, i, indent.length);
+        i = consumeMoreIndentedLines(text2, i, indent.length);
         if (i !== -1)
           end = i + endStep;
       }
-      for (let ch; ch = text[i += 1]; ) {
+      for (let ch; ch = text2[i += 1]; ) {
         if (mode === FOLD_QUOTED && ch === "\\") {
           escStart = i;
-          switch (text[i + 1]) {
+          switch (text2[i + 1]) {
             case "x":
               i += 3;
               break;
@@ -1045,12 +1045,12 @@ var require_foldFlowLines = __commonJS({
         }
         if (ch === "\n") {
           if (mode === FOLD_BLOCK)
-            i = consumeMoreIndentedLines(text, i, indent.length);
+            i = consumeMoreIndentedLines(text2, i, indent.length);
           end = i + indent.length + endStep;
           split = void 0;
         } else {
           if (ch === " " && prev && prev !== " " && prev !== "\n" && prev !== "	") {
-            const next = text[i + 1];
+            const next = text2[i + 1];
             if (next && next !== " " && next !== "\n" && next !== "	")
               split = i;
           }
@@ -1062,12 +1062,12 @@ var require_foldFlowLines = __commonJS({
             } else if (mode === FOLD_QUOTED) {
               while (prev === " " || prev === "	") {
                 prev = ch;
-                ch = text[i += 1];
+                ch = text2[i += 1];
                 overflow = true;
               }
               const j = i > escEnd + 1 ? i - 2 : escStart - 1;
               if (escapedFolds[j])
-                return text;
+                return text2;
               folds.push(j);
               escapedFolds[j] = true;
               end = j + endStep;
@@ -1082,39 +1082,39 @@ var require_foldFlowLines = __commonJS({
       if (overflow && onOverflow)
         onOverflow();
       if (folds.length === 0)
-        return text;
+        return text2;
       if (onFold)
         onFold();
-      let res = text.slice(0, folds[0]);
+      let res = text2.slice(0, folds[0]);
       for (let i2 = 0; i2 < folds.length; ++i2) {
         const fold = folds[i2];
-        const end2 = folds[i2 + 1] || text.length;
+        const end2 = folds[i2 + 1] || text2.length;
         if (fold === 0)
           res = `
-${indent}${text.slice(0, end2)}`;
+${indent}${text2.slice(0, end2)}`;
         else {
           if (mode === FOLD_QUOTED && escapedFolds[fold])
-            res += `${text[fold]}\\`;
+            res += `${text2[fold]}\\`;
           res += `
-${indent}${text.slice(fold + 1, end2)}`;
+${indent}${text2.slice(fold + 1, end2)}`;
         }
       }
       return res;
     }
-    function consumeMoreIndentedLines(text, i, indent) {
+    function consumeMoreIndentedLines(text2, i, indent) {
       let end = i;
       let start = i + 1;
-      let ch = text[start];
+      let ch = text2[start];
       while (ch === " " || ch === "	") {
         if (i < start + indent) {
-          ch = text[++i];
+          ch = text2[++i];
         } else {
           do {
-            ch = text[++i];
+            ch = text2[++i];
           } while (ch && ch !== "\n");
           end = i;
           start = i + 1;
-          ch = text[start];
+          ch = text2[start];
         }
       }
       return end;
@@ -1137,16 +1137,16 @@ var require_stringifyString = __commonJS({
       lineWidth: ctx.options.lineWidth,
       minContentWidth: ctx.options.minContentWidth
     });
-    var containsDocumentMarker = (str) => /^(%|---|\.\.\.)/m.test(str);
-    function lineLengthOverLimit(str, lineWidth, indentLength) {
+    var containsDocumentMarker = (str2) => /^(%|---|\.\.\.)/m.test(str2);
+    function lineLengthOverLimit(str2, lineWidth, indentLength) {
       if (!lineWidth || lineWidth < 0)
         return false;
       const limit = lineWidth - indentLength;
-      const strLen = str.length;
+      const strLen = str2.length;
       if (strLen <= limit)
         return false;
       for (let i = 0, start = 0; i < strLen; ++i) {
-        if (str[i] === "\n") {
+        if (str2[i] === "\n") {
           if (i - start > limit)
             return true;
           start = i + 1;
@@ -1163,11 +1163,11 @@ var require_stringifyString = __commonJS({
       const { implicitKey } = ctx;
       const minMultiLineLength = ctx.options.doubleQuotedMinMultiLineLength;
       const indent = ctx.indent || (containsDocumentMarker(value) ? "  " : "");
-      let str = "";
+      let str2 = "";
       let start = 0;
       for (let i = 0, ch = json2[i]; ch; ch = json2[++i]) {
         if (ch === " " && json2[i + 1] === "\\" && json2[i + 2] === "n") {
-          str += json2.slice(start, i) + "\\ ";
+          str2 += json2.slice(start, i) + "\\ ";
           i += 1;
           start = i;
           ch = "\\";
@@ -1176,38 +1176,38 @@ var require_stringifyString = __commonJS({
           switch (json2[i + 1]) {
             case "u":
               {
-                str += json2.slice(start, i);
+                str2 += json2.slice(start, i);
                 const code = json2.substr(i + 2, 4);
                 switch (code) {
                   case "0000":
-                    str += "\\0";
+                    str2 += "\\0";
                     break;
                   case "0007":
-                    str += "\\a";
+                    str2 += "\\a";
                     break;
                   case "000b":
-                    str += "\\v";
+                    str2 += "\\v";
                     break;
                   case "001b":
-                    str += "\\e";
+                    str2 += "\\e";
                     break;
                   case "0085":
-                    str += "\\N";
+                    str2 += "\\N";
                     break;
                   case "00a0":
-                    str += "\\_";
+                    str2 += "\\_";
                     break;
                   case "2028":
-                    str += "\\L";
+                    str2 += "\\L";
                     break;
                   case "2029":
-                    str += "\\P";
+                    str2 += "\\P";
                     break;
                   default:
                     if (code.substr(0, 2) === "00")
-                      str += "\\x" + code.substr(2);
+                      str2 += "\\x" + code.substr(2);
                     else
-                      str += json2.substr(i, 6);
+                      str2 += json2.substr(i, 6);
                 }
                 i += 5;
                 start = i + 1;
@@ -1217,14 +1217,14 @@ var require_stringifyString = __commonJS({
               if (implicitKey || json2[i + 2] === '"' || json2.length < minMultiLineLength) {
                 i += 1;
               } else {
-                str += json2.slice(start, i) + "\n\n";
+                str2 += json2.slice(start, i) + "\n\n";
                 while (json2[i + 2] === "\\" && json2[i + 3] === "n" && json2[i + 4] !== '"') {
-                  str += "\n";
+                  str2 += "\n";
                   i += 2;
                 }
-                str += indent;
+                str2 += indent;
                 if (json2[i + 2] === " ")
-                  str += "\\";
+                  str2 += "\\";
                 i += 1;
                 start = i + 1;
               }
@@ -1233,8 +1233,8 @@ var require_stringifyString = __commonJS({
               i += 1;
           }
       }
-      str = start ? str + json2.slice(start) : json2;
-      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx, false));
+      str2 = start ? str2 + json2.slice(start) : json2;
+      return implicitKey ? str2 : foldFlowLines.foldFlowLines(str2, indent, foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx, false));
     }
     function singleQuotedString(value, ctx) {
       if (ctx.options.singleQuote === false || ctx.implicitKey && value.includes("\n") || /[ \t]\n|\n[ \t]/.test(value))
@@ -1362,15 +1362,15 @@ ${indent}${start}${value}${end}`;
           return quotedString(value, ctx);
         }
       }
-      const str = value.replace(/\n+/g, `$&
+      const str2 = value.replace(/\n+/g, `$&
 ${indent}`);
       if (actualString) {
-        const test = (tag) => tag.default && tag.tag !== "tag:yaml.org,2002:str" && tag.test?.test(str);
+        const test = (tag) => tag.default && tag.tag !== "tag:yaml.org,2002:str" && tag.test?.test(str2);
         const { compat, tags } = ctx.doc.schema;
         if (tags.some(test) || compat?.some(test))
           return quotedString(value, ctx);
       }
-      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx, false));
+      return implicitKey ? str2 : foldFlowLines.foldFlowLines(str2, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx, false));
     }
     function stringifyString(item, ctx, onComment, onChompKeep) {
       const { implicitKey, inFlow } = ctx;
@@ -1522,11 +1522,11 @@ var require_stringify = __commonJS({
       const props = stringifyProps(node2, tagObj, ctx);
       if (props.length > 0)
         ctx.indentAtStart = (ctx.indentAtStart ?? 0) + props.length + 1;
-      const str = typeof tagObj.stringify === "function" ? tagObj.stringify(node2, ctx, onComment, onChompKeep) : identity.isScalar(node2) ? stringifyString.stringifyString(node2, ctx, onComment, onChompKeep) : node2.toString(ctx, onComment, onChompKeep);
+      const str2 = typeof tagObj.stringify === "function" ? tagObj.stringify(node2, ctx, onComment, onChompKeep) : identity.isScalar(node2) ? stringifyString.stringifyString(node2, ctx, onComment, onChompKeep) : node2.toString(ctx, onComment, onChompKeep);
       if (!props)
-        return str;
-      return identity.isScalar(node2) || str[0] === "{" || str[0] === "[" ? `${props} ${str}` : `${props}
-${ctx.indent}${str}`;
+        return str2;
+      return identity.isScalar(node2) || str2[0] === "{" || str2[0] === "[" ? `${props} ${str2}` : `${props}
+${ctx.indent}${str2}`;
     }
     exports2.createStringifyContext = createStringifyContext;
     exports2.stringify = stringify;
@@ -1561,8 +1561,8 @@ var require_stringifyPair = __commonJS({
       });
       let keyCommentDone = false;
       let chompKeep = false;
-      let str = stringify.stringify(key, ctx, () => keyCommentDone = true, () => chompKeep = true);
-      if (!explicitKey && !ctx.inFlow && str.length > 1024) {
+      let str2 = stringify.stringify(key, ctx, () => keyCommentDone = true, () => chompKeep = true);
+      if (!explicitKey && !ctx.inFlow && str2.length > 1024) {
         if (simpleKeys)
           throw new Error("With simple keys, single line scalar must not span more than 1024 characters");
         explicitKey = true;
@@ -1571,27 +1571,27 @@ var require_stringifyPair = __commonJS({
         if (allNullValues || value == null) {
           if (keyCommentDone && onComment)
             onComment();
-          return str === "" ? "?" : explicitKey ? `? ${str}` : str;
+          return str2 === "" ? "?" : explicitKey ? `? ${str2}` : str2;
         }
       } else if (allNullValues && !simpleKeys || value == null && explicitKey) {
-        str = `? ${str}`;
+        str2 = `? ${str2}`;
         if (keyComment && !keyCommentDone) {
-          str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
+          str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(keyComment));
         } else if (chompKeep && onChompKeep)
           onChompKeep();
-        return str;
+        return str2;
       }
       if (keyCommentDone)
         keyComment = null;
       if (explicitKey) {
         if (keyComment)
-          str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
-        str = `? ${str}
+          str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(keyComment));
+        str2 = `? ${str2}
 ${indent}:`;
       } else {
-        str = `${str}:`;
+        str2 = `${str2}:`;
         if (keyComment)
-          str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
+          str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(keyComment));
       }
       let vsb, vcb, valueComment;
       if (identity.isNode(value)) {
@@ -1607,7 +1607,7 @@ ${indent}:`;
       }
       ctx.implicitKey = false;
       if (!explicitKey && !keyComment && identity.isScalar(value))
-        ctx.indentAtStart = str.length + 1;
+        ctx.indentAtStart = str2.length + 1;
       chompKeep = false;
       if (!indentSeq && indentStep.length >= 2 && !ctx.inFlow && !explicitKey && identity.isSeq(value) && !value.flow && !value.tag && !value.anchor) {
         ctx.indent = ctx.indent.substring(2);
@@ -1651,16 +1651,16 @@ ${ctx.indent}`;
       } else if (valueStr === "" || valueStr[0] === "\n") {
         ws = "";
       }
-      str += ws + valueStr;
+      str2 += ws + valueStr;
       if (ctx.inFlow) {
         if (valueCommentDone && onComment)
           onComment();
       } else if (valueComment && !valueCommentDone) {
-        str += stringifyComment.lineComment(str, ctx.indent, commentString(valueComment));
+        str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(valueComment));
       } else if (chompKeep && onChompKeep) {
         onChompKeep();
       }
-      return str;
+      return str2;
     }
     exports2.stringifyPair = stringifyPair;
   }
@@ -1887,31 +1887,31 @@ var require_stringifyCollection = __commonJS({
           }
         }
         chompKeep = false;
-        let str2 = stringify.stringify(item, itemCtx, () => comment2 = null, () => chompKeep = true);
+        let str3 = stringify.stringify(item, itemCtx, () => comment2 = null, () => chompKeep = true);
         if (comment2)
-          str2 += stringifyComment.lineComment(str2, itemIndent, commentString(comment2));
+          str3 += stringifyComment.lineComment(str3, itemIndent, commentString(comment2));
         if (chompKeep && comment2)
           chompKeep = false;
-        lines.push(blockItemPrefix + str2);
+        lines.push(blockItemPrefix + str3);
       }
-      let str;
+      let str2;
       if (lines.length === 0) {
-        str = flowChars.start + flowChars.end;
+        str2 = flowChars.start + flowChars.end;
       } else {
-        str = lines[0];
+        str2 = lines[0];
         for (let i = 1; i < lines.length; ++i) {
           const line = lines[i];
-          str += line ? `
+          str2 += line ? `
 ${indent}${line}` : "\n";
         }
       }
       if (comment) {
-        str += "\n" + stringifyComment.indentComment(commentString(comment), indent);
+        str2 += "\n" + stringifyComment.indentComment(commentString(comment), indent);
         if (onComment)
           onComment();
       } else if (chompKeep && onChompKeep)
         onChompKeep();
-      return str;
+      return str2;
     }
     function stringifyFlowCollection({ items }, ctx, { flowChars, itemIndent }) {
       const { indent, indentStep, flowCollectionPadding: fcPadding, options: { commentString } } = ctx;
@@ -1954,21 +1954,21 @@ ${indent}${line}` : "\n";
         }
         if (comment)
           reqNewline = true;
-        let str = stringify.stringify(item, itemCtx, () => comment = null);
-        reqNewline || (reqNewline = lines.length > linesAtValue || str.includes("\n"));
+        let str2 = stringify.stringify(item, itemCtx, () => comment = null);
+        reqNewline || (reqNewline = lines.length > linesAtValue || str2.includes("\n"));
         if (i < items.length - 1) {
-          str += ",";
+          str2 += ",";
         } else if (ctx.options.trailingComma) {
           if (ctx.options.lineWidth > 0) {
-            reqNewline || (reqNewline = lines.reduce((sum, line) => sum + line.length + 2, 2) + (str.length + 2) > ctx.options.lineWidth);
+            reqNewline || (reqNewline = lines.reduce((sum, line) => sum + line.length + 2, 2) + (str2.length + 2) > ctx.options.lineWidth);
           }
           if (reqNewline) {
-            str += ",";
+            str2 += ",";
           }
         }
         if (comment)
-          str += stringifyComment.lineComment(str, itemIndent, commentString(comment));
-        lines.push(str);
+          str2 += stringifyComment.lineComment(str2, itemIndent, commentString(comment));
+        lines.push(str2);
         linesAtValue = lines.length;
       }
       const { start, end } = flowChars;
@@ -1980,11 +1980,11 @@ ${indent}${line}` : "\n";
           reqNewline = ctx.options.lineWidth > 0 && len > ctx.options.lineWidth;
         }
         if (reqNewline) {
-          let str = start;
+          let str2 = start;
           for (const line of lines)
-            str += line ? `
+            str2 += line ? `
 ${indentStep}${indent}${line}` : "\n";
-          return `${str}
+          return `${str2}
 ${indent}${end}`;
         } else {
           return `${start}${fcPadding}${lines.join(" ")}${fcPadding}${end}`;
@@ -2316,7 +2316,7 @@ var require_string = __commonJS({
       identify: (value) => typeof value === "string",
       default: true,
       tag: "tag:yaml.org,2002:str",
-      resolve: (str) => str,
+      resolve: (str2) => str2,
       stringify(item, ctx, onComment, onChompKeep) {
         ctx = Object.assign({ actualString: true }, ctx);
         return stringifyString.stringifyString(item, ctx, onComment, onChompKeep);
@@ -2354,7 +2354,7 @@ var require_bool = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:bool",
       test: /^(?:[Tt]rue|TRUE|[Ff]alse|FALSE)$/,
-      resolve: (str) => new Scalar.Scalar(str[0] === "t" || str[0] === "T"),
+      resolve: (str2) => new Scalar.Scalar(str2[0] === "t" || str2[0] === "T"),
       stringify({ source, value }, ctx) {
         if (source && boolTag.test.test(source)) {
           const sv = source[0] === "t" || source[0] === "T";
@@ -2375,9 +2375,9 @@ var require_stringifyNumber = __commonJS({
     function stringifyNumber({ format, minFractionDigits, tag, value }) {
       if (typeof value === "bigint")
         return String(value);
-      const num = typeof value === "number" ? value : Number(value);
-      if (!isFinite(num))
-        return isNaN(num) ? ".nan" : num < 0 ? "-.inf" : ".inf";
+      const num2 = typeof value === "number" ? value : Number(value);
+      if (!isFinite(num2))
+        return isNaN(num2) ? ".nan" : num2 < 0 ? "-.inf" : ".inf";
       let n = Object.is(value, -0) ? "-0" : JSON.stringify(value);
       if (!format && minFractionDigits && (!tag || tag === "tag:yaml.org,2002:float") && /^-?\d/.test(n) && !n.includes("e")) {
         let i = n.indexOf(".");
@@ -2406,7 +2406,7 @@ var require_float = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^(?:[-+]?\.(?:inf|Inf|INF)|\.nan|\.NaN|\.NAN)$/,
-      resolve: (str) => str.slice(-3).toLowerCase() === "nan" ? NaN : str[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
+      resolve: (str2) => str2.slice(-3).toLowerCase() === "nan" ? NaN : str2[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
       stringify: stringifyNumber.stringifyNumber
     };
     var floatExp = {
@@ -2415,10 +2415,10 @@ var require_float = __commonJS({
       tag: "tag:yaml.org,2002:float",
       format: "EXP",
       test: /^[-+]?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)[eE][-+]?[0-9]+$/,
-      resolve: (str) => parseFloat(str),
+      resolve: (str2) => parseFloat(str2),
       stringify(node2) {
-        const num = Number(node2.value);
-        return isFinite(num) ? num.toExponential() : stringifyNumber.stringifyNumber(node2);
+        const num2 = Number(node2.value);
+        return isFinite(num2) ? num2.toExponential() : stringifyNumber.stringifyNumber(node2);
       }
     };
     var float = {
@@ -2426,11 +2426,11 @@ var require_float = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^[-+]?(?:\.[0-9]+|[0-9]+\.[0-9]*)$/,
-      resolve(str) {
-        const node2 = new Scalar.Scalar(parseFloat(str));
-        const dot = str.indexOf(".");
-        if (dot !== -1 && str[str.length - 1] === "0")
-          node2.minFractionDigits = str.length - dot - 1;
+      resolve(str2) {
+        const node2 = new Scalar.Scalar(parseFloat(str2));
+        const dot = str2.indexOf(".");
+        if (dot !== -1 && str2[str2.length - 1] === "0")
+          node2.minFractionDigits = str2.length - dot - 1;
         return node2;
       },
       stringify: stringifyNumber.stringifyNumber
@@ -2447,7 +2447,7 @@ var require_int = __commonJS({
     "use strict";
     var stringifyNumber = require_stringifyNumber();
     var intIdentify = (value) => typeof value === "bigint" || Number.isInteger(value);
-    var intResolve = (str, offset, radix, { intAsBigInt }) => intAsBigInt ? BigInt(str) : parseInt(str.substring(offset), radix);
+    var intResolve = (str2, offset, radix, { intAsBigInt }) => intAsBigInt ? BigInt(str2) : parseInt(str2.substring(offset), radix);
     function intStringify(node2, radix, prefix) {
       const { value } = node2;
       if (intIdentify(value) && value >= 0)
@@ -2460,7 +2460,7 @@ var require_int = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "OCT",
       test: /^0o[0-7]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 8, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 8, opt),
       stringify: (node2) => intStringify(node2, 8, "0o")
     };
     var int2 = {
@@ -2468,7 +2468,7 @@ var require_int = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:int",
       test: /^[-+]?[0-9]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 0, 10, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 0, 10, opt),
       stringify: stringifyNumber.stringifyNumber
     };
     var intHex = {
@@ -2477,7 +2477,7 @@ var require_int = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "HEX",
       test: /^0x[0-9a-fA-F]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 16, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 16, opt),
       stringify: (node2) => intStringify(node2, 16, "0x")
     };
     exports2.int = int2;
@@ -2494,7 +2494,7 @@ var require_schema = __commonJS({
     var _null4 = require_null();
     var seq = require_seq();
     var string4 = require_string();
-    var bool = require_bool();
+    var bool2 = require_bool();
     var float = require_float();
     var int2 = require_int();
     var schema = [
@@ -2502,7 +2502,7 @@ var require_schema = __commonJS({
       seq.seq,
       string4.string,
       _null4.nullTag,
-      bool.boolTag,
+      bool2.boolTag,
       int2.intOct,
       int2.int,
       int2.intHex,
@@ -2530,7 +2530,7 @@ var require_schema2 = __commonJS({
         identify: (value) => typeof value === "string",
         default: true,
         tag: "tag:yaml.org,2002:str",
-        resolve: (str) => str,
+        resolve: (str2) => str2,
         stringify: stringifyJSON
       },
       {
@@ -2547,7 +2547,7 @@ var require_schema2 = __commonJS({
         default: true,
         tag: "tag:yaml.org,2002:bool",
         test: /^true$|^false$/,
-        resolve: (str) => str === "true",
+        resolve: (str2) => str2 === "true",
         stringify: stringifyJSON
       },
       {
@@ -2555,7 +2555,7 @@ var require_schema2 = __commonJS({
         default: true,
         tag: "tag:yaml.org,2002:int",
         test: /^-?(?:0|[1-9][0-9]*)$/,
-        resolve: (str, _onError, { intAsBigInt }) => intAsBigInt ? BigInt(str) : parseInt(str, 10),
+        resolve: (str2, _onError, { intAsBigInt }) => intAsBigInt ? BigInt(str2) : parseInt(str2, 10),
         stringify: ({ value }) => intIdentify(value) ? value.toString() : JSON.stringify(value)
       },
       {
@@ -2563,7 +2563,7 @@ var require_schema2 = __commonJS({
         default: true,
         tag: "tag:yaml.org,2002:float",
         test: /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?$/,
-        resolve: (str) => parseFloat(str),
+        resolve: (str2) => parseFloat(str2),
         stringify: stringifyJSON
       }
     ];
@@ -2571,9 +2571,9 @@ var require_schema2 = __commonJS({
       default: true,
       tag: "",
       test: /^/,
-      resolve(str, onError) {
-        onError(`Unresolved plain scalar ${JSON.stringify(str)}`);
-        return str;
+      resolve(str2, onError) {
+        onError(`Unresolved plain scalar ${JSON.stringify(str2)}`);
+        return str2;
       }
     };
     var schema = [map2.map, seq.seq].concat(jsonScalars, jsonError);
@@ -2605,10 +2605,10 @@ var require_binary = __commonJS({
         if (typeof node_buffer.Buffer === "function") {
           return node_buffer.Buffer.from(src, "base64");
         } else if (typeof atob === "function") {
-          const str = atob(src.replace(/[\n\r]/g, ""));
-          const buffer = new Uint8Array(str.length);
-          for (let i = 0; i < str.length; ++i)
-            buffer[i] = str.charCodeAt(i);
+          const str2 = atob(src.replace(/[\n\r]/g, ""));
+          const buffer = new Uint8Array(str2.length);
+          for (let i = 0; i < str2.length; ++i)
+            buffer[i] = str2.charCodeAt(i);
           return buffer;
         } else {
           onError("This environment does not support reading binary tags; either Buffer or atob is required");
@@ -2619,28 +2619,28 @@ var require_binary = __commonJS({
         if (!value)
           return "";
         const buf = value;
-        let str;
+        let str2;
         if (typeof node_buffer.Buffer === "function") {
-          str = buf instanceof node_buffer.Buffer ? buf.toString("base64") : node_buffer.Buffer.from(buf.buffer).toString("base64");
+          str2 = buf instanceof node_buffer.Buffer ? buf.toString("base64") : node_buffer.Buffer.from(buf.buffer).toString("base64");
         } else if (typeof btoa === "function") {
           let s = "";
           for (let i = 0; i < buf.length; ++i)
             s += String.fromCharCode(buf[i]);
-          str = btoa(s);
+          str2 = btoa(s);
         } else {
           throw new Error("This environment does not support writing binary tags; either Buffer or btoa is required");
         }
         type ?? (type = Scalar.Scalar.BLOCK_LITERAL);
         if (type !== Scalar.Scalar.QUOTE_DOUBLE) {
           const lineWidth = Math.max(ctx.options.lineWidth - ctx.indent.length, ctx.options.minContentWidth);
-          const n = Math.ceil(str.length / lineWidth);
+          const n = Math.ceil(str2.length / lineWidth);
           const lines = new Array(n);
           for (let i = 0, o = 0; i < n; ++i, o += lineWidth) {
-            lines[i] = str.substr(o, lineWidth);
+            lines[i] = str2.substr(o, lineWidth);
           }
-          str = lines.join(type === Scalar.Scalar.BLOCK_LITERAL ? "\n" : " ");
+          str2 = lines.join(type === Scalar.Scalar.BLOCK_LITERAL ? "\n" : " ");
         }
-        return stringifyString.stringifyString({ comment, type, value: str }, ctx, onComment, onChompKeep);
+        return stringifyString.stringifyString({ comment, type, value: str2 }, ctx, onComment, onChompKeep);
       }
     };
     exports2.binary = binary;
@@ -2846,7 +2846,7 @@ var require_float2 = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^(?:[-+]?\.(?:inf|Inf|INF)|\.nan|\.NaN|\.NAN)$/,
-      resolve: (str) => str.slice(-3).toLowerCase() === "nan" ? NaN : str[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
+      resolve: (str2) => str2.slice(-3).toLowerCase() === "nan" ? NaN : str2[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
       stringify: stringifyNumber.stringifyNumber
     };
     var floatExp = {
@@ -2855,10 +2855,10 @@ var require_float2 = __commonJS({
       tag: "tag:yaml.org,2002:float",
       format: "EXP",
       test: /^[-+]?(?:[0-9][0-9_]*)?(?:\.[0-9_]*)?[eE][-+]?[0-9]+$/,
-      resolve: (str) => parseFloat(str.replace(/_/g, "")),
+      resolve: (str2) => parseFloat(str2.replace(/_/g, "")),
       stringify(node2) {
-        const num = Number(node2.value);
-        return isFinite(num) ? num.toExponential() : stringifyNumber.stringifyNumber(node2);
+        const num2 = Number(node2.value);
+        return isFinite(num2) ? num2.toExponential() : stringifyNumber.stringifyNumber(node2);
       }
     };
     var float = {
@@ -2866,11 +2866,11 @@ var require_float2 = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^[-+]?(?:[0-9][0-9_]*)?\.[0-9_]*$/,
-      resolve(str) {
-        const node2 = new Scalar.Scalar(parseFloat(str.replace(/_/g, "")));
-        const dot = str.indexOf(".");
+      resolve(str2) {
+        const node2 = new Scalar.Scalar(parseFloat(str2.replace(/_/g, "")));
+        const dot = str2.indexOf(".");
         if (dot !== -1) {
-          const f = str.substring(dot + 1).replace(/_/g, "");
+          const f = str2.substring(dot + 1).replace(/_/g, "");
           if (f[f.length - 1] === "0")
             node2.minFractionDigits = f.length;
         }
@@ -2890,34 +2890,34 @@ var require_int2 = __commonJS({
     "use strict";
     var stringifyNumber = require_stringifyNumber();
     var intIdentify = (value) => typeof value === "bigint" || Number.isInteger(value);
-    function intResolve(str, offset, radix, { intAsBigInt }) {
-      const sign = str[0];
+    function intResolve(str2, offset, radix, { intAsBigInt }) {
+      const sign = str2[0];
       if (sign === "-" || sign === "+")
         offset += 1;
-      str = str.substring(offset).replace(/_/g, "");
+      str2 = str2.substring(offset).replace(/_/g, "");
       if (intAsBigInt) {
         switch (radix) {
           case 2:
-            str = `0b${str}`;
+            str2 = `0b${str2}`;
             break;
           case 8:
-            str = `0o${str}`;
+            str2 = `0o${str2}`;
             break;
           case 16:
-            str = `0x${str}`;
+            str2 = `0x${str2}`;
             break;
         }
-        const n2 = BigInt(str);
+        const n2 = BigInt(str2);
         return sign === "-" ? BigInt(-1) * n2 : n2;
       }
-      const n = parseInt(str, radix);
+      const n = parseInt(str2, radix);
       return sign === "-" ? -1 * n : n;
     }
     function intStringify(node2, radix, prefix) {
       const { value } = node2;
       if (intIdentify(value)) {
-        const str = value.toString(radix);
-        return value < 0 ? "-" + prefix + str.substr(1) : prefix + str;
+        const str2 = value.toString(radix);
+        return value < 0 ? "-" + prefix + str2.substr(1) : prefix + str2;
       }
       return stringifyNumber.stringifyNumber(node2);
     }
@@ -2927,7 +2927,7 @@ var require_int2 = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "BIN",
       test: /^[-+]?0b[0-1_]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 2, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 2, opt),
       stringify: (node2) => intStringify(node2, 2, "0b")
     };
     var intOct = {
@@ -2936,7 +2936,7 @@ var require_int2 = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "OCT",
       test: /^[-+]?0[0-7_]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 1, 8, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 1, 8, opt),
       stringify: (node2) => intStringify(node2, 8, "0")
     };
     var int2 = {
@@ -2944,7 +2944,7 @@ var require_int2 = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:int",
       test: /^[-+]?[0-9][0-9_]*$/,
-      resolve: (str, _onError, opt) => intResolve(str, 0, 10, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 0, 10, opt),
       stringify: stringifyNumber.stringifyNumber
     };
     var intHex = {
@@ -2953,7 +2953,7 @@ var require_int2 = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "HEX",
       test: /^[-+]?0x[0-9a-fA-F_]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 16, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 16, opt),
       stringify: (node2) => intStringify(node2, 16, "0x")
     };
     exports2.int = int2;
@@ -3057,26 +3057,26 @@ var require_timestamp = __commonJS({
   "../node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/schema/yaml-1.1/timestamp.js"(exports2) {
     "use strict";
     var stringifyNumber = require_stringifyNumber();
-    function parseSexagesimal(str, asBigInt) {
-      const sign = str[0];
-      const parts = sign === "-" || sign === "+" ? str.substring(1) : str;
-      const num = (n) => asBigInt ? BigInt(n) : Number(n);
-      const res = parts.replace(/_/g, "").split(":").reduce((res2, p) => res2 * num(60) + num(p), num(0));
-      return sign === "-" ? num(-1) * res : res;
+    function parseSexagesimal(str2, asBigInt) {
+      const sign = str2[0];
+      const parts = sign === "-" || sign === "+" ? str2.substring(1) : str2;
+      const num2 = (n) => asBigInt ? BigInt(n) : Number(n);
+      const res = parts.replace(/_/g, "").split(":").reduce((res2, p) => res2 * num2(60) + num2(p), num2(0));
+      return sign === "-" ? num2(-1) * res : res;
     }
     function stringifySexagesimal(node2) {
       let { value } = node2;
-      let num = (n) => n;
+      let num2 = (n) => n;
       if (typeof value === "bigint")
-        num = (n) => BigInt(n);
+        num2 = (n) => BigInt(n);
       else if (isNaN(value) || !isFinite(value))
         return stringifyNumber.stringifyNumber(node2);
       let sign = "";
       if (value < 0) {
         sign = "-";
-        value *= num(-1);
+        value *= num2(-1);
       }
-      const _60 = num(60);
+      const _60 = num2(60);
       const parts = [value % _60];
       if (value < 60) {
         parts.unshift(0);
@@ -3096,7 +3096,7 @@ var require_timestamp = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "TIME",
       test: /^[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+$/,
-      resolve: (str, _onError, { intAsBigInt }) => parseSexagesimal(str, intAsBigInt),
+      resolve: (str2, _onError, { intAsBigInt }) => parseSexagesimal(str2, intAsBigInt),
       stringify: stringifySexagesimal
     };
     var floatTime = {
@@ -3105,7 +3105,7 @@ var require_timestamp = __commonJS({
       tag: "tag:yaml.org,2002:float",
       format: "TIME",
       test: /^[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*$/,
-      resolve: (str) => parseSexagesimal(str, false),
+      resolve: (str2) => parseSexagesimal(str2, false),
       stringify: stringifySexagesimal
     };
     var timestamp = {
@@ -3116,8 +3116,8 @@ var require_timestamp = __commonJS({
       // may be omitted altogether, resulting in a date format. In such a case, the time part is
       // assumed to be 00:00:00Z (start of day, UTC).
       test: RegExp("^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})(?:(?:t|T|[ \\t]+)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}(\\.[0-9]+)?)(?:[ \\t]*(Z|[-+][012]?[0-9](?::[0-9]{2})?))?)?$"),
-      resolve(str) {
-        const match = str.match(timestamp.test);
+      resolve(str2) {
+        const match = str2.match(timestamp.test);
         if (!match)
           throw new Error("!!timestamp expects a date, starting with yyyy-mm-dd");
         const [, year, month, day, hour, minute, second] = match.map(Number);
@@ -3149,7 +3149,7 @@ var require_schema3 = __commonJS({
     var seq = require_seq();
     var string4 = require_string();
     var binary = require_binary();
-    var bool = require_bool2();
+    var bool2 = require_bool2();
     var float = require_float2();
     var int2 = require_int2();
     var merge2 = require_merge();
@@ -3162,8 +3162,8 @@ var require_schema3 = __commonJS({
       seq.seq,
       string4.string,
       _null4.nullTag,
-      bool.trueTag,
-      bool.falseTag,
+      bool2.trueTag,
+      bool2.falseTag,
       int2.intBin,
       int2.intOct,
       int2.int,
@@ -3192,7 +3192,7 @@ var require_tags = __commonJS({
     var _null4 = require_null();
     var seq = require_seq();
     var string4 = require_string();
-    var bool = require_bool();
+    var bool2 = require_bool();
     var float = require_float();
     var int2 = require_int();
     var schema = require_schema();
@@ -3213,7 +3213,7 @@ var require_tags = __commonJS({
     ]);
     var tagsByName = {
       binary: binary.binary,
-      bool: bool.boolTag,
+      bool: bool2.boolTag,
       float: float.float,
       floatExp: float.floatExp,
       floatNaN: float.floatNaN,
@@ -8200,14 +8200,14 @@ function promiseAllObject(promisesObj) {
 }
 function randomString(length = 10) {
   const chars = "abcdefghijklmnopqrstuvwxyz";
-  let str = "";
+  let str2 = "";
   for (let i = 0; i < length; i++) {
-    str += chars[Math.floor(Math.random() * chars.length)];
+    str2 += chars[Math.floor(Math.random() * chars.length)];
   }
-  return str;
+  return str2;
 }
-function esc(str) {
-  return JSON.stringify(str);
+function esc(str2) {
+  return JSON.stringify(str2);
 }
 function slugify(input2) {
   return input2.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "");
@@ -8321,8 +8321,8 @@ var primitiveTypes = /* @__PURE__ */ new Set([
   "symbol",
   "undefined"
 ]);
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function escapeRegex(str2) {
+  return str2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function clone(inst, def, params) {
   const cl = new inst._zod.constr(def ?? inst._zod.def);
@@ -8588,13 +8588,13 @@ function getSizableOrigin(input2) {
   return "unknown";
 }
 var highSurrogate = /[\uD800-\uDBFF]/;
-function codePointLength(str) {
-  const units = str.length;
-  if (!highSurrogate.test(str))
+function codePointLength(str2) {
+  const units = str2.length;
+  if (!highSurrogate.test(str2))
     return units;
   let count4 = units;
   for (let i = 0; i < units - 1; i++) {
-    if ((str.charCodeAt(i) & 64512) === 55296 && (str.charCodeAt(i + 1) & 64512) === 56320) {
+    if ((str2.charCodeAt(i) & 64512) === 55296 && (str2.charCodeAt(i + 1) & 64512) === 56320) {
       count4--;
       i++;
     }
@@ -10927,7 +10927,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
     }
     return propValues;
   });
-  const isObject2 = isObject;
+  const isObject3 = isObject;
   const catchall = def.catchall;
   let value;
   const memo2 = globalConfig.memoizer;
@@ -10935,7 +10935,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
   inst._zod.parse = (payload, ctx) => {
     value ?? (value = _normalized.value);
     const input2 = payload.value;
-    if (!isObject2(input2)) {
+    if (!isObject3(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -11071,7 +11071,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     return doc.compile();
   };
   let fastpass;
-  const isObject2 = isObject;
+  const isObject3 = isObject;
   const jit = !globalConfig.jitless;
   const allowsEval2 = allowsEval;
   const fastEnabled = jit && allowsEval2.value;
@@ -11080,7 +11080,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
   inst._zod.parse = (payload, ctx) => {
     value ?? (value = _normalized.value);
     const input2 = payload.value;
-    if (!isObject2(input2)) {
+    if (!isObject3(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -16715,8 +16715,8 @@ function ko_default() {
 }
 
 // ../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/locales/lt.js
-var capitalizeFirstCharacter = (text) => {
-  return text.charAt(0).toUpperCase() + text.slice(1);
+var capitalizeFirstCharacter = (text2) => {
+  return text2.charAt(0).toUpperCase() + text2.slice(1);
 };
 function getUnitTypeFromNumber(number5) {
   const abs = Math.abs(number5);
@@ -25147,8 +25147,8 @@ function currencyCode2(_params) {
   return _stringFormat(ZodCustomStringFormat, "currency_code", currencyCode, _params);
 }
 function hash(alg, params) {
-  const enc = params?.enc ?? "hex";
-  const format = `${alg}_${enc}`;
+  const enc2 = params?.enc ?? "hex";
+  const format = `${alg}_${enc2}`;
   const regex = regexes_exports[format];
   if (!regex)
     throw new Error(`Unrecognized hash format: ${format}`);
@@ -27082,7 +27082,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// ../dist/chunk-BUA4T3C7.js
+// ../dist/chunk-YZ7JNNZ7.js
 var webagentEnvSchema = external_exports.enum(["local", "staging", "production"]);
 var regionCodeSchema = external_exports.enum(["us", "in"]);
 var hosts = {
@@ -27129,7 +27129,25 @@ var idPrefixes = {
   workflow: "wf",
   workflowRun: "wfr",
   mcpGrant: "mcg",
-  mcpRequest: "mcr"
+  mcpRequest: "mcr",
+  /** Production US (0.41.0, D71/D73). */
+  capacityRequest: "cap",
+  pool: "pol",
+  runnerNode: "rnn",
+  adminAlert: "aal",
+  feedback: "fbk",
+  /** Proxy devices (0.42.0): a customer's own machine as an exit. */
+  proxyDevice: "pxd",
+  /** Connected apps (0.42.0): GitHub / Slack installs. */
+  integration: "int",
+  /** QA environments (0.43.0, D82): one app, many places to test it (staging, preview, production). */
+  qaEnvironment: "qae",
+  /** QA notes (0.43.0, D82): app notes and known issues. */
+  qaNote: "qan",
+  /** QA proposals (0.44.0): a proposed change to an existing test, waiting for a person. */
+  qaProposal: "qap",
+  /** QA shared steps (0.48.2, qa-next W1-2): one immutable version row of a project's shared steps. */
+  qaSharedStep: "qss"
 };
 var REGION_ALT = regionCodeSchema.options.join("|");
 function idSchema(kind) {
@@ -27138,6 +27156,7 @@ function idSchema(kind) {
     `expected a ${kind} id`
   );
 }
+var identityUserIdSchema = external_exports.string().min(1).max(200);
 var apiKeySecretSchema = external_exports.string().regex(new RegExp(`^wa_(${REGION_ALT})_[A-Za-z0-9_-]{43}$`), "malformed API key");
 var engineSchema = external_exports.enum(["chromium", "firefox", "webkit"]);
 var ENGINES = engineSchema.options;
@@ -27267,8 +27286,13 @@ var sessionOptionsSchema = external_exports.object({
   /** IANA zone, e.g. `Europe/Berlin`. */
   timezone: external_exports.string().max(64).optional(),
   blockAds: external_exports.boolean().optional(),
-  /** `http://user:pass@host:port` or `socks5://host:port`. Forces a cold launch. */
-  proxyUrl: external_exports.string().url().optional(),
+  /**
+   * `http://user:pass@host:port` (http(s) only; `socks5://` is refused, 0.46.0). Forces a cold
+   * launch.
+   */
+  proxyUrl: external_exports.string().url().refine((u) => /^https?:\/\//i.test(u), {
+    message: "proxyUrl must be http:// or https:// (socks5 is not supported)"
+  }).optional(),
   /**
    * Route through the managed proxy network (when the server has one configured), optionally
    * from a country. Billed per GB received. Forces a cold launch.
@@ -27457,7 +27481,13 @@ var WEBHOOK_EVENTS = [
   /** A scheduled run's findings differ from the previous run of the same schedule. */
   "run.changed",
   "session.live",
-  "session.captcha"
+  "session.captcha",
+  /** A workflow run settled with any verdict except `fail`/`error`; the data's `verdict` says which (0.41.1, `workflowRunWebhookDataSchema`). */
+  "workflow_run.completed",
+  /** A workflow run settled with verdict `fail` or `error` (0.41.1, same data). */
+  "workflow_run.failed",
+  /** A test's flaky score crossed the threshold or it passed only on a retry (0.43.0, `testFlakyWebhookDataSchema`). */
+  "test.flaky"
 ];
 var webhookEventSchema = external_exports.enum([...WEBHOOK_EVENTS, "test.ping"]);
 var webhookEvents = external_exports.array(external_exports.enum(WEBHOOK_EVENTS)).min(1, "pick at least one event");
@@ -28100,8 +28130,8 @@ var forkEngineRequestSchema = external_exports.object({
   checks: engineConfigSchema.shape.checks
 });
 var patchEngineDraftRequestSchema = engineConfigSchema.partial().extend({
-  /** Unique per project; not a built-in slug (0.40.0). Applies at once, like `name`. */
-  slug: engineSlugSchema.optional(),
+  /** Unique per project; not a built-in slug (0.40.0). Applies at once, like `name`. `null` clears it (0.41.5). */
+  slug: engineSlugSchema.nullable().optional(),
   name: engineNameSchema.optional(),
   description: engineDescriptionSchema.optional(),
   icon: engineIconSchema.nullable().optional()
@@ -28137,6 +28167,187 @@ var engineStatsResponseSchema = external_exports.object({
   total: engineStatsRowSchema,
   versions: external_exports.array(engineStatsRowSchema.extend({ version: engineVersionNumberSchema }))
 });
+var LOCAL_APP_ALIAS_SUFFIX = ".local-app.invalid";
+var K = Uint32Array.of(
+  1116352408,
+  1899447441,
+  3049323471,
+  3921009573,
+  961987163,
+  1508970993,
+  2453635748,
+  2870763221,
+  3624381080,
+  310598401,
+  607225278,
+  1426881987,
+  1925078388,
+  2162078206,
+  2614888103,
+  3248222580,
+  3835390401,
+  4022224774,
+  264347078,
+  604807628,
+  770255983,
+  1249150122,
+  1555081692,
+  1996064986,
+  2554220882,
+  2821834349,
+  2952996808,
+  3210313671,
+  3336571891,
+  3584528711,
+  113926993,
+  338241895,
+  666307205,
+  773529912,
+  1294757372,
+  1396182291,
+  1695183700,
+  1986661051,
+  2177026350,
+  2456956037,
+  2730485921,
+  2820302411,
+  3259730800,
+  3345764771,
+  3516065817,
+  3600352804,
+  4094571909,
+  275423344,
+  430227734,
+  506948616,
+  659060556,
+  883997877,
+  958139571,
+  1322822218,
+  1537002063,
+  1747873779,
+  1955562222,
+  2024104815,
+  2227730452,
+  2361852424,
+  2428436474,
+  2756734187,
+  3204031479,
+  3329325298
+);
+var rotr = (x, n) => x >>> n | x << 32 - n;
+function sha256(data) {
+  const len = data.length;
+  const padded = new Uint8Array(len + 9 + 63 >> 6 << 6);
+  padded.set(data);
+  padded[len] = 128;
+  const view = new DataView(padded.buffer);
+  view.setUint32(padded.length - 8, Math.floor(len * 8 / 2 ** 32));
+  view.setUint32(padded.length - 4, len * 8 >>> 0);
+  const h = Uint32Array.of(
+    1779033703,
+    3144134277,
+    1013904242,
+    2773480762,
+    1359893119,
+    2600822924,
+    528734635,
+    1541459225
+  );
+  const w = new Uint32Array(64);
+  for (let off = 0; off < padded.length; off += 64) {
+    for (let i = 0; i < 16; i++) w[i] = view.getUint32(off + i * 4);
+    for (let i = 16; i < 64; i++) {
+      const w15 = w[i - 15] ?? 0;
+      const w2 = w[i - 2] ?? 0;
+      const s0 = rotr(w15, 7) ^ rotr(w15, 18) ^ w15 >>> 3;
+      const s1 = rotr(w2, 17) ^ rotr(w2, 19) ^ w2 >>> 10;
+      w[i] = (w[i - 16] ?? 0) + s0 + (w[i - 7] ?? 0) + s1;
+    }
+    let a = h[0] ?? 0;
+    let b = h[1] ?? 0;
+    let c = h[2] ?? 0;
+    let d2 = h[3] ?? 0;
+    let e = h[4] ?? 0;
+    let f = h[5] ?? 0;
+    let g = h[6] ?? 0;
+    let hh = h[7] ?? 0;
+    for (let i = 0; i < 64; i++) {
+      const t1 = hh + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + (e & f ^ ~e & g) + (K[i] ?? 0) + (w[i] ?? 0);
+      const t2 = (rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + (a & b ^ a & c ^ b & c);
+      hh = g;
+      g = f;
+      f = e;
+      e = d2 + t1 >>> 0;
+      d2 = c;
+      c = b;
+      b = a;
+      a = t1 + t2 >>> 0;
+    }
+    const add = [a, b, c, d2, e, f, g, hh];
+    for (let i = 0; i < 8; i++) h[i] = (h[i] ?? 0) + (add[i] ?? 0);
+  }
+  const out = new Uint8Array(32);
+  const outView = new DataView(out.buffer);
+  for (let i = 0; i < 8; i++) outView.setUint32(i * 4, h[i] ?? 0);
+  return out;
+}
+var BASE32 = "abcdefghijklmnopqrstuvwxyz234567";
+function base32Prefix(bytes, chars) {
+  let bits = 0;
+  let acc = 0;
+  let out = "";
+  for (const byte of bytes) {
+    acc = acc << 8 | byte;
+    bits += 8;
+    while (bits >= 5 && out.length < chars) {
+      out += BASE32[acc >>> bits - 5 & 31];
+      bits -= 5;
+    }
+    acc &= (1 << bits) - 1;
+    if (out.length >= chars) break;
+  }
+  return out;
+}
+function localAppAlias(deviceId) {
+  const digest = sha256(new TextEncoder().encode(deviceId));
+  return `d-${base32Prefix(digest, 12)}${LOCAL_APP_ALIAS_SUFFIX}`;
+}
+var localAppAliasSchema = external_exports.string().regex(/^d-[a-z2-7]{12}\.local-app\.invalid$/, "expected a local-app alias");
+var localAppPortSchema = external_exports.number().int().min(1024).max(65535);
+var localAppPortsSchema = external_exports.array(localAppPortSchema).min(1).max(8).refine((p) => new Set(p).size === p.length, { message: "ports must be distinct" });
+var localAppNavHostSchema = external_exports.string().max(253).regex(
+  /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/,
+  "expected a lowercase public host name"
+).refine(
+  (h) => !/^[0-9.]+$/.test(h) && h !== "localhost" && !h.endsWith(".localhost") && !h.endsWith(".internal") && !h.endsWith(".invalid"),
+  { message: "allowNav takes public host names only" }
+);
+var localAppSchema = external_exports.object({
+  /** A paired proxy device (`GET /v1/proxy-devices`) with `purpose: "local_app"`. */
+  deviceId: idSchema("proxyDevice"),
+  /** The only ports the alias may reach, 1..8 distinct, 1024..65535. */
+  ports: localAppPortsSchema,
+  /** Extra public hosts the browser may open as a top-level page, at most 10. */
+  allowNav: external_exports.array(localAppNavHostSchema).max(10).optional(),
+  /** Optional echo; when sent it must equal `localAppAlias(deviceId)` (the server derives the alias, a caller cannot choose). */
+  alias: localAppAliasSchema.optional()
+}).superRefine((v, ctx) => {
+  if (v.alias !== void 0 && v.alias !== localAppAlias(v.deviceId)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["alias"],
+      message: "alias is derived from deviceId and cannot be chosen"
+    });
+  }
+});
+var localAppInfoSchema = external_exports.object({
+  deviceId: idSchema("proxyDevice"),
+  /** The URL host to open, `localAppAlias(deviceId)`. */
+  alias: localAppAliasSchema,
+  ports: localAppPortsSchema,
+  allowNav: external_exports.array(localAppNavHostSchema).max(10).optional()
+});
+var evidenceClassSchema = external_exports.enum(["standard", "local_app"]);
 var scrapeFormatSchema = external_exports.enum(["html", "cleaned_html", "markdown", "readability"]);
 var waitUntil = external_exports.enum(["domcontentloaded", "load", "networkidle"]).default("load");
 var timeoutMs = external_exports.number().int().min(1e3).max(12e4).default(3e4);
@@ -28311,8 +28522,121 @@ var crawlResponseSchema = external_exports.object({
   }),
   ms: external_exports.number()
 });
+var storageByOrigin = external_exports.record(external_exports.string(), external_exports.record(external_exports.string(), external_exports.string()));
+var sessionContextSchema = external_exports.object({
+  cookies: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())),
+  localStorage: storageByOrigin.optional(),
+  sessionStorage: storageByOrigin.optional(),
+  indexedDB: external_exports.record(external_exports.string(), external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown()))).optional()
+});
+var putSessionContextRequestSchema = sessionContextSchema.partial();
+var okResponseSchema = external_exports.object({ ok: external_exports.boolean() });
+var cookieParamSchema = external_exports.object({
+  name: external_exports.string().min(1).max(256),
+  value: external_exports.string().max(4096),
+  url: external_exports.string().max(2e3).optional(),
+  domain: external_exports.string().max(253).optional(),
+  path: external_exports.string().max(1e3).optional(),
+  secure: external_exports.boolean().optional(),
+  httpOnly: external_exports.boolean().optional(),
+  sameSite: external_exports.enum(["Strict", "Lax", "None"]).optional(),
+  /** Unix time in seconds. */
+  expires: external_exports.number().optional()
+});
+var listCookiesResponseSchema = external_exports.object({
+  cookies: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown()))
+});
+var putCookiesRequestSchema = external_exports.object({
+  cookies: external_exports.array(cookieParamSchema).min(1).max(200)
+});
+var putCookiesResponseSchema = external_exports.object({
+  ok: external_exports.boolean(),
+  count: external_exports.number().int().nonnegative()
+});
+var deleteCookiesQuerySchema = external_exports.object({
+  name: external_exports.string().min(1).max(256).optional(),
+  domain: external_exports.string().max(253).optional()
+});
+var SESSION_FILE_MAX_BYTES = 25 * 1024 * 1024;
+var sessionFileNameSchema = external_exports.string().min(1).max(255).regex(/^[^/\\.][^/\\]*$/, "a plain file name, not starting with a dot");
+var uploadFileQuerySchema = external_exports.object({ name: sessionFileNameSchema });
+var uploadFileResponseSchema = external_exports.object({
+  /** The file's key in the session (for `GET …/files/:name` and `files/attach`); a download's is its guid. */
+  name: external_exports.string(),
+  size: external_exports.number().int().nonnegative(),
+  /** Where it came from (0.19.1): uploaded by the caller, or downloaded by the page. */
+  source: external_exports.enum(["upload", "download"]).optional(),
+  /** The name the site gave a download (0.19.1); show this, keep `name` as the key. */
+  suggestedFilename: external_exports.string().max(255).optional()
+});
+var listFilesResponseSchema = external_exports.object({
+  files: external_exports.array(uploadFileResponseSchema),
+  downloads: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown()))
+});
+var attachFilesRequestSchema = external_exports.object({
+  ref: external_exports.string().regex(/^e\d+$/),
+  names: external_exports.array(sessionFileNameSchema).min(1).max(50),
+  /** Snapshot generation the ref came from (stale refs are refused). */
+  generation: external_exports.number().int().optional()
+});
+var qaDebugSkillSchema = external_exports.object({
+  name: external_exports.string().regex(/^[a-z][a-z0-9-]*$/),
+  version: external_exports.string().min(1),
+  /** sha256 of the skill package. */
+  digest: external_exports.string(),
+  /** Presigned GET of the package, valid for the lease. */
+  packageUrl: external_exports.string().url()
+});
+var qaDebugLeaseSchema = external_exports.object({
+  /**
+   * The step the person wants to stand on (1-based, the test's written steps). Steps 1..replayTo-1 run
+   * again first; `1` replays nothing (the start page only).
+   */
+  replayTo: external_exports.number().int().min(1).max(60),
+  skill: qaDebugSkillSchema,
+  /**
+   * The `qa-case` inputs a normal run of this test would get (`url`, `path`, `steps`, ...), built by the
+   * api. The runner keeps `steps` 1..replayTo-1 and drops every expectation, check and teardown.
+   */
+  inputs: external_exports.record(external_exports.string(), external_exports.unknown())
+});
+var qaExploreLeaseSchema = external_exports.object({
+  /** The environment's origin (`https://host[:port]`): the only origin the session may load as a top-level page. */
+  appOrigin: external_exports.string().max(300).regex(/^https?:\/\/[^/?#\s]+$/)
+});
+var QA_RUN_STATE_MAX_BYTES = 512 * 1024;
+var QA_RUN_STATE_MAX_COOKIES = 150;
+var originStorageSchema = external_exports.record(
+  external_exports.string().max(300),
+  external_exports.record(external_exports.string().max(1024), external_exports.string())
+);
+var qaRunStateSchema = external_exports.object({
+  cookies: external_exports.array(cookieParamSchema).max(QA_RUN_STATE_MAX_COOKIES),
+  localStorage: originStorageSchema.optional(),
+  sessionStorage: originStorageSchema.optional()
+});
+var qaRunStatePutRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  state: qaRunStateSchema
+});
+var qaRunStatePutResponseSchema = external_exports.object({
+  ok: external_exports.literal(true),
+  cookies: external_exports.number().int().nonnegative(),
+  localStorageKeys: external_exports.number().int().nonnegative(),
+  sessionStorageKeys: external_exports.number().int().nonnegative(),
+  dropped: external_exports.number().int().nonnegative(),
+  bytes: external_exports.number().int().nonnegative()
+});
+var qaRunStateFetchRequestSchema = external_exports.object({ sessionId: idSchema("session") });
+var qaRunStateFetchResponseSchema = qaRunStateSchema.extend({
+  expiresAt: external_exports.iso.datetime()
+});
+var qaSharedLoginLeaseSchema = external_exports.object({
+  mode: external_exports.enum(["export", "import"]),
+  origin: external_exports.string().url().max(300)
+});
 var poolSchema = external_exports.enum(["shared", "job", "isolated", "dedicated"]);
-var sessionKindSchema = external_exports.enum(["live", "job", "quick"]);
+var sessionKindSchema = external_exports.enum(["live", "job", "quick", "http"]);
 var planSchema = external_exports.enum(["free", "starter", "pro", "enterprise"]);
 var sinksSchema = external_exports.object({
   events: external_exports.object({
@@ -28346,7 +28670,12 @@ var leaseSecretSchema = external_exports.object({ name: external_exports.string(
 var credentialFillSchema = external_exports.object({
   namespace: external_exports.string().min(1).max(64).default("default"),
   /** Press Enter after filling. */
-  autoSubmit: external_exports.boolean().default(false)
+  autoSubmit: external_exports.boolean().default(false),
+  /**
+   * 0.41.6 (hub D76): lookups are allowed but nothing is filled on its own; a fill needs a person's
+   * `Use vault` answer on a `login` question first (the session did not turn `credentials` on).
+   */
+  onRequest: external_exports.boolean().optional()
 });
 var profileLoadSchema = external_exports.object({ id: idSchema("profile") });
 var profileArchiveSaveResponseSchema = external_exports.object({ profileId: idSchema("profile") });
@@ -28428,18 +28757,50 @@ var skillJobSchema = external_exports.object({
    * Run with the untrusted-action guard. Defaults to true (safe); the API sends false only for a
    * skill the tenant itself authored.
    */
-  untrusted: external_exports.boolean().default(true)
+  untrusted: external_exports.boolean().default(true),
+  /**
+   * Video policy of this run (0.45.0, QA runs): `failure` records and keeps the clip only when the run
+   * fails, `always` records every run, `never` records none. Absent: the runner's own policy (a QA session
+   * decides from the lease `qaRun`; others keep today's behaviour). Screenshots are never affected.
+   */
+  record: external_exports.enum(["failure", "always", "never"]).optional(),
+  /**
+   * Keep the clip of one passing run in N (0.45.0), by a stable hash of the session id; 1 keeps every
+   * passing clip. Only meaningful with `record: "failure"`. Absent: no pass is sampled.
+   */
+  passSampleOneIn: external_exports.number().int().min(1).optional()
+});
+var localAppRouteSchema = external_exports.object({
+  /** `localAppAlias(deviceId)`: the only host routed to the relay. */
+  alias: localAppAliasSchema,
+  /** The only ports of the alias that may be opened. */
+  ports: localAppPortsSchema,
+  /** Public hosts allowed as top-level pages besides the alias (spec R4). */
+  allowNav: external_exports.array(localAppNavHostSchema).max(10).optional(),
+  /** `http://<sessionId>:<streamJwt>@<relay-internal-host>:4415`. A secret: never log it. */
+  upstream: external_exports.string().url().max(2e3)
 });
 var placeRequestFieldsSchema = external_exports.object({
   /** Idempotency: the same requestId returns the same placement. */
   requestId: external_exports.string().min(8),
   tenantId: idSchema("tenant"),
-  apiKeyId: idSchema("apiKey").optional(),
+  /**
+   * The principal that opened the session: an API key id, or, for an MCP sign-in principal, its
+   * `mcg_` grant id (0.41.5). The lease carries the same value.
+   */
+  apiKeyId: external_exports.union([idSchema("apiKey"), idSchema("mcpGrant")]).optional(),
   plan: planSchema,
   kind: sessionKindSchema,
   homeRegion: regionCodeSchema,
   executionRegion: regionCodeSchema,
   options: sessionOptionsSchema,
+  /**
+   * The org's pool (0.41.0, D71): the api picks it, the orchestrator places inside it (runners carry a
+   * `poolId`). Absent: the shared pool / any runner (old api, local dev).
+   */
+  poolId: idSchema("pool").optional(),
+  /** Pool to try when `poolId` is full (a dedicated pool that overflows to shared); the api sets it, 0.41.0. */
+  fallbackPoolId: idSchema("pool").optional(),
   limits: limitsSchema,
   sinks: sinksSchema,
   secrets: external_exports.array(leaseSecretSchema).default([]),
@@ -28448,10 +28809,51 @@ var placeRequestFieldsSchema = external_exports.object({
   /** Present when the session starts from a saved profile. */
   profile: profileLoadSchema.optional(),
   /**
+   * Cookies imported into the profile (`POST /v1/profiles/import-cookies`): the runner adds them to the
+   * browser context before the first navigation. Never logged.
+   */
+  initialCookies: external_exports.array(cookieParamSchema).max(200).optional(),
+  /** Present for a local-app session (0.43.0): the runner routes the alias to the relay and guards by it. Cold launch. */
+  localAppRoute: localAppRouteSchema.optional(),
+  /** Retention class the runner stamps on the session's artifacts (0.43.0). Absent: `standard`; `local_app` with `localAppRoute`. */
+  evidenceClass: evidenceClassSchema.optional(),
+  /**
+   * QA session profile flag (0.44.0): `qa` turns on the QA run behaviour (sign-in placeholders
+   * `{{totp}}`/`{{inbox.*}}`, evidence tuned for tests). Absent: a normal session. Off by default;
+   * the api sets it only for QA runs. Place and lease carry it alike.
+   * NAMED `sessionProfile` because `profile` above is the saved BROWSER profile `{id}` to load.
+   * The orchestrator's `buildLease` and the job command schema MUST carry this field and `qaRun`
+   * from place to lease unchanged. When it is `qa`, the api schedules at least 1 retry for failing
+   * qa cases.
+   */
+  sessionProfile: external_exports.literal("qa").optional(),
+  /**
+   * QA run facts that feed the video policy (0.44.0), set with `sessionProfile: "qa"`: `attempt`
+   * (1 = first try, 2+ = a retry), `firstRunOfVersion` (first run of this test version, so record
+   * video), `onDemandVideo` (a person asked for video). Same carry rule as `sessionProfile`.
+   */
+  qaRun: external_exports.object({
+    attempt: external_exports.number().int().min(1),
+    firstRunOfVersion: external_exports.boolean(),
+    onDemandVideo: external_exports.boolean(),
+    /**
+     * Log in once per run (0.47.0, qa-next C4): `export` = the run's setup session, `import` = fetch the
+     * run's login state before the first navigation. Absent: the case signs in itself.
+     */
+    sharedLogin: qaSharedLoginLeaseSchema.optional()
+  }).optional(),
+  /**
+   * Debug live (qa-next W2-2): a `live` session that replays a test's steps 1..replayTo-1 and then records
+   * the person's actions as plain-word steps. The api sets it only for `POST /v1/qa/debug`.
+   */
+  qaDebug: qaDebugLeaseSchema.optional(),
+  /**
    * Save the browser profile when the session closes (public `persistProfile`): after the browser
    * exits, the runner packs the user data dir and PUTs it to `internalRoutes.homeApi.profileArchiveSave`.
    * The API decides the target (the lease's `profile`, or a new profile); the runner sends only bytes.
    */
+  /** Explorer (qa-next W2-3): run this job session read-only, locked to `appOrigin`. Same carry rule as `qaRun`. */
+  qaExplore: qaExploreLeaseSchema.optional(),
   persistProfile: external_exports.boolean().optional(),
   /** Present when the session loads uploaded extensions (at most 10; the API dedupes). */
   extensions: external_exports.array(extensionLoadSchema).max(10).optional(),
@@ -28466,11 +28868,11 @@ var placeRequestFieldsSchema = external_exports.object({
 });
 function checkKindPayload(v, ctx) {
   checkSessionOptions(v.options, ctx, ["options"]);
-  if (v.kind === "job" !== (v.skill !== void 0)) {
+  if ((v.kind === "job" || v.kind === "http") !== (v.skill !== void 0)) {
     ctx.addIssue({
       code: "custom",
       path: ["skill"],
-      message: "skill is required for kind job only"
+      message: "skill is required for kind job or http only"
     });
   }
   if (v.kind === "quick" !== (v.quick !== void 0)) {
@@ -28543,6 +28945,21 @@ var createSessionRequestSchema = sessionOptionsSchema.omit({ id: true }).extend(
    * (`proxyUrl`, `useProxy`, `dedicatedIp`): sending it with any is `invalid_input` on `proxyId`.
    */
   proxyId: idSchema("proxy").optional(),
+  /**
+   * Exit through one of your own paired devices (`GET /v1/proxy-devices`, 0.42.0). Exclusive with
+   * `proxyId`, `proxyUrl`, `useProxy` and `dedicatedIp`: sending it with any is `invalid_input`
+   * on `proxyDeviceId`. A device of another tenant is `not_found`.
+   */
+  proxyDeviceId: idSchema("proxyDevice").optional(),
+  /**
+   * Test an app running on one of your own paired devices (0.43.0, hub D82): the cloud browser opens
+   * a synthetic alias host that the api's relay forwards to the device's loopback, only on the
+   * declared ports. Exclusive with `proxyId`, `proxyUrl`, `useProxy`, `dedicatedIp`,
+   * `proxyDeviceId` and `allowHosts`: sending it with any is `invalid_input` on `localApp`. A device
+   * of another tenant is `not_found`; a device not paired with `purpose: "local_app"` is `invalid_input`.
+   * The reply echoes `Session.localApp` with the derived alias. The guard rules are the runtime's.
+   */
+  localApp: localAppSchema.optional(),
   /** Execution region (`GET /v1/regions`). Default: the tenant's home region. */
   region: regionCodeSchema.optional(),
   /** Launch with this saved profile (logins, preferences, site data). */
@@ -28601,6 +29018,20 @@ var createSessionRequestSchema = sessionOptionsSchema.omit({ id: true }).extend(
       message: "proxyId cannot be combined with proxyUrl, useProxy or dedicatedIp: send one proxy source"
     });
   }
+  if (v.proxyDeviceId && (v.proxyId !== void 0 || v.proxyUrl !== void 0 || v.useProxy !== void 0 || v.dedicatedIp !== void 0)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["proxyDeviceId"],
+      message: "proxyDeviceId cannot be combined with proxyId, proxyUrl, useProxy or dedicatedIp: send one proxy source"
+    });
+  }
+  if (v.localApp && (v.proxyId !== void 0 || v.proxyUrl !== void 0 || v.useProxy !== void 0 || v.dedicatedIp !== void 0 || v.proxyDeviceId !== void 0 || v.allowHosts !== void 0)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["localApp"],
+      message: "localApp cannot be combined with proxyId, proxyUrl, useProxy, dedicatedIp, proxyDeviceId or allowHosts: send one proxy source"
+    });
+  }
   if (v.queueForCapacity && v.waitForCapacityMs !== void 0 && v.waitForCapacityMs > 0) {
     ctx.addIssue({
       code: "custom",
@@ -28626,7 +29057,13 @@ var sessionEndReasonSchema = external_exports.enum([
   /** The session went over its memory cap a second time (0.22.0, hub spec compute-limits). */
   "memory_limit",
   /** Queued for capacity (0.27.0) and no browser freed up before `queue.expiresAt`. */
-  "capacity_timeout"
+  "capacity_timeout",
+  /** The runner node was drained (runtime deploy or admin drain, D73) and the session was still open at the deadline (0.41.0). Not an error: evidence is uploaded, billing stops. */
+  "maintenance",
+  /** The MCP sign-in grant the session was started under was revoked (0.41.3). Not an error. */
+  "revoked",
+  /** The paired device of a local-app session dropped and did not come back (0.44.0). Not our fault: say "your local app went offline". */
+  "device_offline"
 ]);
 var sessionQueueSchema = external_exports.object({
   /** 1 = next to start in this VPC. */
@@ -28672,7 +29109,11 @@ var sessionSchema = external_exports.object({
   /** The `startUrl` the session was created with (0.33.3), so "Run again" can reopen the same page. */
   startUrl: external_exports.string().max(2048).optional(),
   /** Set only while the session is queued for capacity (0.27.0). */
-  queue: sessionQueueSchema.optional()
+  queue: sessionQueueSchema.optional(),
+  /** Present on a local-app session (0.43.0): the alias to open and the ports it reaches. Never the relay route or token. */
+  localApp: localAppInfoSchema.optional(),
+  /** Retention class of the session's evidence (0.43.0). Absent: `standard`; `local_app` for local-app sessions. */
+  evidenceClass: evidenceClassSchema.optional()
 });
 var startedByName = external_exports.string().max(200).optional();
 var sessionStartedBySchema = external_exports.discriminatedUnion("kind", [
@@ -28726,6 +29167,8 @@ var runnerInfoSchema = external_exports.object({
   id: idSchema("runner"),
   region: regionCodeSchema,
   pool: poolSchema,
+  /** The `pol_…` pool this runner serves (0.41.0, D71); not secret, passed in user_data. Absent: the shared pool. */
+  poolId: idSchema("pool").optional(),
   /** host:port on the private network. */
   address: external_exports.string(),
   engines: external_exports.array(engineSchema).min(1),
@@ -28746,7 +29189,15 @@ var runnerInfoSchema = external_exports.object({
   /** How per-session CPU is capped on this host (0.26.0). */
   cpuCap: external_exports.enum(["cgroup", "affinity", "renice"]).optional(),
   /** Finishing its sessions, taking no new ones (0.26.0). */
-  draining: external_exports.boolean().optional()
+  draining: external_exports.boolean().optional(),
+  /**
+   * CPU busy share for placement (0.47.0, qa-next C3): sessions inside a step, averaged over the last
+   * heartbeat window (HEARTBEAT_INTERVAL_S). A session waiting on a model call or a page wait counts 0, so
+   * 2.5 = on average two and a half sessions were burning CPU. Absent: an older runner; place by `slots`.
+   */
+  busySessions: external_exports.number().nonnegative().optional(),
+  /** Open sessions on the QA profile (0.47.0), for the orchestrator's per-node `maxQaConcurrent` cap. */
+  qaSessions: external_exports.number().int().nonnegative().optional()
 });
 var originSchema = external_exports.string().url().refine((o) => {
   try {
@@ -28765,6 +29216,12 @@ var credentialLookupResponseSchema = external_exports.object({
   /** Current 6-digit code when the credential has TOTP; valid until its 30 s step ends. */
   totpCode: external_exports.string().regex(/^\d{6}$/).optional()
 });
+var credentialSecretRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  origin: originSchema,
+  name: external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/)
+});
+var credentialSecretResponseSchema = external_exports.object({ value: external_exports.string().min(1).max(2e3) });
 var presignRequestSchema = external_exports.object({
   sessionId: idSchema("session"),
   name: external_exports.string().min(1).max(200),
@@ -28824,6 +29281,14 @@ var prewarmResponseSchema = external_exports.object({
   runners: external_exports.number().int().min(0)
 });
 var drainResponseSchema = external_exports.object({ runnerId: external_exports.string().min(1), draining: external_exports.boolean() });
+var drainRequestSchema = external_exports.object({
+  /** Milliseconds until sessions still open are ended with reason `maintenance`. */
+  deadlineMs: external_exports.number().int().min(1e3).max(24 * 36e5)
+});
+var drainResultSchema = external_exports.object({
+  sessions: external_exports.number().int().min(0),
+  idleEnded: external_exports.number().int().min(0)
+});
 var orchestratorSessionsResponseSchema = external_exports.object({
   /** Every session the orchestrator still tracks (placed or live on a runner); ended ones are absent. */
   sessions: external_exports.array(external_exports.object({ id: idSchema("session"), runnerId: idSchema("runner") })).max(1e4),
@@ -28851,6 +29316,59 @@ var orgSchema = external_exports.object({
 var membershipSchema = external_exports.object({ org: orgSchema, role: memberRoleSchema });
 var listOrgsResponseSchema = external_exports.object({ memberships: external_exports.array(membershipSchema) });
 var listRegionsResponseSchema = external_exports.object({ regions: external_exports.array(regionCodeSchema) });
+var capacityRequestStatusSchema = external_exports.enum(["pending", "approved", "declined", "cancelled"]);
+var capacityRequestTimelineSchema = external_exports.enum(["now", "this_month", "later"]);
+var capacityRequestDedicatedSchema = external_exports.enum(["yes", "maybe", "no"]);
+var createCapacityRequestRequestSchema = external_exports.object({
+  /** Concurrent sessions the org wants. */
+  sessions: external_exports.number().int().min(1).max(100),
+  /** What you build, one line. */
+  useCase: external_exports.string().trim().min(1).max(300),
+  sessionsPerDay: external_exports.number().int().min(0).optional(),
+  timeline: capacityRequestTimelineSchema.optional(),
+  wantsDedicated: capacityRequestDedicatedSchema.optional()
+});
+var capacityRequestSchema = external_exports.object({
+  id: idSchema("capacityRequest"),
+  tenantId: idSchema("tenant"),
+  status: capacityRequestStatusSchema,
+  sessions: external_exports.number().int().min(1),
+  useCase: external_exports.string(),
+  sessionsPerDay: external_exports.number().int().min(0).optional(),
+  timeline: capacityRequestTimelineSchema.optional(),
+  wantsDedicated: capacityRequestDedicatedSchema.optional(),
+  /** Set when approved: the new concurrency limit. */
+  approvedLimit: external_exports.number().int().min(1).optional(),
+  /** The admin's note, shown to the org. */
+  decisionNote: external_exports.string().optional(),
+  createdAt: external_exports.iso.datetime(),
+  decidedAt: external_exports.iso.datetime().optional()
+});
+var capacityRequestSummarySchema = capacityRequestSchema.pick({ id: true, status: true });
+var listCapacityRequestsResponseSchema = external_exports.object({
+  requests: external_exports.array(capacityRequestSchema)
+});
+var tenantCapacitySchema = external_exports.object({
+  /** What the plan gives. */
+  planLimit: external_exports.number().int().min(0),
+  /** Set by an approved request; null when none. */
+  approvedLimit: external_exports.number().int().min(0).nullable(),
+  /** What applies now: `approvedLimit ?? planLimit`, or 1 under the global throttle without approval. */
+  effectiveLimit: external_exports.number().int().min(0),
+  /** True when a global throttle dropped this org to 1 ("high demand" banner). */
+  throttled: external_exports.boolean(),
+  /** The org's pending request, if any. */
+  openRequest: capacityRequestSummarySchema.optional()
+});
+var capacityExceededDetailsSchema = external_exports.looseObject({
+  quota: external_exports.enum(["concurrency", "memory", "budget"]),
+  limit: external_exports.number().int().optional(),
+  sessions: external_exports.number().int().optional(),
+  limitMb: external_exports.number().int().optional(),
+  inUseMb: external_exports.number().int().optional(),
+  throttled: external_exports.boolean().optional(),
+  requestUrl: external_exports.string().url().optional()
+});
 var feedbackKindSchema = external_exports.enum(["bug", "idea", "other"]);
 var feedbackContextSchema = external_exports.object({
   /** Dashboard route the person was on, e.g. `/sessions/sess_…`. */
@@ -28932,9 +29450,12 @@ var tenantResponseSchema = external_exports.object({
     /** Memory reserved by the org's open sessions now, MB (0.23.0). */
     memoryInUseMb: external_exports.number().int().nonnegative().optional()
   }),
-  securityTerms: external_exports.object({ required: external_exports.boolean(), acceptedAt: unixMs3.nullable() })
+  securityTerms: external_exports.object({ required: external_exports.boolean(), acceptedAt: unixMs3.nullable() }),
+  /** The concurrency limit in force and the global throttle (0.41.0, D71): drives the "high demand" banner and Request more. */
+  capacity: tenantCapacitySchema.optional()
 });
 var acceptSecurityTermsResponseSchema = external_exports.object({ acceptedSecurityTermsAt: unixMs3 });
+var apiKeyScopeSchema = external_exports.enum(["full", "ci"]);
 var apiKeyInfoSchema = external_exports.object({
   id: idSchema("apiKey"),
   /** The project the key belongs to (hub D29); calls with the key act in this project. */
@@ -28944,13 +29465,21 @@ var apiKeyInfoSchema = external_exports.object({
   role: roleSchema,
   createdAt: unixMs3,
   lastUsedAt: unixMs3.nullable(),
-  revokedAt: unixMs3.nullable()
+  revokedAt: unixMs3.nullable(),
+  /** When the key stops working (0.41.3, ISO). `null` or absent = never. */
+  expiresAt: external_exports.string().datetime().nullable().optional(),
+  /** Absent = `full` (0.41.3). */
+  scope: apiKeyScopeSchema.optional()
 });
 var listApiKeysResponseSchema = external_exports.object({ keys: external_exports.array(apiKeyInfoSchema) });
 var createApiKeyRequestSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(100),
   role: roleSchema.optional(),
-  projectId: idSchema("project").optional()
+  projectId: idSchema("project").optional(),
+  /** Key expires then (0.41.3, ISO, must be in the future: the api checks). Absent = never. */
+  expiresAt: external_exports.string().datetime().optional(),
+  /** Default `full` (0.41.3). `ci` is the least-privilege key for pipelines, see `apiKeyScopeSchema`. */
+  scope: apiKeyScopeSchema.optional()
 });
 var createApiKeyResponseSchema = external_exports.object({
   key: apiKeySecretSchema,
@@ -29265,12 +29794,21 @@ var taskQuestionOptionSchema = external_exports.object({
   /** The agent's suggestion; at most one option per question. */
   recommended: external_exports.boolean().optional()
 });
+var taskQuestionLoginSchema = external_exports.object({
+  origin: external_exports.string().url().max(2048),
+  account: external_exports.object({
+    username: external_exports.string().max(200).optional(),
+    label: external_exports.string().max(120).optional()
+  }).optional()
+});
 var taskQuestionSchema = external_exports.object({
   id: external_exports.string().min(1).max(40),
-  kind: external_exports.enum(["choice", "approve", "plan", "handoff"]),
+  kind: external_exports.enum(["choice", "approve", "plan", "handoff", "login"]),
   text: external_exports.string().min(1).max(500),
   options: external_exports.array(taskQuestionOptionSchema).min(1).max(4),
-  allowText: external_exports.boolean().default(true)
+  allowText: external_exports.boolean().default(true),
+  /** Set on `login` questions only. */
+  login: taskQuestionLoginSchema.optional()
 }).refine((q) => q.options.filter((o) => o.recommended).length <= 1, {
   message: "at most one option may be recommended",
   path: ["options"]
@@ -29331,6 +29869,55 @@ var taskResultSchema = external_exports.object({
   costMicros: external_exports.number().int().nonnegative(),
   ms: external_exports.number().nonnegative(),
   text: external_exports.string()
+});
+var taskScreenshotKindSchema = external_exports.enum(["final", "failed_step"]);
+var taskScreenshotSchema = external_exports.object({
+  kind: taskScreenshotKindSchema,
+  stepIndex: external_exports.number().int().min(0).optional(),
+  url: external_exports.string().url(),
+  expiresAt: external_exports.string().datetime()
+});
+var taskSchema = external_exports.object({
+  id: idSchema("task"),
+  sessionId: idSchema("session"),
+  goal: external_exports.string(),
+  /**
+   * Who sent the task (0.20.0, group chat): `dashboard` {id: identity sub, name} from the session
+   * token's verified `usr` claim. Absent when the token carried no person (API key, SDK) or for
+   * tasks stored before 0.20.0.
+   */
+  startedBy: sessionStartedBySchema.optional(),
+  engineRef: engineRefSchema.optional(),
+  /** Absent on tasks stored before 0.21.0 = `auto`. */
+  mode: taskModeSchema.optional(),
+  /** The open question while the task waits for the user (0.21.0); cleared once answered. */
+  waiting: taskQuestionSchema.optional(),
+  /** The latest status lines of a running task, newest last (0.21.0). */
+  progress: external_exports.array(taskProgressSchema).max(3).optional(),
+  /** Questions asked and answered so far, oldest first (0.21.0). */
+  exchanges: external_exports.array(taskExchangeSchema).max(20).optional(),
+  status: external_exports.enum(["running", "finished"]),
+  ok: external_exports.boolean().optional(),
+  stoppedBy: taskStoppedBySchema.optional(),
+  limit: taskLimitSchema.optional(),
+  reason: external_exports.string().optional(),
+  answer: external_exports.string().optional(),
+  steps: external_exports.array(taskStepSchema),
+  costMicros: external_exports.number().int().nonnegative(),
+  ms: external_exports.number().nonnegative().optional(),
+  /** Navigations refused by the engine's `allowHosts`; absent = 0 (A50-1). */
+  refusedNavigations: external_exports.number().int().nonnegative().optional(),
+  /** Up to two screenshots of a finished task with fresh signed links (0.41.3). Absent when none were kept. */
+  screenshots: external_exports.array(taskScreenshotSchema).optional(),
+  startedAt: external_exports.iso.datetime(),
+  finishedAt: external_exports.iso.datetime().optional()
+});
+var listTasksResponseSchema = external_exports.object({ tasks: external_exports.array(taskSchema) });
+var taskScreenshotRefSchema = external_exports.object({
+  kind: taskScreenshotKindSchema,
+  stepIndex: external_exports.number().int().min(0).optional(),
+  key: external_exports.string().max(512),
+  bytes: external_exports.number().int().min(0)
 });
 var artifactKindSchema = external_exports.enum([
   "screenshot",
@@ -29455,7 +30042,9 @@ var eventSchema = external_exports.discriminatedUnion("type", [
       reportKey: external_exports.string().optional(),
       /** One-line summary and counters (steps, failedSteps, assertions, findings…) for run lists. */
       summary: external_exports.string().optional(),
-      counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).optional()
+      counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).optional(),
+      /** A case with the run's shared login landed on a sign-in page (0.47.0, qa-next C4): the api retries it once with a fresh login. */
+      signInWall: external_exports.boolean().optional()
     })
   }),
   /**
@@ -29478,6 +30067,19 @@ var eventSchema = external_exports.discriminatedUnion("type", [
       maxCostUsd: external_exports.number().positive().optional()
     })
   }),
+  /**
+   * A goal task asked a person a question (0.42.4): approve, plan, choice, handoff or a sign-in wall
+   * (`login`, hub D76). The api forwards it to notification sinks (Slack Approve/Deny). Never carries a
+   * secret; answers still go through `POST /v1/sessions/:id/tasks/answer`.
+   */
+  external_exports.object({
+    ...envelope,
+    type: external_exports.literal("task.question"),
+    data: external_exports.object({
+      taskId: idSchema("task"),
+      question: taskQuestionSchema
+    })
+  }),
   /** The task ended. Same fields as the `POST …/tasks` reply minus page `text`; at most 500 steps. */
   external_exports.object({
     ...envelope,
@@ -29498,7 +30100,9 @@ var eventSchema = external_exports.discriminatedUnion("type", [
       /** Mode the task ran in (0.21.0). */
       mode: taskModeSchema.optional(),
       /** Questions asked during the task and their answers (0.21.0), at most 20. */
-      exchanges: external_exports.array(taskExchangeSchema).max(20).optional()
+      exchanges: external_exports.array(taskExchangeSchema).max(20).optional(),
+      /** Object-store keys of the screenshots the runner kept, at most 2 (0.41.3); the api signs links from them. */
+      screenshots: external_exports.array(taskScreenshotRefSchema).max(2).optional()
     })
   }),
   /**
@@ -29572,6 +30176,65 @@ var actionCacheCommitRequestSchema = external_exports.object({
   sessionId: idSchema("session"),
   entries: external_exports.array(actionCacheEntrySchema).min(1).max(50)
 });
+var inboxSchema = external_exports.object({
+  id: idSchema("inbox"),
+  address: external_exports.string(),
+  createdAt: external_exports.number(),
+  expiresAt: external_exports.number()
+});
+var inboxMessageSchema = external_exports.object({
+  /**
+   * An `inboxMessage` id (`msg_…`). Its time part has 1 s precision, so do not sort by id: the
+   * list answer is already oldest first, and `after` is resolved by position in that list.
+   */
+  id: idSchema("inboxMessage"),
+  from: external_exports.string(),
+  to: external_exports.array(external_exports.string()),
+  subject: external_exports.string(),
+  /** The plain-text part, or the HTML part converted to text. */
+  text: external_exports.string(),
+  /** http(s) links in the mail, in order. Never fetched by the API. */
+  links: external_exports.array(external_exports.string()),
+  /** The first 4–8 digit code near a word like "code" or "verification". */
+  code: external_exports.string().optional(),
+  receivedAt: external_exports.number()
+});
+var listInboxesResponseSchema = external_exports.object({ inboxes: external_exports.array(inboxSchema) });
+var listInboxMessagesResponseSchema = external_exports.object({ messages: external_exports.array(inboxMessageSchema) });
+var listInboxMessagesQuerySchema = external_exports.object({
+  /** Long-poll: `30`, `30s`, `500ms`, `1m`; capped at a minute. */
+  wait: external_exports.string().max(10).optional(),
+  /** Only messages that arrived after this message id. */
+  after: external_exports.string().max(40).optional()
+});
+var inboundMailResponseSchema = external_exports.object({ delivered: external_exports.number().int().nonnegative() });
+var inboxCreateRequestSchema = external_exports.object({
+  /** The job session. */
+  sessionId: idSchema("session")
+});
+var inboxWaitRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  /** An inbox this session created. */
+  inboxId: idSchema("inbox"),
+  /** Only mail with `receivedAt >= since` (epoch ms): the step's start, so earlier mail never answers. */
+  since: external_exports.number().int().nonnegative(),
+  from: external_exports.string().max(320).optional(),
+  subject: external_exports.string().max(300).optional(),
+  /**
+   * Only mail sent to this exact address (0.48.3, qa-next W1-2), compared case-insensitively against the
+   * address AS SENT, plus-tag included (`qa+r7k2@in.example`), so parallel sign-ups on one run inbox never read
+   * each other's codes. The runner sets it to the case's frozen `{{unique.email}}` when the case uses one.
+   */
+  // WATCH(qa-next): the api must keep the as-sent recipient when it strips the plus-tag to route to the inbox.
+  to: external_exports.string().max(320).optional(),
+  /** Long-poll up to this long, 1 s to 60 s (the api may cap it; the runner asks again). */
+  timeoutMs: external_exports.number().int().min(1e3).max(6e4)
+});
+var inboxWaitMessageSchema = inboxMessageSchema.extend({ html: external_exports.string().optional() });
+var inboxWaitResponseSchema = external_exports.object({
+  /** The first mail that matches, or null when none arrived within `timeoutMs`. */
+  message: inboxWaitMessageSchema.nullable()
+});
 var leaseSchema = placeRequestFieldsSchema.omit({ requestId: true }).extend({
   sessionId: idSchema("session"),
   pool: poolSchema,
@@ -29579,6 +30242,329 @@ var leaseSchema = placeRequestFieldsSchema.omit({ requestId: true }).extend({
   /** Hard stop: the runner ends the session at this time whatever the limits say. */
   expiresAt: external_exports.iso.datetime()
 }).superRefine(checkKindPayload);
+var QA_STEPS_WRITTEN_MAX = 30;
+var QA_STEPS_EXPANDED_MAX = 60;
+var QA_HOOK_STEPS_MAX = 10;
+var QA_STEP_TEXT_MAX = 500;
+var QA_EXPECT_ITEMS_MAX = 20;
+var QA_AI_CHECKS_MAX = 3;
+var QA_ASSERTIONS_MAX = 100;
+var qaVariableNameSchema = external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/, "letters, digits and _; not a digit first");
+var qaVariablesSchema = external_exports.record(qaVariableNameSchema, external_exports.string().max(1e3)).refine((v) => Object.keys(v).length <= 50, { message: "at most 50 variables" });
+var qaGeneratedValuesSchema = external_exports.object({
+  "unique.email": external_exports.string().max(254).optional(),
+  "unique.name": external_exports.string().max(200).optional(),
+  "unique.id": external_exports.string().max(100).optional(),
+  "run.id": external_exports.string().max(100).optional(),
+  today: external_exports.string().max(40).optional()
+}).strict();
+var qaAiCheckSchema = external_exports.object({ ai: external_exports.string().trim().min(1).max(300) }).strict();
+var qaExpectItemSchema = external_exports.union([external_exports.string().trim().min(1).max(300), qaAiCheckSchema]);
+var qaExpectSchema = external_exports.union([
+  external_exports.string().max(1e3),
+  external_exports.array(qaExpectItemSchema).min(1).max(QA_EXPECT_ITEMS_MAX).refine((items) => items.filter((i) => typeof i !== "string").length <= QA_AI_CHECKS_MAX, {
+    message: `at most ${QA_AI_CHECKS_MAX} AI checks per test`
+  })
+]);
+var qaRequiredExpectSchema = qaExpectSchema.refine(
+  (e) => typeof e === "string" ? e.trim().length > 0 : true,
+  { message: "expect is empty" }
+);
+var qaHttpMethodSchema = external_exports.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]);
+var FORBIDDEN_HEADER = /^(host|connection|content-length|transfer-encoding|upgrade|te|trailer|keep-alive|proxy-.*)$/i;
+var qaApiHeadersSchema = external_exports.record(
+  external_exports.string().regex(/^[A-Za-z0-9-]{1,64}$/, "header name: letters, digits and -"),
+  external_exports.string().max(1e3)
+).refine((h) => Object.keys(h).length <= 20, { message: "at most 20 headers" }).refine((h) => Object.keys(h).every((k) => !FORBIDDEN_HEADER.test(k)), {
+  message: "Host, Proxy-*, Connection and framing headers cannot be set"
+});
+var QA_API_BODY_MAX = 16384;
+var qaApiBodySchema = external_exports.union([external_exports.string(), external_exports.record(external_exports.string(), external_exports.unknown()), external_exports.array(external_exports.unknown())]).refine((b) => (typeof b === "string" ? b : JSON.stringify(b)).length <= QA_API_BODY_MAX, {
+  message: `body is at most ${QA_API_BODY_MAX} chars`
+});
+var qaApiStepSchema = external_exports.object({
+  kind: external_exports.literal("api"),
+  method: qaHttpMethodSchema,
+  url: external_exports.string().min(1).max(2e3).refine((u) => u.startsWith("/") || /^https?:\/\//i.test(u), {
+    message: "a path starting with / or an http(s) URL"
+  }),
+  headers: qaApiHeadersSchema.optional(),
+  body: qaApiBodySchema.optional(),
+  /** Send the browser's cookies for that origin (reuse the test's login). Absent: false. */
+  withCookies: external_exports.boolean().optional(),
+  /** e.g. `status 200, body has "Acme"`. Compiled into assertions with `at` pointing here. */
+  expect: qaExpectSchema.optional()
+}).refine((s) => s.body === void 0 || s.method !== "GET" && s.method !== "HEAD", {
+  message: "GET and HEAD calls have no body",
+  path: ["body"]
+});
+var qaSharedStepNameSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
+var qaUseStepSchema = external_exports.object({
+  kind: external_exports.literal("use"),
+  name: qaSharedStepNameSchema,
+  version: external_exports.number().int().min(1).optional()
+});
+var qaTypedStepSchema = external_exports.discriminatedUnion("kind", [qaApiStepSchema, qaUseStepSchema]);
+var qaStepSchema = external_exports.union([external_exports.string().min(1).max(QA_STEP_TEXT_MAX), qaTypedStepSchema]);
+var qaStepListSchema = external_exports.array(qaStepSchema).max(QA_STEPS_WRITTEN_MAX);
+var qaHookStepListSchema = external_exports.array(qaStepSchema).max(QA_HOOK_STEPS_MAX);
+var qaAssertionTargetSchema = external_exports.object({
+  /** ARIA role, e.g. `row`, `button`. Absent: any role with that exact name. */
+  role: external_exports.string().min(1).max(40).optional(),
+  name: external_exports.string().min(1).max(200)
+});
+var qaAssertionAtSchema = external_exports.object({
+  phase: external_exports.enum(["before", "steps", "after"]),
+  index: external_exports.number().int().min(0)
+});
+var assertionBase = {
+  /** The phrase as the author wrote it, shown on the report. */
+  source: external_exports.string().max(300),
+  at: qaAssertionAtSchema.optional()
+};
+var qaAssertionSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({ kind: external_exports.literal("text_visible"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("text_absent"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("url_contains"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("title_is"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("count"),
+    target: qaAssertionTargetSchema,
+    n: external_exports.number().int().min(0).max(1e3),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("state"),
+    target: qaAssertionTargetSchema,
+    state: external_exports.enum(["visible", "enabled", "disabled"]),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("field_value"),
+    label: external_exports.string().min(1).max(200),
+    value: external_exports.string().max(300),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("no_console_errors"), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("request_status"),
+    path: external_exports.string().min(1).max(500),
+    status: external_exports.number().int().min(100).max(599),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("download"), name: external_exports.string().min(1).max(200), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("status_is"),
+    status: external_exports.number().int().min(100).max(599),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("body_contains"),
+    text: external_exports.string().min(1).max(300),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("ai"), prompt: external_exports.string().min(1).max(300), ...assertionBase })
+]);
+var qaCompiledExpectSchema = external_exports.object({
+  compilerVersion: external_exports.number().int().min(1),
+  assertions: external_exports.array(qaAssertionSchema).max(QA_ASSERTIONS_MAX)
+});
+var qaAssertionOutcomeSchema = external_exports.enum(["pass", "fail", "ambiguous", "error"]);
+var qaAssertionResultSchema = external_exports.object({
+  /** Position in `compiled.assertions`. */
+  index: external_exports.number().int().min(0).max(QA_ASSERTIONS_MAX - 1),
+  kind: external_exports.enum(
+    qaAssertionSchema.options.map((o) => o.shape.kind.value)
+  ),
+  /** The phrase as written (the assertion's `source`). */
+  source: external_exports.string().max(300),
+  outcome: qaAssertionOutcomeSchema,
+  /** What it saw, plain words: "2 matches for row \"Project\"", "status 404", "no such text". Not on a pass. */
+  saw: external_exports.string().max(500).optional(),
+  /**
+   * Set only for `kind: "ai"`: label the result **AI-judged**, show `reasoning`, put `costMicros` on the
+   * report. Never cached.
+   */
+  // WATCH(qa-next): "a person can mark it wrong" (spec §5.2) has no shape yet; it lands with triage (B1-B3).
+  aiJudged: external_exports.object({
+    reasoning: external_exports.string().max(500),
+    costMicros: external_exports.number().int().nonnegative(),
+    model: external_exports.string().max(80).optional()
+  }).optional()
+});
+var qaAssertionResultListSchema = external_exports.array(qaAssertionResultSchema).max(QA_ASSERTIONS_MAX);
+var qaHookOutcomeSchema = external_exports.object({
+  before: external_exports.enum(["pass", "failed"]).optional(),
+  after: external_exports.enum(["pass", "failed", "timed_out", "skipped"]).optional(),
+  failedSteps: external_exports.array(
+    external_exports.object({
+      phase: external_exports.enum(["before", "after"]),
+      index: external_exports.number().int().min(0).max(QA_HOOK_STEPS_MAX - 1),
+      saw: external_exports.string().max(500).optional()
+    })
+  ).max(2).optional()
+});
+var qaLaneSchema = external_exports.enum(["browser", "http"]);
+var qaApiPhaseSchema = external_exports.enum(["before", "steps", "after"]);
+var qaApiCallSchema = external_exports.object({
+  phase: qaApiPhaseSchema,
+  index: external_exports.number().int().min(0).max(59),
+  step: qaApiStepSchema
+});
+var qaApiCallsSchema = external_exports.array(qaApiCallSchema).max(60);
+var qaApiCallHostsSchema = external_exports.array(external_exports.string().max(300)).min(1).max(6);
+var unixMs4 = external_exports.number().int().nonnegative();
+var PROXY_DEVICE_STATUSES = ["online", "offline", "paused", "disabled"];
+var proxyDeviceStatusSchema = external_exports.enum(PROXY_DEVICE_STATUSES);
+var PROXY_DEVICE_AUDIT_ACTIONS = [
+  "proxy_device.paired",
+  "proxy_device.updated",
+  "proxy_device.revoked",
+  "proxy_device.paused",
+  "proxy_device.resumed"
+];
+var proxyDeviceAuditActionSchema = external_exports.enum(PROXY_DEVICE_AUDIT_ACTIONS);
+var proxyDeviceNameSchema = external_exports.string().trim().min(1).max(100);
+var proxyDevicePurposeSchema = external_exports.enum(["proxy", "local_app"]);
+var proxyDeviceLimitsSchema = external_exports.object({
+  /** Concurrent streams (open connections) through the device. */
+  maxStreams: external_exports.number().int().min(1).max(64).default(8),
+  /** Bandwidth cap in kilobits per second. Absent: no cap. */
+  maxKbps: external_exports.number().int().min(1).optional(),
+  /** Monthly traffic cap in megabytes. Absent: no cap. */
+  monthlyMb: external_exports.number().int().min(1).optional()
+});
+var proxyDevicePairingCodeSchema = external_exports.string().regex(/^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/, "expected a code like ABCD-EFGH");
+var proxyDeviceTokenSchema = external_exports.string().regex(/^wad_[A-Za-z0-9_-]{32,128}$/, "malformed device token");
+var createProxyDevicePairingRequestSchema = external_exports.object({
+  name: proxyDeviceNameSchema,
+  /**
+   * Only the person who paired it may route sessions through it. Default true (security review 2026-11-13: a
+   * home IP is personal); false shares the device with the whole tenant.
+   */
+  restrictToUser: external_exports.boolean().default(true),
+  limits: proxyDeviceLimitsSchema.optional(),
+  /** 0.43.0. Absent: `proxy` (today's behaviour). */
+  purpose: proxyDevicePurposeSchema.default("proxy")
+});
+var proxyDevicePairingSchema = external_exports.object({
+  code: proxyDevicePairingCodeSchema,
+  /** Epoch ms, 10 minutes after creation. */
+  expiresAt: unixMs4,
+  /** What to run on the device, e.g. `npx @lookover-ai/webagent-device pair ABCD-EFGH`. */
+  command: external_exports.string().min(1).max(500)
+});
+var claimProxyDeviceRequestSchema = external_exports.object({
+  code: proxyDevicePairingCodeSchema,
+  /** e.g. `linux-x64`, `darwin-arm64`, `win32-x64`. */
+  platform: external_exports.string().min(1).max(64),
+  clientVersion: external_exports.string().min(1).max(64)
+});
+var claimProxyDeviceResponseSchema = external_exports.object({
+  deviceId: idSchema("proxyDevice"),
+  /** Returned once; the device stores it (file mode 0600). */
+  deviceToken: proxyDeviceTokenSchema,
+  /** `wss://relay.<region>/v1/connect`. */
+  relayUrl: external_exports.string().url().max(500),
+  /** What the pairing was made for (0.43.0), so the client starts in the right mode. Absent: `proxy`. */
+  purpose: proxyDevicePurposeSchema.default("proxy")
+});
+var proxyDeviceInfoSchema = external_exports.object({
+  id: idSchema("proxyDevice"),
+  name: proxyDeviceNameSchema,
+  status: proxyDeviceStatusSchema,
+  /** Identity user id (opaque, not `usr_`; 0.46.1). */
+  ownerUserId: identityUserIdSchema,
+  restrictToUser: external_exports.boolean(),
+  /** 0.43.0. Old payloads read as `proxy`. */
+  purpose: proxyDevicePurposeSchema.default("proxy"),
+  platform: external_exports.string().max(64).optional(),
+  clientVersion: external_exports.string().max(64).optional(),
+  lastSeenAt: unixMs4.optional(),
+  connectedAt: unixMs4.optional(),
+  /** The address the device's traffic leaves from, as last measured. */
+  exitIp: external_exports.string().max(45).optional(),
+  activeStreams: external_exports.number().int().nonnegative(),
+  limits: proxyDeviceLimitsSchema,
+  createdAt: unixMs4
+});
+var listProxyDevicesResponseSchema = external_exports.object({
+  devices: external_exports.array(proxyDeviceInfoSchema),
+  relay: external_exports.object({ deployed: external_exports.boolean() })
+});
+var updateProxyDeviceRequestSchema = external_exports.object({
+  name: proxyDeviceNameSchema.optional(),
+  enabled: external_exports.boolean().optional(),
+  restrictToUser: external_exports.boolean().optional(),
+  limits: proxyDeviceLimitsSchema.optional()
+}).refine((v) => Object.values(v).some((x) => x !== void 0), {
+  message: "send at least one field to update"
+});
+var deleteProxyDeviceResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
+var relayDeviceAuthRequestSchema = external_exports.object({ token: proxyDeviceTokenSchema });
+var relayDeviceAuthResponseSchema = external_exports.object({
+  deviceId: idSchema("proxyDevice"),
+  tenantId: idSchema("tenant"),
+  /** Identity user id (opaque, not `usr_`; 0.46.1). */
+  ownerUserId: identityUserIdSchema,
+  restrictToUser: external_exports.boolean(),
+  /** What the device was paired for (0.43.0); the relay serves aliases only for `local_app` and exits only for `proxy`. Absent: `proxy`. */
+  purpose: proxyDevicePurposeSchema.default("proxy"),
+  /** False: revoked or turned off; the relay refuses every OPEN. */
+  enabled: external_exports.boolean(),
+  limits: proxyDeviceLimitsSchema,
+  /** Traffic so far this month, MB (for `limits.monthlyMb`). */
+  usedMb: external_exports.number().nonnegative().optional()
+});
+var relayPresenceRequestSchema = external_exports.object({
+  deviceId: idSchema("proxyDevice"),
+  connected: external_exports.boolean(),
+  /** The device client is paused (it answers every OPEN with `paused`). */
+  paused: external_exports.boolean(),
+  activeStreams: external_exports.number().int().nonnegative(),
+  exitIp: external_exports.string().max(45).optional(),
+  platform: external_exports.string().max(64).optional(),
+  clientVersion: external_exports.string().max(64).optional(),
+  /** Bytes moved since the previous presence, both directions. */
+  bytesDelta: external_exports.number().int().nonnegative().optional()
+});
+var relayPresenceResponseSchema = external_exports.object({ ok: external_exports.boolean() });
+var relayKickResponseSchema = external_exports.object({ kicked: external_exports.boolean() });
+var proxyStreamClaimsSchema = external_exports.object({
+  /** Session id. */
+  sub: idSchema("session"),
+  ten: idSchema("tenant"),
+  /** The dashboard user who started the session; absent for API-key sessions. */
+  usr: identityUserIdSchema.optional(),
+  /** The proxy device this session exits through. */
+  dev: idSchema("proxyDevice"),
+  exp: external_exports.number().int(),
+  /** Token kind (0.42.4); the relay refuses any other value. Optional until every signer sends it. */
+  typ: external_exports.literal("proxy-stream").optional(),
+  /**
+   * Local-app sessions (0.43.0): the alias hosts this session may OPEN (1..4, each a well-formed
+   * `localAppAlias`). Absent: an ordinary device-exit session. With `aliases`, the relay allows
+   * nothing else: any other host, or a port not in `ports`, is `blocked_destination`; and it must
+   * be a device paired with `purpose: "local_app"`. Present with `ports` or not at all.
+   */
+  aliases: external_exports.array(localAppAliasSchema).min(1).max(4).optional(),
+  /** Ports allowed for `aliases` (0.43.0): 1..8 entries of 1024..65535. */
+  ports: localAppPortsSchema.optional()
+}).refine((v) => v.aliases === void 0 === (v.ports === void 0), {
+  message: "aliases and ports go together",
+  path: ["aliases"]
+});
+var relaySessionEndRequestSchema = external_exports.object({
+  /** `exp` of the session's stream JWT (unix seconds): how long the relay keeps the denylist entry. */
+  exp: external_exports.number().int(),
+  /** Close the session's open streams now. Default true. */
+  closeStreams: external_exports.boolean().default(true)
+});
+var relaySessionEndResponseSchema = external_exports.object({
+  /** True once the session id is on the denylist (also true when it already was). */
+  denied: external_exports.boolean(),
+  closedStreams: external_exports.number().int().nonnegative()
+});
 var skillPackageLimits = {
   fileBytes: 5 * 1024 * 1024,
   totalBytes: 20 * 1024 * 1024,
@@ -29592,40 +30578,6 @@ var skillPackageLockSchema = external_exports.object({
   files: external_exports.record(external_exports.string(), external_exports.string().regex(/^[0-9a-f]{64}$/))
 });
 var skillPackageDigestSchema = external_exports.string().regex(/^sha256-[0-9a-f]{64}$/);
-var taskSchema = external_exports.object({
-  id: idSchema("task"),
-  sessionId: idSchema("session"),
-  goal: external_exports.string(),
-  /**
-   * Who sent the task (0.20.0, group chat): `dashboard` {id: identity sub, name} from the session
-   * token's verified `usr` claim. Absent when the token carried no person (API key, SDK) or for
-   * tasks stored before 0.20.0.
-   */
-  startedBy: sessionStartedBySchema.optional(),
-  engineRef: engineRefSchema.optional(),
-  /** Absent on tasks stored before 0.21.0 = `auto`. */
-  mode: taskModeSchema.optional(),
-  /** The open question while the task waits for the user (0.21.0); cleared once answered. */
-  waiting: taskQuestionSchema.optional(),
-  /** The latest status lines of a running task, newest last (0.21.0). */
-  progress: external_exports.array(taskProgressSchema).max(3).optional(),
-  /** Questions asked and answered so far, oldest first (0.21.0). */
-  exchanges: external_exports.array(taskExchangeSchema).max(20).optional(),
-  status: external_exports.enum(["running", "finished"]),
-  ok: external_exports.boolean().optional(),
-  stoppedBy: taskStoppedBySchema.optional(),
-  limit: taskLimitSchema.optional(),
-  reason: external_exports.string().optional(),
-  answer: external_exports.string().optional(),
-  steps: external_exports.array(taskStepSchema),
-  costMicros: external_exports.number().int().nonnegative(),
-  ms: external_exports.number().nonnegative().optional(),
-  /** Navigations refused by the engine's `allowHosts`; absent = 0 (A50-1). */
-  refusedNavigations: external_exports.number().int().nonnegative().optional(),
-  startedAt: external_exports.iso.datetime(),
-  finishedAt: external_exports.iso.datetime().optional()
-});
-var listTasksResponseSchema = external_exports.object({ tasks: external_exports.array(taskSchema) });
 var liveViewerSchema = external_exports.object({
   id: external_exports.string().min(1).max(128),
   name: external_exports.string().max(200).optional()
@@ -29750,6 +30702,12 @@ var liveServerMessageSchema = external_exports.discriminatedUnion("type", [
   external_exports.object({ type: external_exports.literal("snapshot"), text: external_exports.string() }),
   external_exports.object({ type: external_exports.literal("error"), message: external_exports.string() }),
   external_exports.object({ type: external_exports.literal("pong"), at: external_exports.number() }),
+  /**
+   * The session's runner is draining (0.41.0, D73): running tasks finish, idle sessions end, and at
+   * `endsAt` (unix ms, like `pong.at`) the session ends with reason `maintenance`. Sent about 5 minutes
+   * before; reconnect and start a new session after.
+   */
+  external_exports.object({ type: external_exports.literal("maintenance_warning"), endsAt: external_exports.number().int().nonnegative() }),
   /** The offer also carries `iceServers`. */
   external_exports.object({
     type: external_exports.literal("rtc"),
@@ -29879,6 +30837,12 @@ var authMeResponseSchema = external_exports.object({
    * identity, D40 (7)). Null for a person with no org.
    */
   currentOrgId: idSchema("tenant").nullable().optional(),
+  /**
+   * 0.41.2: the org's home region for a signed-in person who has no tenant on this API, because
+   * their org lives in a region whose API is not live yet. The dashboard shows a "coming to <region>"
+   * note instead of an empty workspace. Absent: the person has a tenant here, or no org at all.
+   */
+  pendingRegion: regionCodeSchema.optional(),
   apiKey: external_exports.object({
     id: idSchema("apiKey"),
     projectId: idSchema("project"),
@@ -29963,6 +30927,13 @@ var billingResponseSchema = external_exports.object({
   /** Prepaid credit balance (0.31.0); sent only when the org has a credit entry. `enforced`: running out refuses new work. */
   credits: external_exports.object({ balanceMicros: external_exports.number().int(), enforced: external_exports.boolean() }).optional()
 });
+var COOKIE_IMPORT_FORMATS = [
+  "auto",
+  "cookie-editor",
+  "netscape",
+  "storage-state"
+];
+var cookieImportFormatSchema = external_exports.enum(COOKIE_IMPORT_FORMATS);
 var profileInfoSchema = external_exports.object({
   id: external_exports.string(),
   name: external_exports.string(),
@@ -29978,6 +30949,12 @@ var profileListSchema = external_exports.object({ profiles: external_exports.arr
 var profileName = external_exports.string().min(1).max(100);
 var renameProfileRequestSchema = external_exports.object({ name: profileName });
 var uploadProfileQuerySchema = external_exports.object({ name: profileName.default("imported") });
+var MAX_COOKIE_IMPORT_CHARS = 2 * 1024 * 1024;
+var importCookiesRequestSchema = external_exports.object({
+  name: profileName,
+  format: cookieImportFormatSchema.optional(),
+  data: external_exports.string().min(1).max(MAX_COOKIE_IMPORT_CHARS)
+});
 var extensionEngineSchema = external_exports.enum(["chromium", "firefox"]);
 var extensionInfoSchema = external_exports.object({
   id: external_exports.string(),
@@ -30002,15 +30979,26 @@ var credentialSourceRequestSchema = external_exports.object({
 var credentialSourceSchema = credentialSourceRequestSchema.extend({
   provider: secretProviderKindSchema
 });
+var CREDENTIAL_SECRETS_MAX = 20;
+var credentialSecretsSchema = external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3)).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
+  message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
+});
 var credentialInfoSchema = external_exports.object({
   id: external_exports.string(),
-  /** Exact origin the credential is used on, e.g. `https://staging.example.com`. */
+  /**
+   * Exact origin the credential is used on, e.g. `https://staging.example.com`. For an
+   * `anyOrigin` credential the api returns `"*"`.
+   */
   origin: external_exports.string(),
+  /** Usable on any site (0.42.0). Absent = false. */
+  anyOrigin: external_exports.boolean().optional(),
   /** Groups credentials (per environment, per test suite); sessions pick a namespace. */
   namespace: external_exports.string(),
   label: external_exports.string(),
   username: external_exports.string(),
   hasTotp: external_exports.boolean(),
+  /** Names of the credential's secrets (0.48.2), never the values. Absent: none. */
+  secretNames: external_exports.array(qaVariableNameSchema).max(CREDENTIAL_SECRETS_MAX).optional(),
   source: credentialSourceSchema.optional(),
   lastResolvedAt: external_exports.number().optional(),
   resolveError: external_exports.string().optional(),
@@ -30020,20 +31008,39 @@ var credentialInfoSchema = external_exports.object({
 var listCredentialsQuerySchema = external_exports.object({ namespace: external_exports.string().max(64).optional() });
 var credentialListSchema = external_exports.object({ credentials: external_exports.array(credentialInfoSchema) });
 var createCredentialRequestSchema = external_exports.object({
-  origin: external_exports.string().max(300),
+  /** Required unless `anyOrigin` is true (then it must be left out). */
+  origin: external_exports.string().max(300).optional(),
+  /** Use this login on any site (0.42.0, default false), e.g. the seeded "Test login". */
+  anyOrigin: external_exports.boolean().optional(),
   username: external_exports.string().max(500).optional(),
   password: external_exports.string().min(1).max(5e3).optional(),
   source: credentialSourceRequestSchema.optional(),
   namespace: external_exports.string().min(1).max(64).optional(),
   label: external_exports.string().max(200).optional(),
-  totpSecret: external_exports.string().max(200).optional()
+  totpSecret: external_exports.string().max(200).optional(),
+  /** Named secrets (0.48.2), see `credentialSecretsSchema`. */
+  secrets: credentialSecretsSchema.optional()
+}).superRefine((v, ctx) => {
+  if (v.anyOrigin && v.origin !== void 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["origin"],
+      message: "origin must be left out when anyOrigin is true"
+    });
+  }
+  if (!v.anyOrigin && v.origin === void 0) {
+    ctx.addIssue({ code: "custom", path: ["origin"], message: "origin is required" });
+  }
 });
 var patchCredentialRequestSchema = external_exports.object({
   username: external_exports.string().min(1).max(500).optional(),
   password: external_exports.string().min(1).max(5e3).optional(),
   source: credentialSourceRequestSchema.optional(),
   label: external_exports.string().max(200).optional(),
-  totpSecret: external_exports.string().max(200).nullable().optional()
+  totpSecret: external_exports.string().max(200).nullable().optional(),
+  secrets: external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3).nullable()).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
+    message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
+  }).optional()
 });
 var secretProviderInfoSchema = external_exports.object({
   id: external_exports.string(),
@@ -30068,38 +31075,46 @@ var dedicatedIpStateSchema = external_exports.object({
 var allocateDedicatedIpRequestSchema = external_exports.object({
   country: external_exports.string().regex(/^[a-zA-Z]{2}$/).optional()
 });
-var inboxSchema = external_exports.object({
-  id: idSchema("inbox"),
-  address: external_exports.string(),
-  createdAt: external_exports.number(),
-  expiresAt: external_exports.number()
+var unixMs22 = external_exports.number().int().nonnegative();
+var INTEGRATION_PROVIDERS = ["github", "slack"];
+var integrationProviderSchema = external_exports.enum(INTEGRATION_PROVIDERS);
+var SLACK_EVENTS = [
+  "approval_requested",
+  "task_finished",
+  "task_failed",
+  "workflow_run_completed",
+  "workflow_run_failed",
+  "sign_in_wall"
+];
+var slackEventSchema = external_exports.enum(SLACK_EVENTS);
+var slackChannelIdSchema = external_exports.string().min(1).max(40);
+var slackSettingsSchema = external_exports.object({
+  /** Where notifications go unless a project overrides it. */
+  defaultChannelId: slackChannelIdSchema.optional(),
+  /** Project id -> channel id. */
+  projectChannels: external_exports.record(idSchema("project"), slackChannelIdSchema).optional(),
+  events: external_exports.array(slackEventSchema).max(SLACK_EVENTS.length)
 });
-var inboxMessageSchema = external_exports.object({
-  /**
-   * An `inboxMessage` id (`msg_…`). Its time part has 1 s precision, so do not sort by id: the
-   * list answer is already oldest first, and `after` is resolved by position in that list.
-   */
-  id: idSchema("inboxMessage"),
-  from: external_exports.string(),
-  to: external_exports.array(external_exports.string()),
-  subject: external_exports.string(),
-  /** The plain-text part, or the HTML part converted to text. */
-  text: external_exports.string(),
-  /** http(s) links in the mail, in order. Never fetched by the API. */
-  links: external_exports.array(external_exports.string()),
-  /** The first 4–8 digit code near a word like "code" or "verification". */
-  code: external_exports.string().optional(),
-  receivedAt: external_exports.number()
+var integrationStatusSchema = external_exports.object({
+  provider: integrationProviderSchema,
+  available: external_exports.boolean(),
+  installed: external_exports.boolean(),
+  /** GitHub org/user login or Slack workspace name. */
+  account: external_exports.string().max(200).optional(),
+  installedBy: identityUserIdSchema.optional(),
+  installedAt: unixMs22.optional(),
+  scopes: external_exports.array(external_exports.string().max(100)).max(100).optional(),
+  /** Slack only, when installed: the notification settings. */
+  settings: slackSettingsSchema.optional()
 });
-var listInboxesResponseSchema = external_exports.object({ inboxes: external_exports.array(inboxSchema) });
-var listInboxMessagesResponseSchema = external_exports.object({ messages: external_exports.array(inboxMessageSchema) });
-var listInboxMessagesQuerySchema = external_exports.object({
-  /** Long-poll: `30`, `30s`, `500ms`, `1m`; capped at a minute. */
-  wait: external_exports.string().max(10).optional(),
-  /** Only messages that arrived after this message id. */
-  after: external_exports.string().max(40).optional()
+var listIntegrationsResponseSchema = external_exports.object({
+  integrations: external_exports.array(integrationStatusSchema)
 });
-var inboundMailResponseSchema = external_exports.object({ delivered: external_exports.number().int().nonnegative() });
+var installIntegrationResponseSchema = external_exports.object({ url: external_exports.string().url().max(2e3) });
+var deleteIntegrationResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
+var patchSlackSettingsRequestSchema = slackSettingsSchema.partial().extend({ defaultChannelId: slackChannelIdSchema.nullable().optional() });
+var slackLinkRequestSchema = external_exports.object({ token: external_exports.string().min(16).max(2e3) });
+var slackLinkResponseSchema = external_exports.object({ linked: external_exports.literal(true) });
 var pageQuerySchema = external_exports.object({
   limit: external_exports.coerce.number().int().min(1).max(100).default(50),
   cursor: external_exports.string().min(1).max(500).optional()
@@ -30357,13 +31372,25 @@ var skillUsageResponseSchema = external_exports.object({
     })
   )
 });
-var clientIdSchema = external_exports.url({ protocol: /^https$/, error: "client_id must be an https URL" }).max(2e3);
+var oauthClientKindSchema = external_exports.enum(["cimd", "registered"]);
+var clientIdSchema = external_exports.string().min(1).max(2e3).regex(/^\S+$/, "client_id must not contain spaces");
 var clientFields = {
   clientId: clientIdSchema,
+  /** Absent on payloads from before 0.44.0, where every client was `cimd`. */
+  clientKind: oauthClientKindSchema.default("cimd"),
   clientName: external_exports.string().min(1).max(200),
-  /** Host of `clientId`: shown so the person can tell lookalike apps apart. */
+  /** Host of a `cimd` `clientId`; for a `registered` client the host of its redirect URI. Shown so the person can tell lookalike apps apart. */
   clientHost: external_exports.string().min(1).max(255)
 };
+function checkClientId(v, ctx) {
+  if (v.clientKind === "cimd" && !external_exports.url({ protocol: /^https$/ }).safeParse(v.clientId).success) {
+    ctx.addIssue({
+      code: "custom",
+      message: "client_id must be an https URL",
+      path: ["clientId"]
+    });
+  }
+}
 var oauthGrantSchema = external_exports.object({
   id: idSchema("mcpGrant"),
   ...clientFields,
@@ -30374,7 +31401,7 @@ var oauthGrantSchema = external_exports.object({
   createdAt: external_exports.string(),
   lastUsedAt: external_exports.string().optional(),
   revokedAt: external_exports.string().optional()
-});
+}).superRefine(checkClientId);
 var listOauthGrantsResponseSchema = external_exports.object({
   grants: external_exports.array(oauthGrantSchema),
   ...pageNextField
@@ -30395,35 +31422,64 @@ var oauthRequestViewSchema = external_exports.object({
     })
   ).max(500),
   expiresAt: external_exports.string()
-});
+}).superRefine(checkClientId);
 var approveOauthRequestSchema = external_exports.object({ projectId: idSchema("project") });
 var approveOauthRequestResponseSchema = external_exports.object({
   redirectUrl: external_exports.string().min(1).max(4e3)
 });
-var unixMs4 = external_exports.number().int().nonnegative();
+var unixMs32 = external_exports.number().int().nonnegative();
+var projectUseCaseSchema = external_exports.enum(["general", "testing"]);
+var projectProfileSchema = external_exports.object({
+  writesTests: external_exports.enum(["me", "agent", "both"]).optional(),
+  scope: external_exports.enum(["key_flows", "full_regression"]).optional(),
+  cadence: external_exports.array(external_exports.enum(["pr", "nightly", "manual"])).max(3).optional(),
+  role: external_exports.string().trim().max(100).optional(),
+  needsLogin: external_exports.boolean().optional(),
+  needsCode: external_exports.boolean().optional()
+});
 var projectSchema = external_exports.object({
   id: idSchema("project"),
   tenantId: idSchema("tenant"),
   name: external_exports.string().min(1).max(100),
   isDefault: external_exports.boolean(),
-  createdAt: unixMs4
+  /** 0.43.0. Old payloads without it read as `general`. */
+  useCase: projectUseCaseSchema.default("general"),
+  /** 0.43.0. Absent: not answered. */
+  profile: projectProfileSchema.optional(),
+  createdAt: unixMs32
 });
 var listProjectsResponseSchema = external_exports.object({ projects: external_exports.array(projectSchema) });
-var createProjectRequestSchema = external_exports.object({ name: external_exports.string().trim().min(1).max(100) });
+var createProjectRequestSchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(100),
+  /** 0.43.0. Absent: `general`. */
+  useCase: projectUseCaseSchema.optional(),
+  /** 0.43.0. */
+  profile: projectProfileSchema.optional()
+});
+var updateProjectRequestSchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(100).optional(),
+  useCase: projectUseCaseSchema.optional(),
+  profile: projectProfileSchema.nullable().optional()
+}).refine((v) => v.name !== void 0 || v.useCase !== void 0 || v.profile !== void 0, {
+  message: "send at least one of name, useCase, profile"
+});
 var deleteProjectResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
-var unixMs22 = external_exports.number().int().nonnegative();
+var unixMs42 = external_exports.number().int().nonnegative();
 var HOSTNAME_RE = /^(?=.{1,253}$)[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 var IPV6_RE = /^(?=.*:)[0-9a-fA-F:.]{2,45}$/;
 var proxyHostSchema = external_exports.string().max(253).refine((h) => HOSTNAME_RE.test(h) || IPV6_RE.test(h), {
   message: "a hostname or IP address only: no scheme, path, port or credentials"
 });
 var proxyProtocolSchema = external_exports.enum(["http", "https", "socks5"]);
+var createProxyProtocolSchema = external_exports.enum(["http", "https"], {
+  error: "protocol must be http or https (socks5 is not supported)"
+});
 var proxyNameSchema = external_exports.string().trim().min(1).max(100);
 var proxyPortSchema = external_exports.number().int().min(1).max(65535);
 var bypassHostsSchema = external_exports.array(proxyHostSchema).max(50);
 var createProxyRequestSchema = external_exports.object({
   name: proxyNameSchema,
-  protocol: proxyProtocolSchema,
+  protocol: createProxyProtocolSchema,
   host: proxyHostSchema,
   port: proxyPortSchema,
   username: external_exports.string().min(1).max(256).optional(),
@@ -30440,7 +31496,7 @@ var proxyInfoSchema = external_exports.object({
   username: external_exports.string().min(1).max(256).optional(),
   hasPassword: external_exports.boolean(),
   bypassHosts: bypassHostsSchema,
-  createdAt: unixMs22
+  createdAt: unixMs42
 });
 var listProxiesResponseSchema = external_exports.object({ proxies: external_exports.array(proxyInfoSchema) });
 var deleteProxyResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
@@ -30453,7 +31509,201 @@ var testProxyResponseSchema = external_exports.object({
   /** Why it failed (no credentials in it). */
   error: external_exports.string().max(500).optional()
 });
+var FRAME_TYPES = {
+  OPEN: 1,
+  OPEN_OK: 2,
+  OPEN_ERR: 3,
+  DATA: 4,
+  END: 5,
+  RESET: 6,
+  CREDIT: 7,
+  PING: 8,
+  PAUSE: 9,
+  RESUME: 10
+};
+var frameTypeSchema = external_exports.enum(
+  Object.keys(FRAME_TYPES)
+);
+var STREAM_WINDOW_BYTES = 256 * 1024;
+var MAX_FRAME_PAYLOAD_BYTES = 64 * 1024;
+var OPEN_ERR_CODES = [
+  "blocked_destination",
+  "paused",
+  "limit",
+  "dial_failed",
+  "timeout",
+  "forbidden"
+];
+var openErrCodeSchema = external_exports.enum(OPEN_ERR_CODES);
+var openPayloadSchema = external_exports.object({
+  host: external_exports.string().min(1).max(253),
+  port: external_exports.number().int().min(1).max(65535)
+});
+var openErrPayloadSchema = external_exports.object({ code: openErrCodeSchema });
+var TYPE_BY_NUMBER = new Map(
+  Object.values(FRAME_TYPES).map((n) => [n, n])
+);
+var enc = new TextEncoder();
+var dec = new TextDecoder();
+var QA_ALERT_RECIPIENTS_MAX = 10;
+var qaAlertModeSchema = external_exports.enum(["transitions", "every_failure"]);
+var qaAlertSettingsSchema = external_exports.object({
+  email: external_exports.object({
+    enabled: external_exports.boolean(),
+    recipients: external_exports.array(external_exports.email().max(254)).max(QA_ALERT_RECIPIENTS_MAX)
+  }),
+  slack: external_exports.object({
+    enabled: external_exports.boolean(),
+    /** The saved credential that holds the incoming-webhook URL. Needed while `enabled` is true. */
+    webhookCredentialId: idSchema("credential").optional()
+  }),
+  /** Which events alert. */
+  on: external_exports.object({
+    /** A scheduled run failed. */
+    failedScheduled: external_exports.boolean(),
+    /** A run on a pull request failed. */
+    failedPr: external_exports.boolean(),
+    /** A test passed only on a retry (`test.flaky`). */
+    flaky: external_exports.boolean(),
+    /** A test that was failing passes again. */
+    recovered: external_exports.boolean()
+  }),
+  mode: qaAlertModeSchema
+});
+var QA_AUDIT_ACTIONS = [
+  "qa.alerts.update",
+  "qa.tests.status",
+  "qa.tracker.update",
+  "qa.proposal.create",
+  "qa.state.write",
+  "qa.state.read"
+];
+var qaAuditActionSchema = external_exports.enum(QA_AUDIT_ACTIONS);
+var QA_NOT_COVERED_MAX = 50;
+var qaNotCoveredPageSchema = external_exports.object({
+  /** Normalised path, e.g. `/orders/:id`. */
+  path: external_exports.string().max(500),
+  /** One real address the crawl found for it (no query string). */
+  url: external_exports.string().max(2e3),
+  /** When a Quick check last saw it. */
+  crawledAt: external_exports.iso.datetime()
+});
+var QA_DAILY_DAYS = 28;
+var qaDailySchema = external_exports.object({
+  /** `YYYY-MM-DD`, UTC. */
+  date: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
+  /** Runs that settled this day. */
+  runs: external_exports.number().int().nonnegative(),
+  passed: external_exports.number().int().nonnegative(),
+  failed: external_exports.number().int().nonnegative(),
+  /** "Couldn't test": never counted as a fail. */
+  error: external_exports.number().int().nonnegative(),
+  /** Tests that passed only on a retry this day (distinct tests). */
+  flaky: external_exports.number().int().nonnegative(),
+  /** Median wall time of the day's runs, ms. Absent: no run settled. */
+  medianRunMs: external_exports.number().int().nonnegative().optional(),
+  /** What the day's results cost, micro-USD. */
+  costMicros: external_exports.number().int().nonnegative()
+});
+var qaReleaseGateSchema = external_exports.object({
+  ready: external_exports.boolean(),
+  requiredTotal: external_exports.number().int().nonnegative(),
+  requiredPassed: external_exports.number().int().nonnegative(),
+  couldntTest: external_exports.number().int().nonnegative(),
+  text: external_exports.string().max(200)
+});
+var qaFlakyReasonSchema = external_exports.enum(["retry", "shared_login", "ai_check"]);
+function qaFlakyText(reasons, attempts) {
+  const list2 = reasons && reasons.length > 0 ? reasons : ["retry"];
+  const tries = attempts && attempts > 1 ? attempts : 2;
+  return list2.map(
+    (r) => r === "retry" ? `passed on try ${tries} of ${tries}` : r === "shared_login" ? "passed after signing in again" : "passed on an AI check"
+  ).join("; ");
+}
+var QA_TRACE_MAX_STEPS = 200;
+var QA_TRACE_MAX_REQUESTS_PER_STEP = 150;
+var QA_TRACE_MAX_CONSOLE_PER_STEP = 50;
+var QA_TRACE_MAX_PAGE_CHARS = 3e4;
+var qaTraceRequestSchema = external_exports.object({
+  method: external_exports.string().max(16),
+  url: external_exports.string().max(2e3),
+  status: external_exports.number().int().min(0).max(999).optional(),
+  /** `document`, `xhr`, `fetch`, `script`, `image`, ... as the browser names it. */
+  resourceType: external_exports.string().max(40).optional(),
+  mimeType: external_exports.string().max(120).optional(),
+  durationMs: external_exports.number().int().nonnegative().optional(),
+  /** Why the request failed (`net::ERR_...`, `blocked`); absent: it got a response. */
+  failed: external_exports.string().max(200).optional(),
+  fromCache: external_exports.boolean().optional(),
+  /** Request headers (credential values redacted). Absent: not kept. */
+  requestHeaders: external_exports.record(external_exports.string().max(200), external_exports.string().max(2e3)).optional(),
+  /** Response headers (credential values redacted). */
+  responseHeaders: external_exports.record(external_exports.string().max(200), external_exports.string().max(2e3)).optional(),
+  /** Something in this entry was replaced with `[redacted]`. */
+  redacted: external_exports.boolean().optional()
+});
+var qaTraceConsoleSchema = external_exports.object({
+  text: external_exports.string().max(2e3),
+  url: external_exports.string().max(2e3).optional(),
+  /** Epoch ms. */
+  at: external_exports.number().int().nonnegative(),
+  redacted: external_exports.boolean().optional()
+});
+var qaTracePageSchema = external_exports.object({
+  url: external_exports.string().max(2e3).optional(),
+  title: external_exports.string().max(500).optional(),
+  text: external_exports.string().max(QA_TRACE_MAX_PAGE_CHARS),
+  /** The text was cut at `QA_TRACE_MAX_PAGE_CHARS`. */
+  truncated: external_exports.boolean().optional(),
+  redacted: external_exports.boolean().optional()
+});
+var qaStepTraceSchema = external_exports.object({
+  index: external_exports.number().int().nonnegative(),
+  label: external_exports.string().max(300),
+  ok: external_exports.boolean(),
+  /** Epoch ms the step started and ended. */
+  startedAt: external_exports.number().int().nonnegative(),
+  endedAt: external_exports.number().int().nonnegative(),
+  network: external_exports.array(qaTraceRequestSchema).max(QA_TRACE_MAX_REQUESTS_PER_STEP),
+  /** More requests happened than were kept. */
+  networkCut: external_exports.number().int().nonnegative().optional(),
+  console: external_exports.array(qaTraceConsoleSchema).max(QA_TRACE_MAX_CONSOLE_PER_STEP),
+  page: qaTracePageSchema.optional()
+});
+var qaTraceKeptBecauseSchema = external_exports.enum(["failed", "retry", "sampled", "recorded"]);
+var qaAttemptTraceSchema = external_exports.object({
+  version: external_exports.literal(1),
+  runId: idSchema("skillRun"),
+  sessionId: idSchema("session"),
+  keptBecause: qaTraceKeptBecauseSchema,
+  /** What the runner redacted, in words the drawer can show as is. */
+  redaction: external_exports.object({
+    /** Request bodies are never captured. */
+    requestBodies: external_exports.literal("off"),
+    rules: external_exports.array(external_exports.string().max(120)).max(20)
+  }),
+  steps: external_exports.array(qaStepTraceSchema).max(QA_TRACE_MAX_STEPS)
+});
+var qaBlockedRequestsSchema = external_exports.object({
+  analytics: external_exports.number().int().nonnegative(),
+  media: external_exports.number().int().nonnegative()
+});
+var qaTriageSchema = external_exports.enum([
+  "new",
+  "bug_filed",
+  "known_issue",
+  "needs_update",
+  "real_bug",
+  "environment"
+]);
+var qaTriageGuessKindSchema = external_exports.enum(["app_changed", "test_stale", "env_error", "bug"]);
+var qaTriageGuessSchema = external_exports.object({
+  kind: qaTriageGuessKindSchema,
+  text: external_exports.string().max(500)
+});
 var reportVerdictSchema = external_exports.enum(["pass", "fail", "error", "running"]);
+var reportStepResolutionSchema = external_exports.enum(["replayed", "healed", "model"]);
+var reportHealKindSchema = external_exports.enum(["locator", "wait", "text"]);
 var reportStepSchema = external_exports.object({
   /** 0-based position in this list (loop children flattened, loop parents dropped). */
   index: external_exports.number().int().nonnegative(),
@@ -30473,13 +31723,36 @@ var reportStepSchema = external_exports.object({
   expected: external_exports.string().max(500).optional(),
   /** What it saw instead or as well, in words (0.36.0). */
   actual: external_exports.string().max(500).optional(),
+  /**
+   * What it saw, in words (0.43.0): the name the QA report uses for `actual`. While both exist the
+   * producer sends the same text in both; readers should prefer `saw`, then `actual`.
+   */
+  saw: external_exports.string().max(500).optional(),
+  /**
+   * How the step was resolved (0.43.0, hub D82): `replayed` = answered from the replay cache,
+   * `healed` = the cache missed but a cheap repair worked (see `healKind`), `model` = a model call.
+   * Absent: the producer did not say (reports made before 0.43.0).
+   */
+  resolution: reportStepResolutionSchema.optional(),
+  /** What kind of repair a `healed` step needed (0.43.0). Only set with `resolution: "healed"`. Never applies to expectations. */
+  healKind: reportHealKindSchema.optional(),
+  /**
+   * The step passed but a person should look at it (0.45.0): the flow review found it odd (for example a
+   * step that did something other than its words, or one that only passed after a repair). The runtime
+   * sets it; the api may use it for the test-level `needsReview`. It never changes `status`.
+   */
+  needsReview: external_exports.boolean().optional(),
   /** Why it failed, plain text; failed assertion messages when the step has no error of its own. */
   error: external_exports.string().max(500).optional(),
   ms: external_exports.number().nonnegative().optional(),
-  /** Short-lived link (see `evidence.urlsExpireAt`); only failed steps have one today. */
+  /** Short-lived link (see `evidence.urlsExpireAt`). Failed steps only before 0.43.0; with the QA evidence policy every step can have one. */
   screenshotUrl: external_exports.string().max(2e3).optional()
 });
-var reportFindingSchema = findingSchema.pick({ rule: true, severity: true, title: true, url: true, fix: true }).extend({ detail: external_exports.string().max(1e3).optional() });
+var reportFindingSchema = findingSchema.pick({ rule: true, severity: true, title: true, url: true, fix: true }).extend({
+  detail: external_exports.string().max(1e3).optional(),
+  /** Set on a workflow-run case's report when the run had a `baselineRunId` (0.41.3): true = not in the baseline. */
+  new: external_exports.boolean().optional()
+});
 var reportConsoleErrorSchema = external_exports.object({
   source: external_exports.enum(["console", "pageerror"]),
   text: external_exports.string().max(500),
@@ -30533,10 +31806,16 @@ var runReportSchema = external_exports.object({
     /** `/v1/sessions/:id/logs`: full console and network log, paged. */
     logsPath: external_exports.string().optional(),
     /** When the signed URLs (screenshots, report) stop working. */
-    urlsExpireAt: external_exports.iso.datetime().optional()
+    urlsExpireAt: external_exports.iso.datetime().optional(),
+    /** Signed link to the last screenshot of the run (0.41.3); expires at `urlsExpireAt`. */
+    finalScreenshotUrl: external_exports.string().url().optional()
   }),
   /** What is missing and why, one sentence each. */
-  notes: external_exports.array(external_exports.string().max(300)).max(8)
+  notes: external_exports.array(external_exports.string().max(300)).max(8),
+  /** A QA case's assertion results (0.48.1, W1-1), the same list as the run case's `assertions`. */
+  assertions: qaAssertionResultListSchema.optional(),
+  /** A QA case's setup/teardown outcome (0.48.2, W1-2), as the runtime wrote it under `hooks`. Absent: no hooks. */
+  hooks: qaHookOutcomeSchema.optional()
 });
 var cronSchema = external_exports.string().trim().regex(/^\S+(\s+\S+){4}$/, "five cron fields: minute hour day month weekday");
 var scheduleTimezoneSchema = external_exports.string().min(1).max(64);
@@ -30603,6 +31882,1370 @@ var scheduleSchema = external_exports.object({
 var listSchedulesResponseSchema = external_exports.object({ schedules: external_exports.array(scheduleSchema) });
 var deleteScheduleResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
 var runScheduleNowResponseSchema = external_exports.object({ started: external_exports.boolean() });
+var skillRunStatusSchema = external_exports.enum([
+  "running",
+  "passed",
+  "failed",
+  "error",
+  "cancelled",
+  "denied"
+]);
+var runSkillRequestSchema = external_exports.object({
+  version: external_exports.string().optional(),
+  inputs: external_exports.record(external_exports.string(), external_exports.unknown()).default({}),
+  /** Engine the run's session uses (A45-1, 0.17.0). Omitted: the project default. */
+  engineId: idSchema("engine").optional(),
+  grant: external_exports.array(permissionSchema).optional(),
+  /**
+   * Session options merged over the skill's own `session` (e.g. `proxyUrl` + `allowHosts` to test a
+   * staging site). The API re-checks the merged options (`checkSessionOptions`).
+   */
+  session: sessionOptionsSchema.partial().extend({
+    /**
+     * Reach an app on one of your paired devices (0.44.0), so REST can start local-app QA runs:
+     * the same `localApp` as `CreateSessionRequest`. Exclusive with every proxy source and
+     * `allowHosts`. Applies to skill runs and to workflow runs (target `session`, start and
+     * ad-hoc run `session`).
+     */
+    localApp: localAppSchema.optional()
+  }).superRefine((v, ctx) => {
+    checkSessionOptions(v, ctx);
+    if (v.localApp && (v.proxyUrl !== void 0 || v.useProxy !== void 0 || v.dedicatedIp !== void 0 || v.allowHosts !== void 0)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["localApp"],
+        message: "localApp cannot be combined with proxyUrl, useProxy, dedicatedIp or allowHosts: send one proxy source"
+      });
+    }
+  }).optional()
+});
+var skillRunAcceptedSchema = external_exports.object({
+  runId: idSchema("skillRun"),
+  sessionId: idSchema("session"),
+  status: external_exports.literal("running")
+});
+var skillRunSummarySchema = external_exports.object({
+  runId: idSchema("skillRun"),
+  skill: external_exports.object({ name: external_exports.string(), version: external_exports.string() }),
+  sessionId: idSchema("session"),
+  status: skillRunStatusSchema,
+  startedAt: external_exports.number().int().nonnegative(),
+  ms: external_exports.number().nonnegative().nullable(),
+  summary: external_exports.string().nullable(),
+  counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).nullable(),
+  /** Engine the run's session used (0.19.0); absent for runs placed before engines. */
+  engineRef: engineRefSchema.optional()
+});
+var toArray = (v) => v === void 0 || Array.isArray(v) ? v : [v];
+var listSkillRunsQuerySchema = pageQuerySchema.extend({
+  status: external_exports.preprocess(toArray, external_exports.array(skillRunStatusSchema).min(1).max(6)).optional(),
+  skill: external_exports.string().trim().min(1).max(200).optional()
+});
+var listSkillRunsResponseSchema = external_exports.object({
+  runs: external_exports.array(skillRunSummarySchema),
+  ...pageNextField
+});
+var skillRunDetailSchema = skillRunSummarySchema.extend({
+  result: external_exports.record(external_exports.string(), external_exports.unknown()).nullable(),
+  hasReport: external_exports.boolean()
+});
+var workflowStopAfterFailuresSchema = external_exports.number().int().min(1).max(500);
+var workflowRunNotRunReasonSchema = external_exports.enum(["stopped_early", "superseded"]);
+var workflowRunControlFields = {
+  stopAfterFailures: workflowStopAfterFailuresSchema.optional(),
+  /**
+   * Re-run an earlier run: the same cases (and the same target/url/environment unless this body sets them),
+   * frozen from the current workflow version. Unknown or other-project id: `invalid_input`.
+   */
+  rerunOf: idSchema("workflowRun").optional(),
+  /**
+   * Only the cases that did not pass in the earlier run (failed, errored or not run). The passes are carried
+   * over: listed on the new run with `carriedFrom` and the earlier verdict, not re-run, not billed.
+   * With `rerunOf`: that run. Without it: the latest ENDED run of the same workflow (ad-hoc runs: same
+   * `workflowKey`), of the same pull request when `ci.pr` is set; when there is none, every case runs and
+   * the run's `notes` say so. A carried-over case that no longer exists in the workflow is dropped.
+   */
+  failedOnly: external_exports.boolean().optional(),
+  /**
+   * C1: a newer commit cancels older open runs of the same pull request. Key: (workflow, or `workflowKey` for
+   * ad-hoc runs; `ci.repo`; `ci.pr`). A run started with a different `ci.sha` cancels the older ones still
+   * running: their running sessions stop, queued cases end `notRunReason: "superseded"`, the run gets
+   * `cancelled`. Only runs with `ci.pr` take part; default-branch, schedule and manual runs are never
+   * cancelled and never cancel. Absent: on when `ci.pr` is set. `false`: this run neither cancels nor
+   * can be cancelled.
+   */
+  cancelInProgress: external_exports.boolean().optional()
+};
+var workflowRunCancelledSchema = external_exports.object({
+  reason: external_exports.enum(["superseded"]),
+  /** The newer commit (`ci.sha` of the run that cancelled this one). */
+  bySha: external_exports.string().max(100).optional(),
+  byRunId: idSchema("workflowRun").optional(),
+  at: external_exports.iso.datetime()
+});
+var workflowSlugSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
+var WORKFLOW_MAX_CASES = 500;
+var workflowUrlSchema = external_exports.string().max(2e3).refine(
+  (u) => {
+    if (!/^https?:\/\//i.test(u)) return false;
+    try {
+      new URL(u);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  { message: "must be an http(s) URL" }
+);
+var workflowCaseChecksSchema = external_exports.object({
+  /** Text the page must show. */
+  text: external_exports.string().min(1).max(300).optional(),
+  /** Text the address must contain. */
+  url: external_exports.string().min(1).max(300).optional(),
+  /** Text the page must not show. */
+  noText: external_exports.string().min(1).max(300).optional()
+});
+var workflowCaseStatusSchema = external_exports.enum(["proposed", "active", "quarantined", "archived"]);
+var workflowCaseOriginSchema = external_exports.enum([
+  "dashboard",
+  "repo",
+  "agent",
+  "chat",
+  "quick_check",
+  "starter"
+]);
+var workflowCaseSchema = external_exports.object({
+  /**
+   * Unique within the workflow, and IMMUTABLE once created (0.43.0): the pair `(workflowId, id)` is
+   * the identity of a test and all its history hangs on it. Renaming a test changes only `title`;
+   * an editor or a repo sync that changes an id is a new test.
+   */
+  id: workflowSlugSchema,
+  title: external_exports.string().trim().min(1).max(200),
+  /** Where the case starts, relative to the target url. */
+  path: external_exports.string().max(2e3).regex(/^\//, "path starts with /"),
+  /**
+   * What to do, at most 30: plain sentences, or typed steps (0.48.0, `qa-test-shape.ts`: `api`, `use`).
+   * Show any step with `stepText`. Authored YAML shorthand goes through `normalizeQaCase` first.
+   */
+  steps: qaStepListSchema,
+  /**
+   * Expected outcome in words: one string, or a list of phrases and AI checks (0.48.0). Read it with
+   * `expectItems` / `expectText`. Before the W1-1 compiler the api understands `shows "X"`, `address
+   * contains Y` and `does not show "Z"`; anything else is reported as "not checked".
+   */
+  expect: qaExpectSchema.optional(),
+  /** Compiled `expect` (0.48.0), set by the api at save; ignored on input. Absent: not compiled (runs as before). */
+  compiled: qaCompiledExpectSchema.optional(),
+  checks: workflowCaseChecksSchema.optional(),
+  tags: external_exports.array(workflowSlugSchema).max(20).default([]),
+  /** 1 (most important) to 5. Ordering only, it never decides the verdict. */
+  priority: external_exports.number().int().min(1).max(5).default(3),
+  /**
+   * Absent or `true`: a failure fails the run. `false`: shown as a warning and counted in
+   * `counts.optionalFailed`, never blocks the gate (0.39.0).
+   */
+  required: external_exports.boolean().optional(),
+  /** Life cycle (0.43.0). Absent on input: `active`. */
+  status: workflowCaseStatusSchema.default("active"),
+  /** Where the case came from (0.43.0). Absent: unknown (cases made before 0.43.0). */
+  origin: workflowCaseOriginSchema.optional(),
+  /** Feature area for grouping and filtering, e.g. `checkout` (0.43.0). */
+  area: external_exports.string().trim().min(1).max(60).optional(),
+  /** Person or team that looks after the test (0.43.0). Free text. */
+  owner: external_exports.string().trim().min(1).max(120).optional(),
+  /**
+   * Always sign in inside this case (0.47.0, qa-next C4): skips the run's shared login. Set it on a test of
+   * login itself. Part of the test version. Absent: the case may use the run's shared login.
+   */
+  freshLogin: external_exports.boolean().optional(),
+  /** Tickets, specs or docs the test relates to (0.43.0). */
+  links: external_exports.array(external_exports.object({ label: external_exports.string().trim().min(1).max(60), url: workflowUrlSchema })).max(10).optional()
+});
+var workflowTargetSchema = external_exports.object({
+  url: workflowUrlSchema,
+  /** Session options merged over each case's session (same as `runSkillRequestSchema.session`). */
+  session: runSkillRequestSchema.shape.session
+});
+var MAX_TARGETS = 10;
+var workflowRunTimeoutMsSchema = external_exports.number().int().min(6e4).max(72e5);
+var workflowRetriesSchema = external_exports.number().int().min(0).max(2);
+var workflowManagedBySchema = external_exports.object({
+  kind: external_exports.literal("repo"),
+  /** `owner/name`. */
+  repo: external_exports.string().min(1).max(200),
+  /** Commit the definition was synced from, 7..40 hex. */
+  sha: external_exports.string().regex(/^[0-9a-fA-F]{7,40}$/, "7..40 hex chars").optional(),
+  /** File in the repo, e.g. `.webagent/tests.yaml`. */
+  path: external_exports.string().min(1).max(300).optional()
+});
+var workflowContextSchema = external_exports.string().max(6e3);
+var workflowScheduleSchema = external_exports.object({
+  cron: cronSchema,
+  /** IANA zone the cron is read in. */
+  timezone: scheduleTimezoneSchema.default("UTC"),
+  /** Key of the workflow's `targets`. Absent: `defaultTarget`. */
+  target: workflowSlugSchema.optional()
+});
+function uniqueCaseIds(cases, ctx) {
+  const seen = /* @__PURE__ */ new Set();
+  cases.forEach((c, i) => {
+    if (seen.has(c.id)) {
+      ctx.addIssue({
+        code: "custom",
+        message: `duplicate case id "${c.id}"`,
+        path: ["cases", i, "id"]
+      });
+    }
+    seen.add(c.id);
+  });
+}
+var workflowTestShapeFields = {
+  /** Plain values, `{{vars.NAME}}`; win over the environment's variables of the same name. Never secrets. */
+  variables: qaVariablesSchema.optional(),
+  before: qaHookStepListSchema.optional(),
+  after: qaHookStepListSchema.optional()
+};
+function checkExpandedSteps(v, ctx) {
+  const hooks = (v.before?.length ?? 0) + (v.after?.length ?? 0);
+  v.cases.forEach((c, i) => {
+    if (c.steps.length + hooks > QA_STEPS_EXPANDED_MAX) {
+      ctx.addIssue({
+        code: "custom",
+        message: `a case runs at most ${QA_STEPS_EXPANDED_MAX} steps with before and after`,
+        path: ["cases", i, "steps"]
+      });
+    }
+  });
+}
+var workflowFieldsSchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(200),
+  description: external_exports.string().max(1e3).optional(),
+  /** Unique per project; lets CI upsert with `PUT /v1/workflows/by-key/:key`. */
+  key: workflowSlugSchema.optional(),
+  /** 1..10 targets by slug, e.g. `staging`, `production`. */
+  targets: external_exports.record(workflowSlugSchema, workflowTargetSchema),
+  /** Key of `targets` used when a run names no target. */
+  defaultTarget: workflowSlugSchema,
+  /** 1..500 cases with unique ids (schema ceiling; the api's configured limit applies, see `WORKFLOW_MAX_CASES`). */
+  cases: external_exports.array(workflowCaseSchema).min(1).max(WORKFLOW_MAX_CASES),
+  /**
+   * Engine for this workflow's runs (D68). Resolution order for a run: the call's own engine, then
+   * this one (a tests.yaml `engine:` lands here on sync; a PR run with `workflowKey` uses the saved
+   * workflow's), then the project's default engine. Never a hidden built-in.
+   */
+  engineId: idSchema("engine").optional(),
+  /** Pins one engine version; needs `engineId`. */
+  engineVersion: engineVersionNumberSchema.optional(),
+  /** Cases run at the same time. */
+  concurrency: external_exports.number().int().min(1).max(10).default(3),
+  /** Stops a case once its model spend passes this many USD. */
+  maxCostUsdPerCase: external_exports.number().positive().max(100).optional(),
+  /**
+   * Model routes for this workflow's runs (0.37.0). A role left out falls back to the engine's
+   * `models`, then to the project routes.
+   */
+  models: modelRoutesOverrideSchema.optional(),
+  /** Product notes and house rules passed to every case (0.37.0). */
+  context: workflowContextSchema.optional(),
+  /** Run on a cron (0.37.0). Absent: runs only when started. */
+  schedule: workflowScheduleSchema.optional(),
+  /** Extra tries for a failed case (0.39.0). Absent: by trigger (see the rollup rules above). */
+  retries: workflowRetriesSchema.optional(),
+  /** Set by CI when it upserts from a repo file (0.39.0). Absent: owned by the dashboard. */
+  managedBy: workflowManagedBySchema.optional(),
+  /** Time budget for a run of this workflow (0.43.0). Absent: derived by the api. */
+  timeoutMs: workflowRunTimeoutMsSchema.optional(),
+  ...workflowTestShapeFields
+});
+function checkWorkflowFields(v, ctx) {
+  const keys = Object.keys(v.targets);
+  if (keys.length < 1 || keys.length > MAX_TARGETS) {
+    ctx.addIssue({
+      code: "custom",
+      message: `targets must have 1..${MAX_TARGETS} entries`,
+      path: ["targets"]
+    });
+  }
+  if (!(v.defaultTarget in v.targets)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "defaultTarget must be a key of targets",
+      path: ["defaultTarget"]
+    });
+  }
+  if (v.engineVersion !== void 0 && v.engineId === void 0) {
+    ctx.addIssue({
+      code: "custom",
+      message: "engineVersion needs engineId",
+      path: ["engineVersion"]
+    });
+  }
+  if (v.schedule?.target !== void 0 && !(v.schedule.target in v.targets)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "schedule.target must be a key of targets",
+      path: ["schedule", "target"]
+    });
+  }
+  uniqueCaseIds(v.cases, ctx);
+  checkExpandedSteps(v, ctx);
+}
+var createWorkflowRequestSchema = workflowFieldsSchema.extend({ managedBy: workflowManagedBySchema.nullable().optional() }).superRefine(checkWorkflowFields);
+var workflowSchema = workflowFieldsSchema.extend({
+  id: idSchema("workflow"),
+  version: external_exports.number().int().min(1),
+  createdAt: external_exports.iso.datetime(),
+  updatedAt: external_exports.iso.datetime(),
+  /** When the latest run of this workflow started (0.41.1; ISO like the other Workflow timestamps). `null`/absent: never run. */
+  lastRunAt: external_exports.iso.datetime().nullable().optional()
+}).superRefine(checkWorkflowFields);
+var listWorkflowsResponseSchema = external_exports.object({
+  workflows: external_exports.array(workflowSchema),
+  ...pageNextField
+});
+var workflowTriggerSchema = external_exports.enum(["manual", "api", "mcp", "ci", "schedule"]);
+var workflowTriggerLabelSchema = external_exports.enum([
+  "manual",
+  "schedule",
+  "pr",
+  "agent",
+  "chat",
+  "api"
+]);
+var workflowCiSchema = external_exports.object({
+  provider: external_exports.enum(["github", "other"]),
+  repo: external_exports.string().max(200).optional(),
+  ref: external_exports.string().max(200).optional(),
+  sha: external_exports.string().max(100).optional(),
+  pr: external_exports.number().int().positive().optional(),
+  buildUrl: workflowUrlSchema.optional(),
+  /**
+   * Pull request context (0.43.0). UNTRUSTED text from the PR author: stored on the run and read only
+   * by failure triage, never put in a per-step model context (prompt-injection and token cost).
+   */
+  title: external_exports.string().max(200).optional(),
+  /** Pull request body (0.43.0). Untrusted, see `title`. */
+  body: external_exports.string().max(2e3).optional(),
+  /** Paths changed by the pull request (0.43.0), at most 300 of at most 300 chars. Untrusted, see `title`. */
+  changedFiles: external_exports.array(external_exports.string().max(300)).max(300).optional()
+});
+var startWorkflowRunRequestSchema = external_exports.object({
+  /** Key of the workflow's `targets`. Absent: `defaultTarget`. */
+  target: workflowSlugSchema.optional(),
+  /** Run against this url instead of a saved target. */
+  url: workflowUrlSchema.optional(),
+  caseIds: external_exports.array(workflowSlugSchema).max(WORKFLOW_MAX_CASES).optional(),
+  tags: external_exports.array(workflowSlugSchema).max(20).optional(),
+  /** Session options for this run (0.38.0), same shape as a target's `session` (extra headers for ngrok/WAF, proxy). Wins over the target's. */
+  session: runSkillRequestSchema.shape.session,
+  /** Overrides `Workflow.retries` for this run (0.39.0). */
+  retries: workflowRetriesSchema.optional(),
+  /** Overrides `Workflow.timeoutMs` for this run (0.43.0). */
+  timeoutMs: workflowRunTimeoutMsSchema.optional(),
+  trigger: workflowTriggerSchema.default("api"),
+  ci: workflowCiSchema.optional(),
+  /** Fail-fast, re-run failed and cancel-superseded (0.47.0); see `workflow-run-control.ts`. */
+  ...workflowRunControlFields
+});
+var startAdhocWorkflowRunRequestSchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(200).optional(),
+  url: workflowUrlSchema,
+  cases: external_exports.array(workflowCaseSchema).min(1).max(WORKFLOW_MAX_CASES),
+  /** Absent: the saved workflow's engine when `workflowKey` names one, else the project default engine (D68). */
+  engineId: idSchema("engine").optional(),
+  session: runSkillRequestSchema.shape.session,
+  concurrency: external_exports.number().int().min(1).max(10).default(3),
+  /** Stops a case once its model spend passes this many USD (0.38.0), same cap as `Workflow.maxCostUsdPerCase`. */
+  maxCostUsdPerCase: external_exports.number().positive().max(100).optional(),
+  /** Model routes for this run (0.37.0), same as `Workflow.models`. */
+  models: modelRoutesOverrideSchema.optional(),
+  /** Product notes and house rules passed to every case (0.37.0). */
+  context: workflowContextSchema.optional(),
+  /** Extra tries for a failed case (0.39.0), same as `Workflow.retries`. */
+  retries: workflowRetriesSchema.optional(),
+  /** Time budget for this run (0.43.0), same as `Workflow.timeoutMs`. */
+  timeoutMs: workflowRunTimeoutMsSchema.optional(),
+  /**
+   * Key of the saved workflow this run belongs to (0.39.0): PR runs are ad-hoc (they must not upsert the
+   * workflow) but group under it in the dashboard. Unknown key: the run is ungrouped, not an error.
+   */
+  workflowKey: workflowSlugSchema.optional(),
+  /**
+   * An earlier run to compare against (0.41.3). Findings in this run that the baseline did not have are
+   * marked `new`, ones it had that are gone are listed as `fixed` on the case; `WorkflowRun.baseline` sums them.
+   * Unknown or other-project id: `invalid_input`.
+   */
+  baselineRunId: idSchema("workflowRun").optional(),
+  trigger: workflowTriggerSchema.default("api"),
+  ci: workflowCiSchema.optional(),
+  /**
+   * Fail-fast, re-run failed and cancel-superseded (0.47.0); see `workflow-run-control.ts`. With
+   * `failedOnly`, `cases` still lists every case; the api runs only those that did not pass in the earlier
+   * run (matched by `caseId`) and carries the passes over.
+   */
+  ...workflowRunControlFields,
+  /** Variables, setup and teardown for these cases (0.48.0). */
+  ...workflowTestShapeFields
+}).superRefine((v, ctx) => {
+  uniqueCaseIds(v.cases, ctx);
+  checkExpandedSteps(v, ctx);
+});
+var workflowRunCaseFailureSchema = external_exports.object({
+  step: external_exports.string().max(300).optional(),
+  title: external_exports.string().max(300).optional(),
+  error: external_exports.string().max(500).optional(),
+  screenshotUrl: external_exports.string().max(2e3).optional(),
+  /** What the failed step expected to see, in words (0.45.0). Same text as the report step's `expected`. */
+  expected: external_exports.string().max(500).optional(),
+  /** What it saw instead, in words (0.45.0). Same text as the report step's `saw`. */
+  saw: external_exports.string().max(500).optional(),
+  /** Page address when it failed (0.39.0). */
+  url: external_exports.string().max(2e3).optional(),
+  /** First console error on the page (0.39.0). */
+  consoleError: external_exports.string().max(500).optional(),
+  /** The network request that went wrong (0.39.0). */
+  request: external_exports.object({
+    method: external_exports.string().max(16).optional(),
+    url: external_exports.string().max(2e3),
+    status: external_exports.number().int().min(100).max(599).optional()
+  }).optional()
+});
+var workflowRunCaseAssuranceSchema = external_exports.object({
+  checked: external_exports.array(external_exports.string().max(300)).max(20),
+  notUnderstood: external_exports.array(external_exports.string().max(300)).max(20)
+});
+var workflowRunCaseCouldntTestReasonSchema = external_exports.enum([
+  "sign_in_failed",
+  "setup_failed",
+  "data_change_refused",
+  "secret_missing"
+]);
+var workflowRunCaseSchema = external_exports.object({
+  caseId: workflowSlugSchema,
+  title: external_exports.string().max(200),
+  verdict: reportVerdictSchema,
+  runId: idSchema("skillRun").optional(),
+  sessionId: idSchema("session").optional(),
+  summary: external_exports.string().max(300),
+  failure: workflowRunCaseFailureSchema.optional(),
+  /** Tries used, 1 when never retried (0.39.0). */
+  attempts: external_exports.number().int().min(1).optional(),
+  /**
+   * Passed, but the pass is shaky (0.39.0 retry; qa-next B1 adds shared login and AI check, see
+   * `qaFlakyReasons`). The verdict stays `pass`; show **Flaky**, never a plain green.
+   */
+  flaky: external_exports.boolean().optional(),
+  /** Why it is flaky (qa-next B1); set with `flaky: true`. Absent on older runs: read it as `retry`. */
+  flakyReasons: external_exports.array(qaFlakyReasonSchema).max(3).optional(),
+  /** Echo of the case's `required` (0.39.0). Absent: required. */
+  required: external_exports.boolean().optional(),
+  /** Findings the baseline run had on this case that are gone now (0.41.3); only with `baselineRunId`. */
+  fixed: external_exports.array(
+    external_exports.object({
+      rule: external_exports.string().max(200),
+      path: external_exports.string().max(2e3),
+      selector: external_exports.string().max(500).optional()
+    })
+  ).max(20).optional(),
+  durationMs: external_exports.number().int().nonnegative().optional(),
+  costMicros: external_exports.number().int().nonnegative().optional(),
+  /** Steps answered from the replay cache. */
+  replayedSteps: external_exports.number().int().nonnegative().optional(),
+  /** Steps that needed a model call. */
+  modelSteps: external_exports.number().int().nonnegative().optional(),
+  /** Steps that missed the cache but were repaired without a full model decision (0.43.0). The kinds are on the case's report steps. */
+  healedSteps: external_exports.number().int().nonnegative().optional(),
+  /** Cost of this case in USD (0.43.0), `costMicros` / 1e6 as a convenience for reports. */
+  costUsd: external_exports.number().nonnegative().optional(),
+  /** `/v1/skill-runs/:id/report.json` of the case. */
+  reportPath: external_exports.string().max(500).optional(),
+  /** Triage read-back (0.44.0): set with `PUT /v1/qa/results/triage`. Absent until someone triages a failure. */
+  triage: qaTriageSchema.optional(),
+  triageNote: external_exports.string().max(500).optional(),
+  /** Ticket link of a `bug_filed` result. */
+  bugUrl: workflowUrlSchema.optional(),
+  /** AI guess only (0.44.0, see `qaTriageGuessSchema`): label it as one, never show it as a decision. */
+  triageGuess: qaTriageGuessSchema.optional(),
+  /** What the verdict rests on, in plain words (0.45.0). Absent: the api did not say. */
+  assurance: workflowRunCaseAssuranceSchema.optional(),
+  /** The case did not run (0.47.0); `verdict` is then `error`. Show "Not run (...)", never Couldn't test. */
+  notRunReason: workflowRunNotRunReasonSchema.optional(),
+  /**
+   * Carried over by a `failedOnly` re-run (0.47.0): the case passed in this earlier run and was not re-run.
+   * `verdict` is that run's `pass`; `runId`/`reportPath` point at that run's evidence. Show "Passed in an
+   * earlier run, not re-run". Not billed, not counted again in stats.
+   */
+  carriedFrom: idSchema("workflowRun").optional(),
+  /**
+   * Why a case could not be tested (0.47.0), with `verdict: "error"`. `sign_in_failed`: the run's shared
+   * login failed, so the case was not started (shown once per case, with the setup session's evidence).
+   * Not run cases use `notRunReason` instead.
+   * 0.48.2 (W1-2): `setup_failed` = the test's `before` steps failed, so its own steps did not run (the
+   * setup's failed step is on the report); `data_change_refused` = the environment says tests may not change
+   * data (`canChangeData: false`) and the test has a write API step (POST/PUT/PATCH/DELETE), so it was not
+   * started; `secret_missing` = a `{{secret.NAME}}` the test uses is not a field of the test account for
+   * that origin.
+   */
+  couldntTestReason: workflowRunCaseCouldntTestReasonSchema.optional(),
+  /**
+   * With `couldntTestReason: "secret_missing"` (qa-next B2 retro): the `{{secret.NAME}}` name(s) the test
+   * account lacks, comma separated (`PASSWORD, OTP_SEED`). Show it as is; never parse the summary.
+   */
+  missingSecret: external_exports.string().max(300).optional(),
+  /** The case started signed in from the run's shared login (0.47.0); `freshLogin` after a sign-in wall re-signed in itself. */
+  sharedLogin: external_exports.enum(["used", "fresh_login"]).optional(),
+  /** Where the case ran (0.48.0): `http` = "Checked over HTTP. No page was rendered." Absent: `browser`. */
+  lane: qaLaneSchema.optional(),
+  /** The test version that ran (0.48.0), see `qaTestVersionSchema.version`. Absent: not known (inline cases). */
+  testVersion: external_exports.number().int().min(1).optional(),
+  /**
+   * One result per compiled assertion (0.48.1, W1-1), in `compiled.assertions` order. Any `fail` or
+   * `ambiguous` fails the case; any `error` makes it Couldn't test. Absent: the case had no compiled
+   * expectation (saved before the compiler, runs as Smoke).
+   */
+  assertions: qaAssertionResultListSchema.optional(),
+  /**
+   * The test's `after` (teardown) steps failed, timed out or could not run (0.48.2, W1-2). The verdict is
+   * kept; the report shows the issue "cleanup failed, test data may remain". Absent: false.
+   */
+  cleanupFailed: external_exports.boolean().optional(),
+  /** Built-in values this case ran with (0.48.2, W1-2), frozen at queue time, e.g. the sign-up email. */
+  generated: qaGeneratedValuesSchema.optional(),
+  /**
+   * Step trace of the case's last attempt (qa-next W1-5/W2-1): `GET` this api path for a `QaAttemptTrace` (network,
+   * console and page per step, redacted in the runner). Absent: no trace was kept (passes are sampled 1 in N).
+   */
+  tracePath: external_exports.string().max(500).optional(),
+  /** What the QA profile blocked in the case's session (qa-next C6); see `qaBlockedRequestsText`. */
+  blocked: qaBlockedRequestsSchema.optional()
+});
+var workflowRunCountsSchema = external_exports.object({
+  cases: external_exports.number().int().nonnegative(),
+  passed: external_exports.number().int().nonnegative(),
+  failed: external_exports.number().int().nonnegative(),
+  errored: external_exports.number().int().nonnegative(),
+  running: external_exports.number().int().nonnegative(),
+  /** Cases that passed but are flaky (0.39.0 retry; qa-next B1 also shared login and AI check). */
+  flaky: external_exports.number().int().nonnegative().optional(),
+  /** Optional cases (`required: false`) that failed or errored; they do not change the verdict (0.39.0). */
+  optionalFailed: external_exports.number().int().nonnegative().optional(),
+  /** Cases with a `notRunReason` (0.47.0). They are inside `errored` too, so older readers add up. */
+  notRun: external_exports.number().int().nonnegative().optional(),
+  /** Cases with `carriedFrom` (0.47.0). They are inside `passed` too. */
+  carriedOver: external_exports.number().int().nonnegative().optional()
+});
+var workflowRunSchema = external_exports.object({
+  id: idSchema("workflowRun"),
+  workflowId: idSchema("workflow").optional(),
+  /** The workflow version the cases were frozen from. */
+  workflowVersion: external_exports.number().int().min(1).optional(),
+  name: external_exports.string().max(200),
+  target: external_exports.object({ name: external_exports.string().max(64).optional(), url: workflowUrlSchema }),
+  trigger: workflowTriggerSchema,
+  /** Display label of what started the run (0.44.0). Absent on old runs: derive it with `workflowTriggerLabel`. */
+  triggerLabel: workflowTriggerLabelSchema.optional(),
+  /** Pull request number when `triggerLabel` is `pr` (0.44.0); also `ci.pr` for CI runs. */
+  prNumber: external_exports.number().int().positive().optional(),
+  /** The QA environment the run used (0.45.0), e.g. "Staging" or "Preview"; the sha is in `ci.sha`. Absent: none chosen. */
+  environmentId: idSchema("qaEnvironment").optional(),
+  /** Name of that environment at start (0.45.0), kept on the run so a rename or delete does not rewrite history. */
+  environmentName: external_exports.string().trim().min(1).max(100).optional(),
+  /** Estimated time left of a running run, ms (0.45.0). Absent once it ended or when there is no estimate yet. */
+  etaMs: external_exports.number().int().nonnegative().optional(),
+  ci: workflowCiSchema.optional(),
+  /** The per-case retry setting this run used (0.41.1); each case's `attempts` says how many tries it took. */
+  retries: external_exports.number().int().min(0).optional(),
+  /** The time budget this run used, ms (0.43.0). */
+  timeoutMs: workflowRunTimeoutMsSchema.optional(),
+  /** Comparison with the run named by `baselineRunId` (0.41.3). `null`/absent = no baseline. */
+  baseline: external_exports.object({
+    runId: idSchema("workflowRun"),
+    newFindings: external_exports.number().int().min(0),
+    fixedFindings: external_exports.number().int().min(0)
+  }).nullable().optional(),
+  /** Fail-fast threshold this run used (0.47.0). Absent: off. */
+  stopAfterFailures: workflowStopAfterFailuresSchema.optional(),
+  /** The run this one re-ran (0.47.0), from `rerunOf` or the one `failedOnly` picked. */
+  rerunOf: idSchema("workflowRun").optional(),
+  /** True when only the cases that did not pass were re-run (0.47.0). */
+  failedOnly: external_exports.boolean().optional(),
+  /**
+   * Set when the run was cancelled (0.47.0). The verdict is then `error` (or what the finished required cases
+   * already decided: a `fail` stays `fail`), the summary starts "Cancelled: newer commit <sha7>", the
+   * unfinished cases carry `notRunReason: "superseded"`, and the not-run part is not billed.
+   */
+  cancelled: workflowRunCancelledSchema.optional(),
+  /**
+   * Log in once per run (0.47.0, qa-next C4). `used` = the setup signed in and cases used it; `failed` = the
+   * setup could not sign in (cases end `couldntTestReason: "sign_in_failed"`); `fell_back` = too many cases hit
+   * a sign-in wall, so the rest signed in themselves. `cases` used it, `fellBack` re-signed in. Absent: not used.
+   */
+  sharedLogin: external_exports.object({
+    status: external_exports.enum(["used", "failed", "fell_back"]),
+    cases: external_exports.number().int().nonnegative(),
+    fellBack: external_exports.number().int().nonnegative(),
+    /** The setup's skill run and session, so a reader can link its report ("Signed in once for the run"). */
+    setupRunId: idSchema("skillRun").optional(),
+    setupSessionId: idSchema("session").optional()
+  }).optional(),
+  engineRef: engineRefSchema.optional(),
+  /** The model routes the run used when the workflow or request overrode them (0.37.0). */
+  models: modelRoutesOverrideSchema.optional(),
+  verdict: reportVerdictSchema,
+  /** Plain sentences an LLM can relay as is. */
+  summary: external_exports.string().max(1500),
+  counts: workflowRunCountsSchema,
+  cases: external_exports.array(workflowRunCaseSchema).max(WORKFLOW_MAX_CASES),
+  costMicros: external_exports.number().int().nonnegative(),
+  startedAt: external_exports.iso.datetime(),
+  endedAt: external_exports.iso.datetime().optional(),
+  durationMs: external_exports.number().int().nonnegative().optional(),
+  evidence: external_exports.object({
+    /** `/v1/workflow-runs/:id/report.md`. */
+    markdownPath: external_exports.string().max(500).optional(),
+    /** When the signed links (screenshots) stop working. */
+    urlsExpireAt: external_exports.iso.datetime().optional()
+  }),
+  /** What is missing and why, one sentence each. */
+  notes: external_exports.array(external_exports.string().max(300)).max(8)
+});
+var workflowRunListItemSchema = workflowRunSchema.omit({ cases: true });
+var listWorkflowRunsQuerySchema = pageQuerySchema.extend({
+  workflowId: idSchema("workflow").optional(),
+  verdict: reportVerdictSchema.optional(),
+  trigger: workflowTriggerSchema.optional()
+});
+var listWorkflowRunsResponseSchema = external_exports.object({
+  runs: external_exports.array(workflowRunListItemSchema),
+  ...pageNextField
+});
+var qaTestRefSchema = external_exports.object({
+  workflowId: idSchema("workflow"),
+  caseId: workflowSlugSchema
+});
+var qaTestVerdictSchema = external_exports.enum(["pass", "fail", "error", "skipped"]);
+var qaTestHistoryItemSchema = external_exports.object({
+  runId: idSchema("workflowRun"),
+  verdict: qaTestVerdictSchema,
+  endedAt: external_exports.iso.datetime(),
+  triage: qaTriageSchema.optional(),
+  triageNote: external_exports.string().max(500).optional(),
+  /** Ticket link, set with `triage: "bug_filed"`. */
+  bugUrl: workflowUrlSchema.optional(),
+  /** AI guess only (see `qaTriageGuessSchema`): label it as one, never show it as a decision. */
+  triageGuess: qaTriageGuessSchema.optional(),
+  /**
+   * What this result cost, in millionths of a USD (0.45.0): the api's total, model `costMicros` from the
+   * runtime plus session compute. Absent: not known (results from before 0.45.0).
+   */
+  costMicros: external_exports.number().int().nonnegative().optional(),
+  /** Steps of this result that missed the cache and were repaired without a full model call (0.45.0). */
+  healedSteps: external_exports.number().int().nonnegative().optional()
+});
+var QA_TEST_HISTORY_MAX = 20;
+var qaTestRowSchema = qaTestRefSchema.extend({
+  title: external_exports.string().max(200),
+  status: workflowCaseStatusSchema,
+  origin: workflowCaseOriginSchema.optional(),
+  area: external_exports.string().max(60).optional(),
+  owner: external_exports.string().max(120).optional(),
+  /** The latest results, newest first, at most 20. */
+  last: external_exports.array(qaTestHistoryItemSchema).max(QA_TEST_HISTORY_MAX),
+  /** 0 (stable) to 1 (flips every run), computed from `last` by the api. */
+  flakyScore: external_exports.number().min(0).max(1),
+  /** True while `status` is `quarantined`: it runs, but a failure never gates. */
+  quarantined: external_exports.boolean(),
+  /**
+   * The test wants a person's look (0.45.0): its steps were healed `QA_NEEDS_REVIEW_HEALS` times in a
+   * window. A hint, not a verdict: the result stays what it was. Absent: false.
+   */
+  needsReview: external_exports.boolean().optional(),
+  /** Why `needsReview` is set (0.45.0). `heals`: the steps keep needing repair. */
+  needsReviewReason: external_exports.enum(["heals"]).optional()
+});
+var qaTestFilterSchema = external_exports.enum(["failing", "flaky", "proposed"]);
+var qaListTestsQuerySchema = pageQuerySchema.extend({
+  workflowId: idSchema("workflow").optional(),
+  filter: qaTestFilterSchema.optional(),
+  area: external_exports.string().trim().min(1).max(60).optional(),
+  status: workflowCaseStatusSchema.optional()
+});
+var qaListTestsResponseSchema = external_exports.object({
+  tests: external_exports.array(qaTestRowSchema),
+  ...pageNextField
+});
+var qaTriageUpdateSchema = external_exports.object({
+  runId: idSchema("workflowRun"),
+  caseId: workflowSlugSchema,
+  triage: qaTriageSchema,
+  triageNote: external_exports.string().max(500).optional(),
+  bugUrl: workflowUrlSchema.optional()
+});
+var qaTriageResponseSchema = external_exports.object({
+  runId: idSchema("workflowRun"),
+  caseId: workflowSlugSchema,
+  triage: qaTriageSchema,
+  triageNote: external_exports.string().max(500).optional(),
+  bugUrl: workflowUrlSchema.optional(),
+  /** Echo of the engine's guess when it made one; still only a guess. */
+  triageGuess: qaTriageGuessSchema.optional(),
+  /** When this triage was stored. */
+  updatedAt: external_exports.iso.datetime()
+});
+var qaTestStatusActionValueSchema = external_exports.enum(["active", "rejected"]);
+var qaTestStatusActionSchema = external_exports.object({
+  status: qaTestStatusActionValueSchema.optional(),
+  quarantined: external_exports.boolean().optional()
+}).refine((v) => v.status !== void 0 || v.quarantined !== void 0, {
+  message: "send at least one of status, quarantined"
+});
+var qaProposalStatusSchema = external_exports.enum(["pending", "applied", "rejected"]);
+var qaProposalChangeSchema = external_exports.object({
+  title: external_exports.string().trim().min(1).max(200).optional(),
+  steps: qaStepListSchema.min(1).optional(),
+  expect: qaRequiredExpectSchema.optional()
+}).refine((v) => v.title !== void 0 || v.steps !== void 0 || v.expect !== void 0, {
+  message: "send at least one of title, steps, expect"
+});
+var qaProposalSchema = external_exports.object({
+  id: idSchema("qaProposal"),
+  testRef: qaTestRefSchema,
+  change: qaProposalChangeSchema,
+  /** Who proposed it: `agent` (MCP) or `chat`, rarely `dashboard`. */
+  origin: workflowCaseOriginSchema,
+  status: qaProposalStatusSchema,
+  createdAt: external_exports.iso.datetime(),
+  /** Identity subject or grant id of the proposer. Free text. */
+  createdBy: external_exports.string().min(1).max(200).optional()
+});
+var qaListProposalsResponseSchema = external_exports.object({
+  proposals: external_exports.array(qaProposalSchema),
+  ...pageNextField
+});
+var QA_DEBUG_ACTIONS_MAX = 30;
+var qaOpenDebugLiveRequestSchema = external_exports.object({
+  testRef: qaTestRefSchema,
+  /** 1-based written step to stand on (the failed or couldn't-test one). */
+  step: external_exports.number().int().min(1).max(60),
+  /** The environment to replay against; absent: the project's default environment. */
+  environmentId: idSchema("qaEnvironment").optional()
+});
+var qaDebugSessionSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  testRef: qaTestRefSchema,
+  /** The step the person stands on once the replay is done. */
+  step: external_exports.number().int().min(1),
+  /** Written steps of the test (the banner says "step 4 of 9"). */
+  totalSteps: external_exports.number().int().min(0),
+  createdAt: external_exports.iso.datetime(),
+  /** The session ends here (15 minutes after it opened). */
+  expiresAt: external_exports.iso.datetime(),
+  /** The live view warns from here (minute 12). */
+  warnAt: external_exports.iso.datetime(),
+  /** This month's use of the organization's allowance, this session included. */
+  allowance: external_exports.object({ used: external_exports.number().int().min(0), limit: external_exports.number().int().min(0) })
+});
+var qaDebugReplayStateSchema = external_exports.object({
+  state: external_exports.enum(["replaying", "ready", "failed"]),
+  /** Steps replayed so far (0..of). */
+  done: external_exports.number().int().min(0),
+  /** Steps to replay (replayTo - 1). */
+  of: external_exports.number().int().min(0),
+  /** The step the person will stand on. */
+  replayTo: external_exports.number().int().min(1),
+  /** Plain words: why a replay failed. Never page text with a secret: masked like the run report. */
+  message: external_exports.string().max(500).optional(),
+  /** The page the replay ended on (credential parameters masked). */
+  url: external_exports.string().max(2e3).optional()
+});
+var qaRecordedActionKindSchema = external_exports.enum(["click", "type", "select", "check", "press"]);
+var qaRecordedActionSchema = external_exports.object({
+  /** Runner-local order id (`a1`, `a2`, ...). */
+  id: external_exports.string().min(1).max(20),
+  /** Unix ms. */
+  at: external_exports.number().int().nonnegative(),
+  kind: qaRecordedActionKindSchema,
+  role: external_exports.string().max(60),
+  name: external_exports.string().max(120),
+  /** The step in plain words. */
+  step: external_exports.string().min(1).max(QA_STEP_TEXT_MAX),
+  url: external_exports.string().max(2e3),
+  /** The value was a secret and the step names a placeholder instead (`account.password`). */
+  placeholder: external_exports.literal("account.password").optional()
+});
+var qaDebugLiveStateSchema = external_exports.object({
+  replay: qaDebugReplayStateSchema,
+  /** Recording runs once the replay is `ready`. */
+  recording: external_exports.boolean(),
+  actions: external_exports.array(qaRecordedActionSchema).max(QA_DEBUG_ACTIONS_MAX),
+  /** Sensitive fields typed that are not a password: left out, the person writes that step by hand. */
+  skipped: external_exports.number().int().min(0)
+});
+var qaDebugSaveStepRequestSchema = external_exports.object({
+  actions: external_exports.array(qaRecordedActionSchema).min(1).max(QA_DEBUG_ACTIONS_MAX),
+  dryRun: external_exports.boolean().default(true)
+});
+var qaDebugStepDiffSchema = external_exports.object({
+  testRef: qaTestRefSchema,
+  /** The written step that is replaced (1-based); past the end = the steps are added at the end. */
+  step: external_exports.number().int().min(1),
+  before: qaStepListSchema,
+  after: qaStepListSchema,
+  /** Only with `dryRun: false`. */
+  proposal: qaProposalSchema.optional()
+});
+var qaDebugLinkInputSchema = external_exports.object({
+  testRef: qaTestRefSchema,
+  step: external_exports.number().int().min(1).max(60)
+});
+var qaEnvironmentNameSchema = external_exports.string().trim().min(1).max(100);
+var qaAccountRefSchema = external_exports.object({
+  /** What the account is for, e.g. `admin`, `customer`. Unique within the environment. */
+  role: external_exports.string().trim().min(1).max(64),
+  credentialId: idSchema("credential")
+});
+var qaAppNotesSchema = external_exports.string().max(6e3);
+var qaSignInStepsSchema = external_exports.array(external_exports.string().trim().min(1).max(300)).max(20);
+var accountRefsSchema = external_exports.array(qaAccountRefSchema).max(10).superRefine((refs, ctx) => {
+  const seen = /* @__PURE__ */ new Set();
+  refs.forEach((r, i) => {
+    if (seen.has(r.role)) {
+      ctx.addIssue({ code: "custom", message: `duplicate role "${r.role}"`, path: [i, "role"] });
+    }
+    seen.add(r.role);
+  });
+});
+var qaPreviewPatternSchema = external_exports.string().max(300).refine((p) => /^https?:\/\//i.test(p), { message: "must start with http:// or https://" });
+var qaCanChangeDataSchema = external_exports.boolean();
+var qaApiHostsSchema = external_exports.array(
+  external_exports.string().max(300).refine((o) => /^https?:\/\/[^/?#\s]+\/?$/i.test(o), {
+    message: "an origin like https://api.example.com (no path)"
+  }).transform((o) => o.replace(/\/$/, "").toLowerCase())
+).max(5);
+var qaEnvironmentSchema = external_exports.object({
+  id: idSchema("qaEnvironment"),
+  projectId: idSchema("project"),
+  name: qaEnvironmentNameSchema,
+  baseUrl: workflowUrlSchema,
+  /** The environment runs use when none is named. Exactly one per project. */
+  isDefault: external_exports.boolean(),
+  accountRefs: accountRefsSchema,
+  variables: qaVariablesSchema,
+  appNotes: qaAppNotesSchema.optional(),
+  previewPattern: qaPreviewPatternSchema.optional(),
+  /** How to sign in here (0.44.0). Absent or empty: "Sign in" has no expansion. */
+  signInSteps: qaSignInStepsSchema.optional(),
+  /** "Can tests change data here?" (0.48.2). See `qaCanChangeDataSchema`. */
+  canChangeData: qaCanChangeDataSchema.optional(),
+  /** Origins API steps may call besides `baseUrl` (W1-3, at most 5; the Free plan: none). See `qaApiHostsSchema`. */
+  apiHosts: qaApiHostsSchema.optional()
+});
+var createQaEnvironmentRequestSchema = external_exports.object({
+  name: qaEnvironmentNameSchema,
+  baseUrl: workflowUrlSchema,
+  isDefault: external_exports.boolean().optional(),
+  accountRefs: accountRefsSchema.default([]),
+  variables: qaVariablesSchema.default({}),
+  appNotes: qaAppNotesSchema.optional(),
+  previewPattern: qaPreviewPatternSchema.optional(),
+  signInSteps: qaSignInStepsSchema.optional(),
+  canChangeData: qaCanChangeDataSchema.optional(),
+  apiHosts: qaApiHostsSchema.optional()
+});
+var updateQaEnvironmentRequestSchema = external_exports.object({
+  name: qaEnvironmentNameSchema,
+  baseUrl: workflowUrlSchema,
+  isDefault: external_exports.boolean(),
+  accountRefs: accountRefsSchema,
+  variables: qaVariablesSchema,
+  appNotes: qaAppNotesSchema.nullable(),
+  previewPattern: qaPreviewPatternSchema.nullable(),
+  signInSteps: qaSignInStepsSchema,
+  canChangeData: qaCanChangeDataSchema,
+  /** `[]` clears it. */
+  apiHosts: qaApiHostsSchema
+}).partial().refine((v) => Object.values(v).some((x) => x !== void 0), {
+  message: "send at least one field"
+});
+var listQaEnvironmentsResponseSchema = external_exports.object({
+  environments: external_exports.array(qaEnvironmentSchema)
+});
+var QA_QUICK_CHECK_DEFAULT_PAGES = 10;
+var QA_QUICK_CHECK_MAX_PAGES = 25;
+var QA_QUICK_CHECK_MAX_SUGGESTIONS = 8;
+var qaQuickCheckRequestSchema = external_exports.object({
+  url: workflowUrlSchema,
+  /** Pages to visit, 1..25. Default 10. */
+  maxPages: external_exports.number().int().min(1).max(QA_QUICK_CHECK_MAX_PAGES).default(QA_QUICK_CHECK_DEFAULT_PAGES),
+  /** Use this environment's App notes as context. The check itself never signs in (read-only, no forms). */
+  environmentId: idSchema("qaEnvironment").optional()
+});
+var qaQuickCheckIssueSchema = external_exports.object({
+  ruleId: ruleIdSchema,
+  severity: severitySchema,
+  message: external_exports.string().max(500)
+});
+var qaQuickCheckPageSchema = external_exports.object({
+  url: external_exports.string().max(2e3),
+  /** HTTP status of the page load; 0 when there was no response. */
+  status: external_exports.number().int().min(0).max(599),
+  issues: external_exports.array(qaQuickCheckIssueSchema).max(50)
+});
+var qaQuickCheckSuggestionSchema = external_exports.object({
+  title: external_exports.string().min(1).max(200),
+  steps: external_exports.array(external_exports.string().min(1).max(500)).max(30),
+  expect: external_exports.string().max(1e3)
+});
+var qaQuickCheckStatusSchema = external_exports.enum(["running", "done", "failed"]);
+var qaPollRunIdSchema = external_exports.union([idSchema("workflowRun"), idSchema("skillRun")]);
+var qaQuickCheckResultSchema = external_exports.object({
+  runId: qaPollRunIdSchema,
+  /**
+   * Run state (0.45.0): stop polling at `done` or `failed`. Absent in an answer from before 0.45.0
+   * reads as `done`, so old fixtures still parse. The api always sends it.
+   */
+  status: qaQuickCheckStatusSchema.default("done"),
+  /** Why it `failed`, in plain words ("The site did not answer"). Only with `status: "failed"`. */
+  error: external_exports.string().max(300).optional(),
+  pages: external_exports.array(qaQuickCheckPageSchema).max(QA_QUICK_CHECK_MAX_PAGES),
+  suggestions: external_exports.array(qaQuickCheckSuggestionSchema).max(QA_QUICK_CHECK_MAX_SUGGESTIONS)
+});
+var QA_EXPLORE_DEFAULT_PAGES = 30;
+var QA_EXPLORE_DEFAULT_ACTIONS = 150;
+var QA_EXPLORE_DEFAULT_COST_USD = 1;
+var QA_EXPLORE_HARD_COST_USD = 3;
+var QA_EXPLORE_DEFAULT_MINUTES = 20;
+var qaExploreBudgetsSchema = external_exports.object({
+  maxPages: external_exports.number().int().min(1).max(QA_EXPLORE_DEFAULT_PAGES).default(QA_EXPLORE_DEFAULT_PAGES),
+  maxActions: external_exports.number().int().min(1).max(QA_EXPLORE_DEFAULT_ACTIONS).default(QA_EXPLORE_DEFAULT_ACTIONS),
+  maxCostUsd: external_exports.number().positive().max(QA_EXPLORE_HARD_COST_USD).default(QA_EXPLORE_DEFAULT_COST_USD),
+  maxMinutes: external_exports.number().int().min(1).max(QA_EXPLORE_DEFAULT_MINUTES).default(QA_EXPLORE_DEFAULT_MINUTES)
+});
+var qaExploreRequestSchema = external_exports.object({
+  environmentId: idSchema("qaEnvironment").optional(),
+  focus: external_exports.string().trim().min(1).max(500).optional(),
+  budgets: qaExploreBudgetsSchema.partial().optional()
+});
+var qaExploreStartResponseSchema = external_exports.object({
+  runId: idSchema("skillRun"),
+  /** Explorations left this month on the plan after this one. */
+  allowanceLeft: external_exports.number().int().nonnegative()
+});
+var qaExploreStatusSchema = external_exports.enum(["running", "done", "failed"]);
+var qaExploreVisitedSchema = external_exports.object({
+  url: external_exports.string().max(2e3),
+  /** HTTP status of the load; 0 when there was no response. */
+  status: external_exports.number().int().min(0).max(599),
+  title: external_exports.string().max(200).optional()
+});
+var qaExploreSkipReasonSchema = external_exports.enum([
+  "page_budget",
+  "time_budget",
+  "other_site",
+  "would_change_data",
+  "payment_site"
+]);
+var qaExploreNotVisitedSchema = external_exports.object({
+  url: external_exports.string().max(2e3),
+  reason: qaExploreSkipReasonSchema
+});
+var qaExploreRefusalReasonSchema = external_exports.enum([
+  "write_request",
+  "payment_site",
+  "deny_listed_click",
+  "unchecked_click",
+  "other_site"
+]);
+var qaExploreRefusalSchema = external_exports.object({
+  /** Web address without query or fragment. */
+  url: external_exports.string().max(2e3),
+  /** HTTP method of a refused request; `CLICK` for a refused click. */
+  method: external_exports.string().max(10),
+  reason: qaExploreRefusalReasonSchema,
+  /** The accessible name of a refused click target (page text: untrusted). */
+  name: external_exports.string().max(120).optional()
+});
+var qaExploreObservationKindSchema = external_exports.enum([
+  "broken_page",
+  "error",
+  "accessibility",
+  "layout",
+  "security",
+  "content",
+  "explorer_note"
+]);
+var qaExploreObservationStatusSchema = external_exports.enum(["observed", "bug", "not_reproduced"]);
+var QA_EXPLORE_MAX_OBSERVATIONS = 50;
+var QA_EXPLORE_MAX_PROPOSED = 20;
+var QA_EXPLORE_MAX_NOT_VISITED = 50;
+var QA_EXPLORE_MAX_REFUSALS = 50;
+var qaExploreObservationSchema = external_exports.object({
+  /** Stable within the run (`obs-1`, ...). */
+  id: external_exports.string().regex(/^obs-\d{1,3}$/),
+  kind: qaExploreObservationKindSchema,
+  severity: severitySchema,
+  /** One line for a person. Page text inside it is untrusted. */
+  title: external_exports.string().max(300),
+  url: external_exports.string().max(2e3),
+  ruleId: ruleIdSchema.optional(),
+  status: qaExploreObservationStatusSchema,
+  /** Times a generated test reproduced it, 0..2. */
+  reproduced: external_exports.number().int().min(0).max(2)
+});
+var qaExploreResultSchema = external_exports.object({
+  runId: idSchema("skillRun"),
+  status: qaExploreStatusSchema,
+  /** Why it `failed`, in plain words. Only with `status: "failed"`. */
+  error: external_exports.string().max(300).optional(),
+  /** Starts with what it visited and what it did not ("Visited 12 pages; did not visit 4: ..."). */
+  summary: external_exports.string().max(1e3),
+  environmentId: idSchema("qaEnvironment").optional(),
+  /** The app origin the exploration was locked to. */
+  origin: workflowUrlSchema,
+  visited: external_exports.array(qaExploreVisitedSchema).max(QA_EXPLORE_DEFAULT_PAGES),
+  notVisited: external_exports.array(qaExploreNotVisitedSchema).max(QA_EXPLORE_MAX_NOT_VISITED),
+  observations: external_exports.array(qaExploreObservationSchema).max(QA_EXPLORE_MAX_OBSERVATIONS),
+  /** Tests worth adding; nothing is saved until a person accepts one (they become `proposed`). */
+  proposedTests: external_exports.array(qaQuickCheckSuggestionSchema).max(QA_EXPLORE_MAX_PROPOSED),
+  refused: external_exports.array(qaExploreRefusalSchema).max(QA_EXPLORE_MAX_REFUSALS),
+  budgets: qaExploreBudgetsSchema,
+  /** Model cost so far, millionths of a USD; absent while unknown. */
+  costMicros: external_exports.number().int().nonnegative().optional()
+});
+var qaTriageFeedbackSchema = external_exports.enum(["real_bug", "test_wrong", "environment"]);
+var qaTriageCountsQuerySchema = external_exports.object({
+  days: external_exports.coerce.number().int().min(1).max(90).default(30)
+});
+var qaTriageCountsSchema = external_exports.object({
+  days: external_exports.number().int().min(1).max(90),
+  failed: external_exports.number().int().nonnegative(),
+  triaged: external_exports.number().int().nonnegative(),
+  realBug: external_exports.number().int().nonnegative(),
+  testWrong: external_exports.number().int().nonnegative(),
+  environment: external_exports.number().int().nonnegative(),
+  falseFail: external_exports.number().int().nonnegative(),
+  falsePass: external_exports.number().int().nonnegative()
+});
+var qaNoteKindSchema = external_exports.enum(["app_note", "known_issue"]);
+var noteFields = {
+  kind: qaNoteKindSchema,
+  text: external_exports.string().trim().min(1).max(2e3),
+  /** Person or team that owns it. Free text. */
+  owner: external_exports.string().trim().min(1).max(120).optional(),
+  /** When the note stops applying. Absent: until deleted. */
+  expiresAt: external_exports.iso.datetime().optional(),
+  /** The test this note is about. Absent: the whole app. */
+  testRef: qaTestRefSchema.optional()
+};
+var qaNoteSchema = external_exports.object({
+  id: idSchema("qaNote"),
+  projectId: idSchema("project"),
+  ...noteFields
+});
+var createQaNoteRequestSchema = external_exports.object(noteFields);
+var listQaNotesResponseSchema = external_exports.object({ notes: external_exports.array(qaNoteSchema) });
+var QA_STORY_MAX_CHARS = 4e3;
+var QA_STORY_MAX_TESTS = 10;
+var qaStoryTextSchema = external_exports.string().trim().min(1).max(QA_STORY_MAX_CHARS);
+var qaStoryRequestSchema = external_exports.object({
+  story: qaStoryTextSchema,
+  /** The environment the tests are for; absent: the project's default. Its origin is the only one placeholders may go to. */
+  environmentId: idSchema("qaEnvironment").optional(),
+  /** Where `save: true` puts the tests; absent: the project's default suite. */
+  suiteId: idSchema("workflow").optional(),
+  /** `false` (default): show the tests, save nothing. `true`: save them as `proposed`. */
+  save: external_exports.boolean().default(false)
+});
+var qaStoryTestSchema = external_exports.object({
+  title: external_exports.string().trim().min(1).max(200),
+  steps: qaStepListSchema.min(1),
+  expect: qaRequiredExpectSchema,
+  area: external_exports.string().trim().min(1).max(60).optional()
+});
+var qaStoryResultSchema = external_exports.object({
+  tests: external_exports.array(qaStoryTestSchema).max(QA_STORY_MAX_TESTS),
+  /** One sentence each ("a test went to another site with a secret, so it was left out"). */
+  warnings: external_exports.array(external_exports.string().max(300)).max(20),
+  /** What the model call cost, millionths of a USD (0 when no call was made). */
+  costMicros: external_exports.number().int().nonnegative(),
+  /** With `save: true`: where each test was saved, always `proposed`. */
+  saved: external_exports.array(external_exports.object({ workflowId: idSchema("workflow"), caseId: workflowSlugSchema })).max(QA_STORY_MAX_TESTS).optional()
+});
+var QA_MCP_TOOL_NAMES = [
+  "qa_quick_check",
+  "qa_create_tests",
+  "qa_update_test",
+  "qa_list_tests",
+  "qa_get_test",
+  "qa_run",
+  "qa_status",
+  "qa_list_runs",
+  "qa_report",
+  "qa_cancel_run",
+  "qa_file_bug",
+  "qa_add_note",
+  "qa_review_list",
+  "qa_save_environment",
+  "qa_explore",
+  "qa_debug_link"
+];
+var qaMcpToolNameSchema = external_exports.enum(QA_MCP_TOOL_NAMES);
+var suiteIdSchema = idSchema("workflow");
+var runIdSchema = idSchema("workflowRun");
+var qaNewTestSchema = external_exports.object({
+  title: external_exports.string().trim().min(1).max(200),
+  /** Sentences or typed steps (0.48.0), see `qaStepSchema`. */
+  steps: qaStepListSchema.min(1),
+  /** One string or a list of phrases and AI checks (0.48.0). */
+  expect: qaRequiredExpectSchema,
+  area: external_exports.string().trim().min(1).max(60).optional()
+});
+var QA_CREATE_TESTS_MAX = 50;
+var QA_CREATE_TESTS_YAML_MAX = 2e5;
+var qaCreateTestsInputSchema = external_exports.object({
+  tests: external_exports.array(qaNewTestSchema).min(1).max(QA_CREATE_TESTS_MAX).optional(),
+  yaml: external_exports.string().min(1).max(QA_CREATE_TESTS_YAML_MAX).optional(),
+  suiteId: suiteIdSchema.optional(),
+  dryRun: external_exports.boolean().default(true),
+  /**
+   * Free text (qa-next W2-4): a story the api turns into tests with one cheap-model call (`qa-story.ts`).
+   * Send it INSTEAD of `tests` / `yaml`; the same `dryRun` rule applies and saved tests are `proposed`.
+   */
+  story: qaStoryTextSchema.optional()
+}).refine(
+  (v) => v.story !== void 0 ? v.tests === void 0 && v.yaml === void 0 : v.tests === void 0 !== (v.yaml === void 0),
+  { message: "send exactly one of tests or yaml" }
+);
+var qaCreateTestsResultSchema = external_exports.object({
+  dryRun: external_exports.boolean(),
+  tests: external_exports.array(
+    external_exports.object({
+      workflowId: suiteIdSchema.optional(),
+      caseId: workflowSlugSchema,
+      title: external_exports.string().max(200),
+      status: external_exports.literal("proposed")
+    })
+  ).max(QA_CREATE_TESTS_MAX),
+  /** One sentence each, e.g. "expectation not understood: ...". */
+  warnings: external_exports.array(external_exports.string().max(300)).max(50)
+});
+var qaUpdateTestInputSchema = external_exports.object({
+  testRef: qaTestRefSchema,
+  title: external_exports.string().trim().min(1).max(200).optional(),
+  steps: qaStepListSchema.min(1).optional(),
+  expect: qaRequiredExpectSchema.optional()
+}).refine((v) => v.title !== void 0 || v.steps !== void 0 || v.expect !== void 0, {
+  message: "send at least one of title, steps, expect"
+});
+var qaListTestsInputSchema = external_exports.object({
+  filter: qaTestFilterSchema.optional(),
+  area: external_exports.string().trim().min(1).max(60).optional(),
+  suiteId: suiteIdSchema.optional(),
+  limit: external_exports.number().int().min(1).max(50).default(20)
+});
+var qaGetTestInputSchema = external_exports.object({ testRef: qaTestRefSchema });
+var qaRunInputSchema = external_exports.object({
+  suiteId: suiteIdSchema.optional(),
+  tests: external_exports.array(qaTestRefSchema).min(1).max(100).optional(),
+  environmentId: idSchema("qaEnvironment").optional(),
+  url: workflowUrlSchema.optional(),
+  tags: external_exports.array(workflowSlugSchema).min(1).max(20).optional(),
+  dryRun: external_exports.boolean().optional(),
+  /** Fail-fast (0.47.0): stop after this many failed required tests. */
+  stopAfterFailures: workflowRunControlFields.stopAfterFailures,
+  /** Re-run this earlier run (0.47.0); with `failedOnly`, only its tests that did not pass. */
+  rerunOf: workflowRunControlFields.rerunOf,
+  /** Only the tests that did not pass last time (0.47.0); without `rerunOf`: the latest ended run of the suite. */
+  failedOnly: workflowRunControlFields.failedOnly
+}).refine((v) => v.suiteId === void 0 || v.tests === void 0, {
+  message: "send suiteId or tests, not both"
+});
+var qaStatusInputSchema = external_exports.object({ runId: qaPollRunIdSchema });
+var qaListRunsInputSchema = external_exports.object({
+  environmentId: idSchema("qaEnvironment").optional(),
+  trigger: workflowTriggerSchema.optional(),
+  verdict: reportVerdictSchema.optional(),
+  limit: external_exports.number().int().min(1).max(50).default(20)
+});
+var qaReportInputSchema = external_exports.object({ runId: runIdSchema.optional(), testRef: qaTestRefSchema.optional() }).refine((v) => v.runId === void 0 !== (v.testRef === void 0), {
+  message: "send exactly one of runId or testRef"
+});
+var qaCancelRunInputSchema = external_exports.object({ runId: runIdSchema });
+var qaBugTrackerSchema = external_exports.enum(["linear", "jira", "markdown"]);
+var qaFileBugInputSchema = external_exports.object({
+  runId: runIdSchema,
+  caseId: workflowSlugSchema,
+  tracker: qaBugTrackerSchema.optional()
+});
+var qaAddNoteInputSchema = external_exports.object({
+  kind: qaNoteKindSchema,
+  text: external_exports.string().trim().min(1).max(2e3),
+  testRef: qaTestRefSchema.optional()
+});
+var qaReviewListInputSchema = external_exports.object({}).strict();
+var qaSaveEnvironmentInputSchema = external_exports.object({
+  name: qaEnvironmentNameSchema,
+  baseUrl: workflowUrlSchema,
+  previewPattern: qaPreviewPatternSchema.optional()
+});
+var qaReadinessSchema = external_exports.object({
+  status: external_exports.enum(["ready", "not_ready", "unknown"]),
+  /** The run the answer comes from. */
+  runId: idSchema("workflowRun").optional(),
+  /** Commit that run tested, when CI said. */
+  sha: external_exports.string().max(100).optional(),
+  environmentId: idSchema("qaEnvironment").optional(),
+  /** The release gate of that run (qa-next W2-5): required passed, couldn't test, and the sentence to show. */
+  gate: qaReleaseGateSchema.optional()
+});
+var qaTrendDaySchema = external_exports.object({
+  /** `YYYY-MM-DD`, UTC. */
+  date: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD"),
+  passed: external_exports.number().int().nonnegative(),
+  failed: external_exports.number().int().nonnegative(),
+  error: external_exports.number().int().nonnegative()
+});
+var QA_TREND_DAYS = 14;
+var QA_TOP_LIST_MAX = 10;
+var qaTopTestSchema = qaTestRefSchema.extend({
+  title: external_exports.string().max(200),
+  value: external_exports.number().nonnegative()
+});
+var qaOverviewSchema = external_exports.object({
+  readiness: qaReadinessSchema,
+  /** Oldest first, at most 14 days (days without results are included as zeros). */
+  trend: external_exports.array(qaTrendDaySchema).max(QA_TREND_DAYS),
+  /** Most failures in the trend window; `value` = failed results. */
+  failing: external_exports.array(qaTopTestSchema).max(QA_TOP_LIST_MAX),
+  /** Highest flaky score; `value` = 0..1. */
+  flaky: external_exports.array(qaTopTestSchema).max(QA_TOP_LIST_MAX),
+  /** Slowest on average; `value` = milliseconds. */
+  slowest: external_exports.array(qaTopTestSchema).max(QA_TOP_LIST_MAX),
+  /** qa-next W2-5: the last 28 UTC days from the daily rollup, oldest first, quiet days as zeros. Local runs excluded. */
+  daily: external_exports.array(qaDailySchema).max(QA_DAILY_DAYS).optional(),
+  /** qa-next B3: pages a Quick check found that no test visited (normalised paths). Absent: never crawled. */
+  notCovered: external_exports.array(qaNotCoveredPageSchema).max(QA_NOT_COVERED_MAX).optional()
+});
+var qaStartRunRequestSchema = startWorkflowRunRequestSchema.extend({
+  workflowId: idSchema("workflow"),
+  environmentId: idSchema("qaEnvironment").optional()
+});
+var QA_SHARED_STEP_STEPS_MAX = 20;
+var qaSharedStepStepListSchema = external_exports.array(qaStepSchema).min(1).max(QA_SHARED_STEP_STEPS_MAX).refine((steps2) => steps2.every((s) => typeof s === "string" || s.kind !== "use"), {
+  message: "a shared step cannot use another shared step"
+});
+var qaSharedStepSchema = external_exports.object({
+  id: idSchema("qaSharedStep"),
+  projectId: idSchema("project"),
+  name: qaSharedStepNameSchema,
+  version: external_exports.number().int().min(1),
+  /** One line on what it does, shown in the "Shared steps" filter. */
+  description: external_exports.string().trim().max(200).optional(),
+  steps: qaSharedStepStepListSchema,
+  /** Active tests that use this name at any version ("used by 12 tests"). */
+  usedBy: external_exports.number().int().nonnegative(),
+  /** Active tests frozen on THIS version. */
+  usedByThisVersion: external_exports.number().int().nonnegative(),
+  /** True for the newest version of the name. */
+  latest: external_exports.boolean(),
+  createdAt: external_exports.iso.datetime(),
+  /** Identity subject or grant id of who saved it. Free text. */
+  createdBy: external_exports.string().min(1).max(200).optional()
+});
+var qaListSharedStepsResponseSchema = external_exports.object({
+  sharedSteps: external_exports.array(qaSharedStepSchema)
+});
+var qaGetSharedStepQuerySchema = external_exports.object({
+  version: external_exports.coerce.number().int().min(1).optional()
+});
+var qaSaveSharedStepRequestSchema = external_exports.object({
+  name: qaSharedStepNameSchema,
+  description: external_exports.string().trim().max(200).optional(),
+  steps: qaSharedStepStepListSchema
+});
+var qaSaveSharedStepResponseSchema = external_exports.object({
+  sharedStep: qaSharedStepSchema,
+  /** Proposals opened for active tests on older versions (0 for a new name or an unused one). */
+  proposalsOpened: external_exports.number().int().nonnegative()
+});
+var QA_STARTER_TEST_IDS = [
+  "starter-sign-in-works",
+  "starter-sign-up-email-code",
+  "starter-search-returns-results"
+];
+var qaStarterTestIdSchema = external_exports.enum(QA_STARTER_TEST_IDS);
+var qaStarterOutcomeSchema = external_exports.enum(["added", "already_added", "needs_site"]);
+var qaAddStarterTestsResponseSchema = external_exports.object({
+  outcome: qaStarterOutcomeSchema,
+  tests: external_exports.array(
+    qaTestRefSchema.extend({
+      title: external_exports.string().max(200),
+      status: workflowCaseStatusSchema
+    })
+  )
+});
+var QA_TEST_VERSIONS_MAX = 50;
+var qaTestVersionSchema = external_exports.object({
+  /** 1 is the case as first saved. */
+  version: external_exports.number().int().min(1),
+  at: external_exports.iso.datetime(),
+  /** Who made the change: a person's name or email, or the agent's name (see `byKind`). */
+  by: external_exports.string().max(120),
+  byKind: external_exports.enum(["user", "agent"]).optional(),
+  /** What changed, one line in words ("Step 3 now clicks Pay now"). */
+  change: external_exports.string().max(300),
+  /** The proposal that was applied, when this version came from one (`GET .../proposals`). */
+  proposalId: idSchema("qaProposal").optional()
+});
+var qaTestDetailSchema = qaTestRowSchema.extend({
+  /** Where the case starts, relative to the target url. */
+  path: workflowCaseSchema.shape.path,
+  steps: workflowCaseSchema.shape.steps,
+  expect: workflowCaseSchema.shape.expect,
+  checks: workflowCaseChecksSchema.optional(),
+  links: workflowCaseSchema.shape.links,
+  tags: workflowCaseSchema.shape.tags.optional(),
+  /** Newest first, at most `QA_TEST_VERSIONS_MAX`. */
+  versions: external_exports.array(qaTestVersionSchema).max(QA_TEST_VERSIONS_MAX)
+});
+var qaTrackerKindSchema = external_exports.enum(["linear", "jira"]);
+var jiraHostSchema = external_exports.url({ protocol: /^https$/, error: "host must be an https URL" }).max(300);
+var qaTrackerConnectionSchema = external_exports.object({
+  kind: qaTrackerKindSchema,
+  credentialId: idSchema("credential"),
+  /** Required when `kind` is `linear`, absent otherwise. */
+  linear: external_exports.object({ teamId: external_exports.string().trim().min(1).max(100) }).optional(),
+  /** Required when `kind` is `jira`, absent otherwise. */
+  jira: external_exports.object({
+    host: jiraHostSchema,
+    projectKey: external_exports.string().trim().min(1).max(50),
+    issueType: external_exports.string().trim().min(1).max(50)
+  }).optional()
+}).superRefine((v, ctx) => {
+  if (v.kind === "linear" && !v.linear) {
+    ctx.addIssue({ code: "custom", message: "linear needs linear.teamId", path: ["linear"] });
+  }
+  if (v.kind === "jira" && !v.jira) {
+    ctx.addIssue({
+      code: "custom",
+      message: "jira needs jira.host, projectKey and issueType",
+      path: ["jira"]
+    });
+  }
+  if (v.kind === "linear" && v.jira) {
+    ctx.addIssue({ code: "custom", message: "jira is only for kind jira", path: ["jira"] });
+  }
+  if (v.kind === "jira" && v.linear) {
+    ctx.addIssue({ code: "custom", message: "linear is only for kind linear", path: ["linear"] });
+  }
+});
+var qaFileBugResultSchema = external_exports.object({
+  tracker: qaBugTrackerSchema,
+  url: workflowUrlSchema.optional(),
+  markdown: external_exports.string().max(2e4),
+  triage: external_exports.literal("bug_filed")
+});
 var sessionLogsQuerySchema = external_exports.object({
   /** Line offset to start from: the previous page's `next`. */
   after: external_exports.coerce.number().int().nonnegative().default(0),
@@ -30613,64 +33256,7 @@ var sessionLogsPageSchema = external_exports.object({
   /** Present when more records follow; pass as `after`. */
   next: external_exports.number().int().nonnegative().optional()
 });
-var storageByOrigin = external_exports.record(external_exports.string(), external_exports.record(external_exports.string(), external_exports.string()));
-var sessionContextSchema = external_exports.object({
-  cookies: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())),
-  localStorage: storageByOrigin.optional(),
-  sessionStorage: storageByOrigin.optional(),
-  indexedDB: external_exports.record(external_exports.string(), external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown()))).optional()
-});
-var putSessionContextRequestSchema = sessionContextSchema.partial();
-var okResponseSchema = external_exports.object({ ok: external_exports.boolean() });
-var cookieParamSchema = external_exports.object({
-  name: external_exports.string().min(1).max(256),
-  value: external_exports.string().max(4096),
-  url: external_exports.string().max(2e3).optional(),
-  domain: external_exports.string().max(253).optional(),
-  path: external_exports.string().max(1e3).optional(),
-  secure: external_exports.boolean().optional(),
-  httpOnly: external_exports.boolean().optional(),
-  sameSite: external_exports.enum(["Strict", "Lax", "None"]).optional(),
-  /** Unix time in seconds. */
-  expires: external_exports.number().optional()
-});
-var listCookiesResponseSchema = external_exports.object({
-  cookies: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown()))
-});
-var putCookiesRequestSchema = external_exports.object({
-  cookies: external_exports.array(cookieParamSchema).min(1).max(200)
-});
-var putCookiesResponseSchema = external_exports.object({
-  ok: external_exports.boolean(),
-  count: external_exports.number().int().nonnegative()
-});
-var deleteCookiesQuerySchema = external_exports.object({
-  name: external_exports.string().min(1).max(256).optional(),
-  domain: external_exports.string().max(253).optional()
-});
-var SESSION_FILE_MAX_BYTES = 25 * 1024 * 1024;
-var sessionFileNameSchema = external_exports.string().min(1).max(255).regex(/^[^/\\.][^/\\]*$/, "a plain file name, not starting with a dot");
-var uploadFileQuerySchema = external_exports.object({ name: sessionFileNameSchema });
-var uploadFileResponseSchema = external_exports.object({
-  /** The file's key in the session (for `GET …/files/:name` and `files/attach`); a download's is its guid. */
-  name: external_exports.string(),
-  size: external_exports.number().int().nonnegative(),
-  /** Where it came from (0.19.1): uploaded by the caller, or downloaded by the page. */
-  source: external_exports.enum(["upload", "download"]).optional(),
-  /** The name the site gave a download (0.19.1); show this, keep `name` as the key. */
-  suggestedFilename: external_exports.string().max(255).optional()
-});
-var listFilesResponseSchema = external_exports.object({
-  files: external_exports.array(uploadFileResponseSchema),
-  downloads: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown()))
-});
-var attachFilesRequestSchema = external_exports.object({
-  ref: external_exports.string().regex(/^e\d+$/),
-  names: external_exports.array(sessionFileNameSchema).min(1).max(50),
-  /** Snapshot generation the ref came from (stale refs are refused). */
-  generation: external_exports.number().int().optional()
-});
-var toArray = (v) => v === void 0 || Array.isArray(v) ? v : [v];
+var toArray2 = (v) => v === void 0 || Array.isArray(v) ? v : [v];
 var startedByKindSchema = external_exports.enum([
   "dashboard",
   "key",
@@ -30682,8 +33268,8 @@ var startedByKindSchema = external_exports.enum([
   "mcp"
 ]);
 var listSessionsQuerySchema = pageQuerySchema.extend({
-  state: external_exports.preprocess(toArray, external_exports.array(sessionStatusSchema).min(1).max(5)).optional(),
-  startedBy: external_exports.preprocess(toArray, external_exports.array(startedByKindSchema).min(1).max(8)).optional(),
+  state: external_exports.preprocess(toArray2, external_exports.array(sessionStatusSchema).min(1).max(5)).optional(),
+  startedBy: external_exports.preprocess(toArray2, external_exports.array(startedByKindSchema).min(1).max(8)).optional(),
   since: external_exports.coerce.number().int().min(0).optional(),
   until: external_exports.coerce.number().int().min(0).optional(),
   q: external_exports.string().trim().max(200).optional()
@@ -30758,56 +33344,6 @@ var createSiteAccessRequestSchema = external_exports.object({
   namespace: external_exports.string().min(1).max(64).optional(),
   label: external_exports.string().max(200).optional()
 });
-var skillRunStatusSchema = external_exports.enum([
-  "running",
-  "passed",
-  "failed",
-  "error",
-  "cancelled",
-  "denied"
-]);
-var runSkillRequestSchema = external_exports.object({
-  version: external_exports.string().optional(),
-  inputs: external_exports.record(external_exports.string(), external_exports.unknown()).default({}),
-  /** Engine the run's session uses (A45-1, 0.17.0). Omitted: the project default. */
-  engineId: idSchema("engine").optional(),
-  grant: external_exports.array(permissionSchema).optional(),
-  /**
-   * Session options merged over the skill's own `session` (e.g. `proxyUrl` + `allowHosts` to test a
-   * staging site). The API re-checks the merged options (`checkSessionOptions`).
-   */
-  session: sessionOptionsSchema.partial().superRefine((v, ctx) => checkSessionOptions(v, ctx)).optional()
-});
-var skillRunAcceptedSchema = external_exports.object({
-  runId: idSchema("skillRun"),
-  sessionId: idSchema("session"),
-  status: external_exports.literal("running")
-});
-var skillRunSummarySchema = external_exports.object({
-  runId: idSchema("skillRun"),
-  skill: external_exports.object({ name: external_exports.string(), version: external_exports.string() }),
-  sessionId: idSchema("session"),
-  status: skillRunStatusSchema,
-  startedAt: external_exports.number().int().nonnegative(),
-  ms: external_exports.number().nonnegative().nullable(),
-  summary: external_exports.string().nullable(),
-  counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).nullable(),
-  /** Engine the run's session used (0.19.0); absent for runs placed before engines. */
-  engineRef: engineRefSchema.optional()
-});
-var toArray2 = (v) => v === void 0 || Array.isArray(v) ? v : [v];
-var listSkillRunsQuerySchema = pageQuerySchema.extend({
-  status: external_exports.preprocess(toArray2, external_exports.array(skillRunStatusSchema).min(1).max(6)).optional(),
-  skill: external_exports.string().trim().min(1).max(200).optional()
-});
-var listSkillRunsResponseSchema = external_exports.object({
-  runs: external_exports.array(skillRunSummarySchema),
-  ...pageNextField
-});
-var skillRunDetailSchema = skillRunSummarySchema.extend({
-  result: external_exports.record(external_exports.string(), external_exports.unknown()).nullable(),
-  hasReport: external_exports.boolean()
-});
 var skillText2 = external_exports.string().min(1).max(2e5);
 var skillDraftSchema = external_exports.object({
   id: idSchema("skillDraft"),
@@ -30867,7 +33403,7 @@ var dryRunSchema = external_exports.object({
   startedAt: external_exports.number().int().nonnegative(),
   finishedAt: external_exports.number().int().nonnegative().optional()
 });
-var unixMs32 = external_exports.number().int().nonnegative();
+var unixMs5 = external_exports.number().int().nonnegative();
 var email3 = external_exports.string().trim().toLowerCase().email().max(254);
 var teamMemberSchema = external_exports.object({
   /** Identity user id (opaque). */
@@ -30875,7 +33411,7 @@ var teamMemberSchema = external_exports.object({
   email: external_exports.string(),
   name: external_exports.string().nullable(),
   role: memberRoleSchema,
-  joinedAt: unixMs32
+  joinedAt: unixMs5
 });
 var teamInvitationSchema = external_exports.object({
   /** Identity invitation id (opaque). */
@@ -30883,7 +33419,7 @@ var teamInvitationSchema = external_exports.object({
   email: external_exports.string(),
   role: memberRoleSchema,
   status: external_exports.enum(["pending", "accepted", "rejected", "canceled", "expired"]),
-  expiresAt: unixMs32,
+  expiresAt: unixMs5,
   invitedBy: external_exports.string().nullable()
 });
 var teamResponseSchema = external_exports.object({
@@ -30896,304 +33432,6 @@ var createTeamInvitationRequestSchema = external_exports.object({
 });
 var updateTeamMemberRequestSchema = external_exports.object({ role: memberRoleSchema });
 var teamDeletedResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
-var workflowSlugSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
-var workflowUrlSchema = external_exports.string().max(2e3).refine(
-  (u) => {
-    if (!/^https?:\/\//i.test(u)) return false;
-    try {
-      new URL(u);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-  { message: "must be an http(s) URL" }
-);
-var workflowCaseChecksSchema = external_exports.object({
-  /** Text the page must show. */
-  text: external_exports.string().min(1).max(300).optional(),
-  /** Text the address must contain. */
-  url: external_exports.string().min(1).max(300).optional(),
-  /** Text the page must not show. */
-  noText: external_exports.string().min(1).max(300).optional()
-});
-var workflowCaseSchema = external_exports.object({
-  /** Unique within the workflow. */
-  id: workflowSlugSchema,
-  title: external_exports.string().trim().min(1).max(200),
-  /** Where the case starts, relative to the target url. */
-  path: external_exports.string().max(2e3).regex(/^\//, "path starts with /"),
-  /** What to do, one instruction per item. */
-  steps: external_exports.array(external_exports.string().min(1).max(500)).max(30),
-  /**
-   * Expected outcome in words. The api understands `shows "X"`, `address contains Y` and
-   * `does not show "Z"`; anything else is reported as "not checked".
-   */
-  expect: external_exports.string().max(1e3).optional(),
-  checks: workflowCaseChecksSchema.optional(),
-  tags: external_exports.array(workflowSlugSchema).max(20).default([]),
-  /** 1 (most important) to 5. Ordering only, it never decides the verdict. */
-  priority: external_exports.number().int().min(1).max(5).default(3),
-  /**
-   * Absent or `true`: a failure fails the run. `false`: shown as a warning and counted in
-   * `counts.optionalFailed`, never blocks the gate (0.39.0).
-   */
-  required: external_exports.boolean().optional()
-});
-var workflowTargetSchema = external_exports.object({
-  url: workflowUrlSchema,
-  /** Session options merged over each case's session (same as `runSkillRequestSchema.session`). */
-  session: runSkillRequestSchema.shape.session
-});
-var MAX_TARGETS = 10;
-var workflowRetriesSchema = external_exports.number().int().min(0).max(2);
-var workflowManagedBySchema = external_exports.object({
-  kind: external_exports.literal("repo"),
-  /** `owner/name`. */
-  repo: external_exports.string().min(1).max(200),
-  /** Commit the definition was synced from, 7..40 hex. */
-  sha: external_exports.string().regex(/^[0-9a-fA-F]{7,40}$/, "7..40 hex chars").optional(),
-  /** File in the repo, e.g. `.webagent/tests.yaml`. */
-  path: external_exports.string().min(1).max(300).optional()
-});
-var workflowContextSchema = external_exports.string().max(6e3);
-var workflowScheduleSchema = external_exports.object({
-  cron: cronSchema,
-  /** IANA zone the cron is read in. */
-  timezone: scheduleTimezoneSchema.default("UTC"),
-  /** Key of the workflow's `targets`. Absent: `defaultTarget`. */
-  target: workflowSlugSchema.optional()
-});
-function uniqueCaseIds(cases, ctx) {
-  const seen = /* @__PURE__ */ new Set();
-  cases.forEach((c, i) => {
-    if (seen.has(c.id)) {
-      ctx.addIssue({
-        code: "custom",
-        message: `duplicate case id "${c.id}"`,
-        path: ["cases", i, "id"]
-      });
-    }
-    seen.add(c.id);
-  });
-}
-var workflowFieldsSchema = external_exports.object({
-  name: external_exports.string().trim().min(1).max(200),
-  description: external_exports.string().max(1e3).optional(),
-  /** Unique per project; lets CI upsert with `PUT /v1/workflows/by-key/:key`. */
-  key: workflowSlugSchema.optional(),
-  /** 1..10 targets by slug, e.g. `staging`, `production`. */
-  targets: external_exports.record(workflowSlugSchema, workflowTargetSchema),
-  /** Key of `targets` used when a run names no target. */
-  defaultTarget: workflowSlugSchema,
-  /** 1..100 cases with unique ids. */
-  cases: external_exports.array(workflowCaseSchema).min(1).max(100),
-  /**
-   * Engine for this workflow's runs (D68). Resolution order for a run: the call's own engine, then
-   * this one (a tests.yaml `engine:` lands here on sync; a PR run with `workflowKey` uses the saved
-   * workflow's), then the project's default engine. Never a hidden built-in.
-   */
-  engineId: idSchema("engine").optional(),
-  /** Pins one engine version; needs `engineId`. */
-  engineVersion: engineVersionNumberSchema.optional(),
-  /** Cases run at the same time. */
-  concurrency: external_exports.number().int().min(1).max(10).default(3),
-  /** Stops a case once its model spend passes this many USD. */
-  maxCostUsdPerCase: external_exports.number().positive().max(100).optional(),
-  /**
-   * Model routes for this workflow's runs (0.37.0). A role left out falls back to the engine's
-   * `models`, then to the project routes.
-   */
-  models: modelRoutesOverrideSchema.optional(),
-  /** Product notes and house rules passed to every case (0.37.0). */
-  context: workflowContextSchema.optional(),
-  /** Run on a cron (0.37.0). Absent: runs only when started. */
-  schedule: workflowScheduleSchema.optional(),
-  /** Extra tries for a failed case (0.39.0). Absent: by trigger (see the rollup rules above). */
-  retries: workflowRetriesSchema.optional(),
-  /** Set by CI when it upserts from a repo file (0.39.0). Absent: owned by the dashboard. */
-  managedBy: workflowManagedBySchema.optional()
-});
-function checkWorkflowFields(v, ctx) {
-  const keys = Object.keys(v.targets);
-  if (keys.length < 1 || keys.length > MAX_TARGETS) {
-    ctx.addIssue({
-      code: "custom",
-      message: `targets must have 1..${MAX_TARGETS} entries`,
-      path: ["targets"]
-    });
-  }
-  if (!(v.defaultTarget in v.targets)) {
-    ctx.addIssue({
-      code: "custom",
-      message: "defaultTarget must be a key of targets",
-      path: ["defaultTarget"]
-    });
-  }
-  if (v.engineVersion !== void 0 && v.engineId === void 0) {
-    ctx.addIssue({
-      code: "custom",
-      message: "engineVersion needs engineId",
-      path: ["engineVersion"]
-    });
-  }
-  if (v.schedule?.target !== void 0 && !(v.schedule.target in v.targets)) {
-    ctx.addIssue({
-      code: "custom",
-      message: "schedule.target must be a key of targets",
-      path: ["schedule", "target"]
-    });
-  }
-  uniqueCaseIds(v.cases, ctx);
-}
-var createWorkflowRequestSchema = workflowFieldsSchema.superRefine(checkWorkflowFields);
-var workflowSchema = workflowFieldsSchema.extend({
-  id: idSchema("workflow"),
-  version: external_exports.number().int().min(1),
-  createdAt: external_exports.iso.datetime(),
-  updatedAt: external_exports.iso.datetime()
-}).superRefine(checkWorkflowFields);
-var listWorkflowsResponseSchema = external_exports.object({
-  workflows: external_exports.array(workflowSchema),
-  ...pageNextField
-});
-var workflowTriggerSchema = external_exports.enum(["manual", "api", "mcp", "ci", "schedule"]);
-var workflowCiSchema = external_exports.object({
-  provider: external_exports.enum(["github", "other"]),
-  repo: external_exports.string().max(200).optional(),
-  ref: external_exports.string().max(200).optional(),
-  sha: external_exports.string().max(100).optional(),
-  pr: external_exports.number().int().positive().optional(),
-  buildUrl: workflowUrlSchema.optional()
-});
-var startWorkflowRunRequestSchema = external_exports.object({
-  /** Key of the workflow's `targets`. Absent: `defaultTarget`. */
-  target: workflowSlugSchema.optional(),
-  /** Run against this url instead of a saved target. */
-  url: workflowUrlSchema.optional(),
-  caseIds: external_exports.array(workflowSlugSchema).max(100).optional(),
-  tags: external_exports.array(workflowSlugSchema).max(20).optional(),
-  /** Session options for this run (0.38.0), same shape as a target's `session` (extra headers for ngrok/WAF, proxy). Wins over the target's. */
-  session: runSkillRequestSchema.shape.session,
-  /** Overrides `Workflow.retries` for this run (0.39.0). */
-  retries: workflowRetriesSchema.optional(),
-  trigger: workflowTriggerSchema.default("api"),
-  ci: workflowCiSchema.optional()
-});
-var startAdhocWorkflowRunRequestSchema = external_exports.object({
-  name: external_exports.string().trim().min(1).max(200).optional(),
-  url: workflowUrlSchema,
-  cases: external_exports.array(workflowCaseSchema).min(1).max(20),
-  /** Absent: the saved workflow's engine when `workflowKey` names one, else the project default engine (D68). */
-  engineId: idSchema("engine").optional(),
-  session: runSkillRequestSchema.shape.session,
-  concurrency: external_exports.number().int().min(1).max(10).default(3),
-  /** Stops a case once its model spend passes this many USD (0.38.0), same cap as `Workflow.maxCostUsdPerCase`. */
-  maxCostUsdPerCase: external_exports.number().positive().max(100).optional(),
-  /** Model routes for this run (0.37.0), same as `Workflow.models`. */
-  models: modelRoutesOverrideSchema.optional(),
-  /** Product notes and house rules passed to every case (0.37.0). */
-  context: workflowContextSchema.optional(),
-  /** Extra tries for a failed case (0.39.0), same as `Workflow.retries`. */
-  retries: workflowRetriesSchema.optional(),
-  /**
-   * Key of the saved workflow this run belongs to (0.39.0): PR runs are ad-hoc (they must not upsert the
-   * workflow) but group under it in the dashboard. Unknown key: the run is ungrouped, not an error.
-   */
-  workflowKey: workflowSlugSchema.optional(),
-  trigger: workflowTriggerSchema.default("api"),
-  ci: workflowCiSchema.optional()
-}).superRefine((v, ctx) => uniqueCaseIds(v.cases, ctx));
-var workflowRunCaseFailureSchema = external_exports.object({
-  step: external_exports.string().max(300).optional(),
-  title: external_exports.string().max(300).optional(),
-  error: external_exports.string().max(500).optional(),
-  screenshotUrl: external_exports.string().max(2e3).optional(),
-  /** Page address when it failed (0.39.0). */
-  url: external_exports.string().max(2e3).optional(),
-  /** First console error on the page (0.39.0). */
-  consoleError: external_exports.string().max(500).optional(),
-  /** The network request that went wrong (0.39.0). */
-  request: external_exports.object({
-    method: external_exports.string().max(16).optional(),
-    url: external_exports.string().max(2e3),
-    status: external_exports.number().int().min(100).max(599).optional()
-  }).optional()
-});
-var workflowRunCaseSchema = external_exports.object({
-  caseId: workflowSlugSchema,
-  title: external_exports.string().max(200),
-  verdict: reportVerdictSchema,
-  runId: idSchema("skillRun").optional(),
-  sessionId: idSchema("session").optional(),
-  summary: external_exports.string().max(300),
-  failure: workflowRunCaseFailureSchema.optional(),
-  /** Tries used, 1 when never retried (0.39.0). */
-  attempts: external_exports.number().int().min(1).optional(),
-  /** Passed on a retry (0.39.0). The verdict stays `pass`. */
-  flaky: external_exports.boolean().optional(),
-  /** Echo of the case's `required` (0.39.0). Absent: required. */
-  required: external_exports.boolean().optional(),
-  durationMs: external_exports.number().int().nonnegative().optional(),
-  costMicros: external_exports.number().int().nonnegative().optional(),
-  /** Steps answered from the replay cache. */
-  replayedSteps: external_exports.number().int().nonnegative().optional(),
-  /** Steps that needed a model call. */
-  modelSteps: external_exports.number().int().nonnegative().optional(),
-  /** `/v1/skill-runs/:id/report.json` of the case. */
-  reportPath: external_exports.string().max(500).optional()
-});
-var workflowRunCountsSchema = external_exports.object({
-  cases: external_exports.number().int().nonnegative(),
-  passed: external_exports.number().int().nonnegative(),
-  failed: external_exports.number().int().nonnegative(),
-  errored: external_exports.number().int().nonnegative(),
-  running: external_exports.number().int().nonnegative(),
-  /** Cases that passed on a retry (0.39.0). */
-  flaky: external_exports.number().int().nonnegative().optional(),
-  /** Optional cases (`required: false`) that failed or errored; they do not change the verdict (0.39.0). */
-  optionalFailed: external_exports.number().int().nonnegative().optional()
-});
-var workflowRunSchema = external_exports.object({
-  id: idSchema("workflowRun"),
-  workflowId: idSchema("workflow").optional(),
-  /** The workflow version the cases were frozen from. */
-  workflowVersion: external_exports.number().int().min(1).optional(),
-  name: external_exports.string().max(200),
-  target: external_exports.object({ name: external_exports.string().max(64).optional(), url: workflowUrlSchema }),
-  trigger: workflowTriggerSchema,
-  ci: workflowCiSchema.optional(),
-  engineRef: engineRefSchema.optional(),
-  /** The model routes the run used when the workflow or request overrode them (0.37.0). */
-  models: modelRoutesOverrideSchema.optional(),
-  verdict: reportVerdictSchema,
-  /** Plain sentences an LLM can relay as is. */
-  summary: external_exports.string().max(1500),
-  counts: workflowRunCountsSchema,
-  cases: external_exports.array(workflowRunCaseSchema).max(100),
-  costMicros: external_exports.number().int().nonnegative(),
-  startedAt: external_exports.iso.datetime(),
-  endedAt: external_exports.iso.datetime().optional(),
-  durationMs: external_exports.number().int().nonnegative().optional(),
-  evidence: external_exports.object({
-    /** `/v1/workflow-runs/:id/report.md`. */
-    markdownPath: external_exports.string().max(500).optional(),
-    /** When the signed links (screenshots) stop working. */
-    urlsExpireAt: external_exports.iso.datetime().optional()
-  }),
-  /** What is missing and why, one sentence each. */
-  notes: external_exports.array(external_exports.string().max(300)).max(8)
-});
-var workflowRunListItemSchema = workflowRunSchema.omit({ cases: true });
-var listWorkflowRunsQuerySchema = pageQuerySchema.extend({
-  workflowId: idSchema("workflow").optional(),
-  verdict: reportVerdictSchema.optional(),
-  trigger: workflowTriggerSchema.optional()
-});
-var listWorkflowRunsResponseSchema = external_exports.object({
-  runs: external_exports.array(workflowRunListItemSchema),
-  ...pageNextField
-});
 var engineRefStringSchema = external_exports.string().trim().min(1).max(100);
 var testsFileTargetSchema = external_exports.union([
   workflowUrlSchema.transform((url2) => ({ url: url2 })),
@@ -31266,6 +33504,11 @@ var testsFileFieldsSchema = external_exports.object({
   concurrency: external_exports.number().int().min(1).max(10).optional(),
   maxCostUsdPerCase: external_exports.number().positive().max(100).optional(),
   retries: workflowRetriesSchema.optional(),
+  /**
+   * `variables`, `before`, `after` (0.48.3, qa-next W1-2): the same as on a workflow (`workflowTestShapeFields`).
+   * YAML may write `vars:`; readers run `normalizeQaWorkflowShorthand` before `readTestsFile`.
+   */
+  ...workflowTestShapeFields,
   cases: external_exports.array(testsFileCaseSchema).min(1).max(100)
 });
 function targetNames(v) {
@@ -31361,7 +33604,10 @@ function testsFileToWorkflowRequest(file2, opts = {}) {
     ...engineId !== void 0 ? { engineId } : {},
     ...file2.concurrency !== void 0 ? { concurrency: file2.concurrency } : {},
     ...file2.maxCostUsdPerCase !== void 0 ? { maxCostUsdPerCase: file2.maxCostUsdPerCase } : {},
-    ...file2.retries !== void 0 ? { retries: file2.retries } : {}
+    ...file2.retries !== void 0 ? { retries: file2.retries } : {},
+    ...file2.variables !== void 0 ? { variables: file2.variables } : {},
+    ...file2.before !== void 0 ? { before: file2.before } : {},
+    ...file2.after !== void 0 ? { after: file2.after } : {}
   });
   if (!parsed.success) {
     throw new TestsFileError(
@@ -31388,6 +33634,30 @@ var runFinishedDataSchema = external_exports.object({
   summary: external_exports.string().optional(),
   reportUrl: external_exports.string().optional()
 });
+var workflowRunWebhookDataSchema = external_exports.object({
+  runId: idSchema("workflowRun"),
+  workflowId: idSchema("workflow").nullable(),
+  workflowKey: external_exports.string().nullable(),
+  workflowVersion: external_exports.number().int().min(1).nullable(),
+  verdict: reportVerdictSchema,
+  trigger: workflowTriggerSchema,
+  counts: workflowRunCountsSchema,
+  ci: workflowCiSchema.nullable(),
+  costMicros: external_exports.number().int().nonnegative(),
+  startedAt: external_exports.number().int().nonnegative(),
+  endedAt: external_exports.number().int().nonnegative(),
+  durationMs: external_exports.number().int().nonnegative(),
+  dashboardUrl: external_exports.url()
+});
+var testFlakyWebhookDataSchema = qaTestRefSchema.extend({
+  title: external_exports.string().max(200),
+  runId: idSchema("workflowRun"),
+  /** 0..1, same scale as `QaTestRow.flakyScore`. */
+  flakyScore: external_exports.number().min(0).max(1),
+  /** Unix ms. */
+  at: external_exports.number().int().nonnegative(),
+  dashboardUrl: external_exports.url()
+});
 var testPingDataSchema = external_exports.object({ message: external_exports.string() });
 var envelope2 = (type, data) => external_exports.object({
   id: external_exports.string(),
@@ -31400,6 +33670,9 @@ var webhookPayloadSchema = external_exports.discriminatedUnion("type", [
   envelope2("run.started", runStartedDataSchema),
   envelope2("run.completed", runFinishedDataSchema),
   envelope2("run.failed", runFinishedDataSchema),
+  envelope2("workflow_run.completed", workflowRunWebhookDataSchema),
+  envelope2("workflow_run.failed", workflowRunWebhookDataSchema),
+  envelope2("test.flaky", testFlakyWebhookDataSchema),
   envelope2("test.ping", testPingDataSchema)
 ]);
 var slackWebhookPayloadSchema = external_exports.object({ text: external_exports.string() });
@@ -31447,453 +33720,166 @@ var WebagentApiError = class extends Error {
     this.retryAfterS = init.retryAfterS;
   }
 };
-function errorFromResponse(res, text) {
-  const raw = res.headers.get("retry-after");
-  const header = raw !== null && Number.isFinite(Number(raw)) ? Number(raw) : void 0;
-  let parsed;
-  try {
-    parsed = errorBodySchema.safeParse(JSON.parse(text));
-  } catch {
-    parsed = void 0;
+var engineReplySchema = external_exports.looseObject({ ok: external_exports.boolean() });
+var snapshotSchema = external_exports.record(external_exports.string(), external_exports.unknown());
+
+// src/run-reply.ts
+var isPlain = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+var str = (v) => typeof v === "string" ? v : void 0;
+var num = (v) => typeof v === "number" && Number.isFinite(v) ? v : void 0;
+var bool = (v) => typeof v === "boolean" ? v : void 0;
+function flakyReasonsOf(v) {
+  if (!Array.isArray(v)) return void 0;
+  const known = v.flatMap((r) => {
+    const p = qaFlakyReasonSchema.safeParse(r);
+    return p.success ? [p.data] : [];
+  });
+  return known.length > 0 ? known : void 0;
+}
+var ReplyError = class extends Error {
+  constructor(what, problem) {
+    super(`unexpected reply from ${what}: ${problem}`);
+    this.name = "ReplyError";
   }
-  if (parsed?.success) {
-    const e = parsed.data.error;
-    const fromDetails = e.details?.retryAfterS;
+};
+var VERDICTS = /* @__PURE__ */ new Set(["pass", "fail", "error", "running"]);
+function readCase(raw, i, what) {
+  if (!isPlain(raw)) throw new ReplyError(what, `cases[${i}] is not an object`);
+  const caseId = str(raw.caseId);
+  if (caseId === void 0) throw new ReplyError(what, `cases[${i}] has no caseId`);
+  const verdictRaw = str(raw.verdict);
+  const known = verdictRaw !== void 0 && VERDICTS.has(verdictRaw);
+  const f = isPlain(raw.failure) ? raw.failure : void 0;
+  const req = f && isPlain(f.request) && str(f.request.url) !== void 0 ? f.request : void 0;
+  const out = {
+    caseId,
+    title: str(raw.title) ?? caseId,
+    verdict: known ? verdictRaw : "error",
+    summary: known ? str(raw.summary) ?? "" : `the API reported case "${caseId}" as ${describe3(raw.verdict)}, which this CLI does not know (update the CLI)`,
+    attempts: num(raw.attempts),
+    flaky: bool(raw.flaky),
+    flakyReasons: flakyReasonsOf(raw.flakyReasons),
+    missingSecret: str(raw.missingSecret),
+    required: bool(raw.required),
+    durationMs: num(raw.durationMs),
+    modelSteps: num(raw.modelSteps),
+    replayedSteps: num(raw.replayedSteps)
+  };
+  if (f && known) {
+    out.failure = {
+      step: str(f.step),
+      error: str(f.error),
+      expected: str(f.expected),
+      saw: str(f.saw),
+      ...req ? { request: { method: str(req.method), url: req.url, status: num(req.status) } } : {}
+    };
+  }
+  return out;
+}
+var describe3 = (v) => typeof v === "string" ? `"${v}"` : "a missing verdict";
+function readRun(raw, what) {
+  if (!isPlain(raw)) throw new ReplyError(what, "not a JSON object");
+  const id = str(raw.id);
+  if (id === void 0) throw new ReplyError(what, "no run id");
+  if (raw.verdict === void 0) throw new ReplyError(what, "no verdict");
+  const list2 = raw.cases === void 0 ? [] : raw.cases;
+  if (!Array.isArray(list2)) throw new ReplyError(what, "cases is not a list");
+  const cases = list2.map((c2, i) => readCase(c2, i, what));
+  const c = isPlain(raw.counts) ? raw.counts : {};
+  const verdictRaw = str(raw.verdict);
+  const known = verdictRaw !== void 0 && VERDICTS.has(verdictRaw);
+  let verdict = known ? verdictRaw : "error";
+  let summary = str(raw.summary) ?? "";
+  if (!known) {
+    summary = `the API reported the run as ${describe3(raw.verdict)}, which this CLI does not know (update the CLI); treated as could not test`;
+  } else if (verdict === "pass") {
+    const bad = cases.find(
+      (_, i) => !VERDICTS.has(String(list2[i].verdict)) && cases[i]?.required !== false
+    );
+    if (bad) {
+      verdict = "error";
+      summary = bad.summary;
+    }
+  }
+  return {
+    id,
+    name: str(raw.name) ?? "tests",
+    verdict,
+    summary,
+    counts: {
+      cases: num(c.cases) ?? cases.length,
+      passed: num(c.passed) ?? 0,
+      failed: num(c.failed) ?? 0,
+      errored: num(c.errored) ?? 0,
+      running: num(c.running) ?? 0,
+      flaky: num(c.flaky),
+      optionalFailed: num(c.optionalFailed)
+    },
+    cases,
+    costMicros: num(raw.costMicros) ?? 0,
+    startedAt: str(raw.startedAt) ?? "",
+    durationMs: num(raw.durationMs),
+    notes: Array.isArray(raw.notes) ? raw.notes.filter((n) => typeof n === "string") : [],
+    raw
+  };
+}
+function readWorkflow(raw, what) {
+  if (!isPlain(raw)) throw new ReplyError(what, "not a JSON object");
+  const id = str(raw.id);
+  if (id === void 0) throw new ReplyError(what, "no workflow id");
+  return { id, key: str(raw.key), version: num(raw.version) ?? 0 };
+}
+function readWorkflowList(raw, what) {
+  if (!isPlain(raw) || !Array.isArray(raw.workflows))
+    throw new ReplyError(what, "no workflows list");
+  return {
+    workflows: raw.workflows.map((w) => readWorkflow(w, what)),
+    next: str(raw.next)
+  };
+}
+function readEngines(raw, what) {
+  if (!isPlain(raw) || !Array.isArray(raw.engines)) throw new ReplyError(what, "no engines list");
+  return raw.engines.flatMap((e) => {
+    if (!isPlain(e) || str(e.id) === void 0) return [];
+    const slug = str(e.slug);
+    const name = str(e.name);
+    return [{ id: e.id, ...slug ? { slug } : {}, ...name ? { name } : {} }];
+  });
+}
+
+// src/api-client.ts
+var isObject2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function errorFromReply(res, text2) {
+  const header = res.headers.get("retry-after");
+  const fromHeader = header !== null && Number.isFinite(Number(header)) ? Number(header) : void 0;
+  let body;
+  try {
+    body = JSON.parse(text2);
+  } catch {
+    body = void 0;
+  }
+  const e = isObject2(body) && isObject2(body.error) ? body.error : void 0;
+  if (e && typeof e.message === "string") {
+    const details = isObject2(e.details) ? e.details : void 0;
+    const fromDetails = details?.retryAfterS;
     return new WebagentApiError({
-      code: e.code,
+      code: typeof e.code === "string" ? e.code : "",
       message: e.message,
       status: res.status,
-      details: e.details,
-      requestId: e.requestId ?? res.headers.get("x-request-id") ?? void 0,
-      retryAfterS: typeof fromDetails === "number" ? fromDetails : header
+      details,
+      requestId: (typeof e.requestId === "string" ? e.requestId : void 0) ?? res.headers.get("x-request-id") ?? void 0,
+      retryAfterS: typeof fromDetails === "number" ? fromDetails : fromHeader
     });
   }
   return new WebagentApiError({
-    code: CODE_BY_STATUS[res.status] ?? "internal",
+    code: "",
     message: `HTTP ${res.status}${res.statusText ? ` ${res.statusText}` : ""}`,
     status: res.status,
     requestId: res.headers.get("x-request-id") ?? void 0,
-    retryAfterS: header
+    retryAfterS: fromHeader
   });
 }
-var Transport = class {
-  constructor(opts) {
-    this.opts = opts;
-  }
-  opts;
-  url(path, query) {
-    const base2 = /^https?:\/\//.test(path) ? path : this.opts.baseUrl.replace(/\/+$/, "") + path;
-    const qs = new URLSearchParams();
-    for (const [k, v] of Object.entries(query ?? {})) {
-      if (v === void 0) continue;
-      if (Array.isArray(v)) for (const x of v) qs.append(k, String(x));
-      else qs.set(k, String(v));
-    }
-    const s = qs.toString();
-    return s ? `${base2}${base2.includes("?") ? "&" : "?"}${s}` : base2;
-  }
-  async send(method, path, o = {}) {
-    const headers = {
-      accept: "application/json",
-      authorization: `Bearer ${await this.opts.token()}`,
-      ...o.headers
-    };
-    if (o.idempotencyKey) headers["idempotency-key"] = o.idempotencyKey;
-    let body;
-    if (o.rawBody !== void 0) {
-      body = o.rawBody;
-    } else if (o.body !== void 0) {
-      body = JSON.stringify(o.body);
-      headers["content-type"] = "application/json";
-    }
-    const timeout = AbortSignal.timeout(this.opts.timeoutMs);
-    const signal = o.signal ? AbortSignal.any([o.signal, timeout]) : timeout;
-    const url2 = this.url(path, o.query);
-    let res;
-    try {
-      res = await this.opts.fetch(url2, { method, headers, signal, ...body ? { body } : {} });
-    } catch (err) {
-      if (o.signal?.aborted) throw err;
-      const timedOut = timeout.aborted;
-      throw new WebagentApiError({
-        code: timedOut ? "timeout" : "internal",
-        message: timedOut ? `${method} ${path} timed out after ${this.opts.timeoutMs} ms` : `${method} ${path} failed: ${err instanceof Error ? err.message : String(err)}`,
-        status: 0,
-        details: timedOut ? { ms: this.opts.timeoutMs } : void 0,
-        cause: err
-      });
-    }
-    if (!res.ok) throw errorFromResponse(res, await res.text());
-    return res;
-  }
-  /** JSON reply, checked with the contracts schema. */
-  async json(method, path, schema, o = {}) {
-    const res = await this.send(method, path, o);
-    const parsed = schema.safeParse(await res.json());
-    if (parsed.success) return parsed.data;
-    throw new WebagentApiError({
-      code: "internal",
-      message: `Unexpected reply from ${method} ${path}: ${parsed.error.issues[0]?.message ?? "bad shape"}`,
-      status: res.status,
-      details: { issues: parsed.error.issues },
-      requestId: res.headers.get("x-request-id") ?? void 0
-    });
-  }
-  async bytes(method, path, o = {}) {
-    const res = await this.send(method, path, { ...o, headers: { accept: "*/*", ...o.headers } });
-    return new Uint8Array(await res.arrayBuffer());
-  }
-  async text(method, path, o = {}) {
-    const res = await this.send(method, path, { ...o, headers: { accept: "*/*", ...o.headers } });
-    return res.text();
-  }
-};
-var engineReplySchema = external_exports.looseObject({ ok: external_exports.boolean() });
-var snapshotSchema = external_exports.record(external_exports.string(), external_exports.unknown());
-var REFRESH_WINDOW_MS = 3e4;
-var SessionHandle = class {
-  constructor(info, deps) {
-    this.deps = deps;
-    this.info = info;
-    this.http = new Transport({
-      baseUrl: info.endpoints.http,
-      token: () => this.freshToken(),
-      fetch: deps.fetch,
-      timeoutMs: deps.timeoutMs
-    });
-  }
-  deps;
-  info;
-  http;
-  get id() {
-    return this.info.id;
-  }
-  get endpoints() {
-    return this.info.endpoints;
-  }
-  /** The current session token (may be refreshed by a later call). */
-  get token() {
-    return this.info.token;
-  }
-  get tokenExpiresAt() {
-    return this.info.tokenExpiresAt;
-  }
-  /** The create reply, as last updated. */
-  get session() {
-    return this.info;
-  }
-  /** Mint a new token now (the old one stays valid until it expires). */
-  async refreshToken() {
-    const t = await this.deps.api.json(
-      "POST",
-      `/v1/sessions/${this.id}/token`,
-      sessionTokenResponseSchema
-    );
-    this.info = { ...this.info, token: t.token, tokenExpiresAt: t.tokenExpiresAt };
-    return t;
-  }
-  async freshToken() {
-    if (Date.parse(this.info.tokenExpiresAt) - Date.now() < REFRESH_WINDOW_MS) {
-      await this.refreshToken();
-    }
-    return this.info.token;
-  }
-  /** Run one action. Failures of the page (element not found...) come back as `ok: false`. */
-  act(action) {
-    return this.http.json("POST", "/actions", engineReplySchema, { body: action });
-  }
-  snapshot(opts = {}) {
-    return this.http.json("GET", "/snapshot", snapshotSchema, { query: opts });
-  }
-  /** The snapshot as the text the agent reads. */
-  snapshotText(opts = {}) {
-    return this.http.text("GET", "/snapshot", { query: { ...opts, format: "text" } });
-  }
-  screenshot(opts = {}) {
-    return this.http.bytes("GET", "/screenshot", { query: { ...opts } });
-  }
-  cookies() {
-    return this.http.json("GET", "/cookies", listCookiesResponseSchema);
-  }
-  setCookies(cookies) {
-    return this.http.json("PUT", "/cookies", putCookiesResponseSchema, { body: { cookies } });
-  }
-  /** No filter clears all cookies. */
-  clearCookies(filter = {}) {
-    return this.http.json("DELETE", "/cookies", okResponseSchema, { query: filter });
-  }
-  tabs() {
-    return this.http.json("GET", "/tabs", tabListSchema);
-  }
-  openTab(url2) {
-    return this.http.json("POST", "/tabs", tabInfoSchema, { body: url2 ? { url: url2 } : {} });
-  }
-  activateTab(tabId) {
-    return this.http.json("POST", `/tabs/${encodeURIComponent(tabId)}/activate`, okResponseSchema);
-  }
-  closeTab(tabId) {
-    return this.http.json("DELETE", `/tabs/${encodeURIComponent(tabId)}`, okResponseSchema);
-  }
-  /** A human takes over: actions answer `session_paused` until `resume()`. */
-  pause(by) {
-    return this.http.json("POST", "/pause", pauseSessionResponseSchema, {
-      body: by ? { by } : {}
-    });
-  }
-  resume() {
-    return this.http.json("POST", "/resume", resumeSessionResponseSchema);
-  }
-  /** End the session (idempotent). */
-  close() {
-    return this.deps.api.json("DELETE", `/v1/sessions/${this.id}`, deleteSessionResponseSchema);
-  }
-};
-var WebagentClient = class {
-  baseUrl;
-  http;
-  fetchFn;
-  timeoutMs;
-  constructor(options) {
-    this.baseUrl = resolveBaseUrl(options.apiKey, options.baseUrl);
-    this.fetchFn = options.fetch ?? ((...args) => globalThis.fetch(...args));
-    this.timeoutMs = options.timeoutMs ?? 6e4;
-    this.http = new Transport({
-      baseUrl: this.baseUrl,
-      token: () => options.apiKey,
-      fetch: this.fetchFn,
-      timeoutMs: this.timeoutMs
-    });
-  }
-  // Sessions
-  /** Start a browser session. `endpoints` on the result say where to connect. */
-  async createSession(request = {}, o = {}) {
-    const info = await this.http.json("POST", "/v1/sessions", createSessionResponseSchema, {
-      body: request,
-      ...o
-    });
-    return new SessionHandle(info, {
-      api: this.http,
-      fetch: this.fetchFn,
-      timeoutMs: this.timeoutMs
-    });
-  }
-  async listSessions() {
-    return (await this.http.json("GET", "/v1/sessions", listSessionsResponseSchema)).sessions;
-  }
-  /** One session; `endpoints` and `startedBy` come back when the API sends them. */
-  getSession(id) {
-    return this.http.json("GET", `/v1/sessions/${id}`, getSessionResponseSchema);
-  }
-  closeSession(id) {
-    return this.http.json("DELETE", `/v1/sessions/${id}`, deleteSessionResponseSchema);
-  }
-  // Engines
-  /** The project's engines: built-in and its own (`GET /v1/engines`). */
-  async listEngines() {
-    const res = await this.http.json(
-      "GET",
-      "/v1/engines",
-      listEnginesResponseSchema
-    );
-    return res.engines;
-  }
-  /**
-   * Turn an engine reference (`eng_...` id or a slug such as `qa` or `my-qa`) into the engine id,
-   * checked against this project's engines. Throws `WebagentApiError` with code `not_found`
-   * ("Engine '<ref>' not found in this project") or `conflict` (more than one engine matches).
-   * `details.ref` carries the reference.
-   */
-  async resolveEngine(ref) {
-    const engines = await this.listEngines();
-    const hits = engines.filter((e) => e.id === ref || e.slug === ref);
-    if (hits.length === 1) return hits[0].id;
-    const names = hits.map((e) => `${e.slug ?? e.name} (${e.id})`).join(", ");
-    throw new WebagentApiError({
-      code: hits.length === 0 ? "not_found" : "conflict",
-      status: hits.length === 0 ? 404 : 409,
-      message: hits.length === 0 ? `Engine '${ref}' not found in this project` : `Engine '${ref}' is ambiguous in this project: ${names}`,
-      details: { ref }
-    });
-  }
-  // Skills
-  async listSkills() {
-    return (await this.http.json("GET", "/v1/skills", listSkillsResponseSchema)).skills;
-  }
-  getSkill(name, version2) {
-    return this.http.json("GET", `/v1/skills/${name}`, skillDetailResponseSchema, {
-      query: { version: version2 }
-    });
-  }
-  /** Check a SKILL.md text without saving it. */
-  validateSkill(text) {
-    return this.http.json("POST", "/v1/skills/validate", skillValidationSchema, { body: { text } });
-  }
-  /** Start a run. It is async: poll with `getSkillRun` or use `waitForSkillRun`. */
-  runSkill(name, request = {}, o = {}) {
-    return this.http.json("POST", `/v1/skills/${name}/run`, skillRunAcceptedSchema, {
-      body: request,
-      ...o
-    });
-  }
-  /** Newest first. Pass the reply's `next` as `cursor` for the following page; `status` may repeat. */
-  listSkillRuns(query = {}) {
-    return this.http.json("GET", "/v1/skill-runs", listSkillRunsResponseSchema, {
-      query: { status: query.status, skill: query.skill, limit: query.limit, cursor: query.cursor }
-    });
-  }
-  getSkillRun(runId) {
-    return this.http.json("GET", `/v1/skill-runs/${runId}`, skillRunDetailSchema);
-  }
-  /** The finished run's HTML report (the API redirects to a short-lived URL; `hasReport`). */
-  skillRunReport(runId) {
-    return this.http.text("GET", `/v1/skill-runs/${runId}/report`);
-  }
-  /** JSON test report of a skill run (verdict, steps, findings, console and network failures). */
-  getSkillRunReport(runId) {
-    return this.http.json("GET", `/v1/skill-runs/${runId}/report.json`, runReportSchema);
-  }
-  /** Poll until the run is no longer `running`. */
-  async waitForSkillRun(runId, o = {}) {
-    const deadline = Date.now() + (o.timeoutMs ?? 3e5);
-    for (; ; ) {
-      const run = await this.getSkillRun(runId);
-      if (run.status !== "running") return run;
-      const left = deadline - Date.now();
-      if (left <= 0) {
-        throw new WebagentApiError({
-          code: "timeout",
-          message: `Skill run ${runId} still running after ${o.timeoutMs ?? 3e5} ms`,
-          status: 0,
-          details: { ms: o.timeoutMs ?? 3e5 }
-        });
-      }
-      await sleep(Math.min(o.pollMs ?? 1e3, left), o.signal);
-    }
-  }
-  // Workflows (D63): saved QA cases and their runs
-  /** Newest page first as the API orders it; pass the reply's `next` as `cursor` for the following page. */
-  listWorkflows(query = {}) {
-    return this.http.json("GET", "/v1/workflows", listWorkflowsResponseSchema, {
-      query: { limit: query.limit, cursor: query.cursor }
-    });
-  }
-  createWorkflow(request, o = {}) {
-    return this.http.json("POST", "/v1/workflows", workflowSchema, { body: request, ...o });
-  }
-  getWorkflow(id) {
-    return this.http.json("GET", `/v1/workflows/${id}`, workflowSchema);
-  }
-  /** Create or fully replace the workflow with this `key` (what CI does on the default branch). `version` goes up on every call. */
-  upsertWorkflowByKey(key, request) {
-    return this.http.json(
-      "PUT",
-      `/v1/workflows/by-key/${encodeURIComponent(key)}`,
-      workflowSchema,
-      {
-        body: request
-      }
-    );
-  }
-  /** Start a saved workflow. Async (202): poll with `getWorkflowRun` or use `waitForWorkflowRun`. */
-  startWorkflowRun(workflowId, request = {}, o = {}) {
-    return this.http.json("POST", `/v1/workflows/${workflowId}/runs`, workflowRunSchema, {
-      body: request,
-      ...o
-    });
-  }
-  /** Run cases sent inline, nothing saved (PR runs in CI; `workflowKey` groups them under the saved workflow). */
-  startAdhocWorkflowRun(request, o = {}) {
-    return this.http.json("POST", "/v1/workflow-runs", workflowRunSchema, { body: request, ...o });
-  }
-  getWorkflowRun(runId) {
-    return this.http.json("GET", `/v1/workflow-runs/${runId}`, workflowRunSchema);
-  }
-  /** The run as Markdown (for PR comments and CI logs). */
-  getWorkflowRunMarkdown(runId) {
-    return this.http.text("GET", `/v1/workflow-runs/${runId}/report.md`);
-  }
-  /** Stop a running run. A finished run is a `conflict` error. */
-  cancelWorkflowRun(runId) {
-    return this.http.json("POST", `/v1/workflow-runs/${runId}/cancel`, workflowRunSchema);
-  }
-  /** Poll until the verdict is no longer `running`; throws a `timeout` error after `timeoutMs` (default 20 min; the run is not cancelled). */
-  async waitForWorkflowRun(runId, o = {}) {
-    const timeoutMs2 = o.timeoutMs ?? 12e5;
-    const deadline = Date.now() + timeoutMs2;
-    let pause = o.pollMs ?? 1e3;
-    for (; ; ) {
-      const run = await this.getWorkflowRun(runId);
-      o.onPoll?.(run);
-      if (run.verdict !== "running") return run;
-      const left = deadline - Date.now();
-      if (left <= 0) {
-        throw new WebagentApiError({
-          code: "timeout",
-          message: `Workflow run ${runId} still running after ${timeoutMs2} ms`,
-          status: 0,
-          details: { ms: timeoutMs2 }
-        });
-      }
-      await sleep(Math.min(pause, left), o.signal);
-      pause = Math.min(Math.round(pause * 1.5), o.maxPollMs ?? 1e4);
-    }
-  }
-  // Tasks
-  /** The project's goal tasks, newest first (at most 200); `sessionId` narrows to one session. */
-  async listTasks(sessionId) {
-    return (await this.http.json("GET", "/v1/tasks", listTasksResponseSchema, { query: { sessionId } })).tasks;
-  }
-  /** JSON test report of a goal task. A task has no assertions: the report says so. */
-  getTaskReport(taskId) {
-    return this.http.json("GET", `/v1/tasks/${taskId}/report.json`, runReportSchema);
-  }
-  // Quick tools
-  scrape(request, o = {}) {
-    return this.http.json("POST", "/v1/scrape", scrapeResponseSchema, { body: request, ...o });
-  }
-  crawl(request, o = {}) {
-    return this.http.json("POST", "/v1/crawl", crawlResponseSchema, { body: request, ...o });
-  }
-  /** The image bytes (png, jpeg or webp by `format`). */
-  screenshot(request, o = {}) {
-    return this.http.bytes("POST", "/v1/screenshot", { body: request, ...o });
-  }
-  /** The PDF bytes. */
-  pdf(request, o = {}) {
-    return this.http.bytes("POST", "/v1/pdf", { body: request, ...o });
-  }
-  // Schedules
-  async listSchedules() {
-    return (await this.http.json("GET", "/v1/schedules", listSchedulesResponseSchema)).schedules;
-  }
-  createSchedule(request, o = {}) {
-    return this.http.json("POST", "/v1/schedules", scheduleSchema, { body: request, ...o });
-  }
-  getSchedule(id) {
-    return this.http.json("GET", `/v1/schedules/${id}`, scheduleSchema);
-  }
-  updateSchedule(id, patch) {
-    return this.http.json("PATCH", `/v1/schedules/${id}`, scheduleSchema, { body: patch });
-  }
-  deleteSchedule(id) {
-    return this.http.json("DELETE", `/v1/schedules/${id}`, deleteScheduleResponseSchema);
-  }
-  runScheduleNow(id) {
-    return this.http.json("POST", `/v1/schedules/${id}/run`, runScheduleNowResponseSchema);
-  }
-  // Account
-  tenant() {
-    return this.http.json("GET", "/v1/tenant", tenantResponseSchema);
-  }
-  billing() {
-    return this.http.json("GET", "/v1/billing", billingResponseSchema);
-  }
-  /** Ledger totals; `sinceMs` is a unix time in ms. */
-  usage(sinceMs) {
-    return this.http.json("GET", "/v1/usage", usageTotalsSchema, { query: { sinceMs } });
-  }
-};
-function sleep(ms, signal) {
+function pause(ms, signal) {
   return new Promise((resolve2, reject) => {
     if (signal?.aborted) return reject(signal.reason);
     const t = setTimeout(() => {
@@ -31907,6 +33893,132 @@ function sleep(ms, signal) {
     signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
+var TolerantClient = class {
+  constructor(o) {
+    this.o = o;
+    this.base = resolveBaseUrl(o.apiKey, o.baseUrl);
+    this.fetchFn = o.fetch ?? ((...a) => globalThis.fetch(...a));
+  }
+  o;
+  base;
+  fetchFn;
+  async send(method, path, x = {}) {
+    const qs = new URLSearchParams(x.query).toString();
+    const url2 = `${this.base}${path}${qs ? `?${qs}` : ""}`;
+    const headers = {
+      accept: "application/json",
+      authorization: `Bearer ${this.o.apiKey}`
+    };
+    if (x.idempotencyKey) headers["idempotency-key"] = x.idempotencyKey;
+    if (x.body !== void 0) headers["content-type"] = "application/json";
+    const timeout = AbortSignal.timeout(this.o.timeoutMs);
+    let res;
+    try {
+      res = await this.fetchFn(url2, {
+        method,
+        headers,
+        signal: timeout,
+        ...x.body !== void 0 ? { body: JSON.stringify(x.body) } : {}
+      });
+    } catch (err) {
+      const timedOut = timeout.aborted;
+      throw new WebagentApiError({
+        code: timedOut ? "timeout" : "internal",
+        message: timedOut ? `${method} ${path} timed out after ${this.o.timeoutMs} ms` : `${method} ${path} failed: ${err instanceof Error ? err.message : String(err)}`,
+        status: 0,
+        cause: err
+      });
+    }
+    if (!res.ok) throw errorFromReply(res, await res.text());
+    return res;
+  }
+  /** A 2xx reply with a body the CLI cannot read at all: reported as `internal` with the 2xx status. */
+  async read(res, reader) {
+    try {
+      return reader(await res.json());
+    } catch (err) {
+      throw new WebagentApiError({
+        code: "internal",
+        message: err instanceof ReplyError ? err.message : "the reply was not JSON",
+        status: res.status,
+        requestId: res.headers.get("x-request-id") ?? void 0,
+        cause: err
+      });
+    }
+  }
+  async resolveEngine(ref) {
+    const res = await this.send("GET", "/v1/engines");
+    const engines = await this.read(res, (r) => readEngines(r, "GET /v1/engines"));
+    const hits = engines.filter((e) => e.id === ref || e.slug === ref);
+    if (hits.length === 1) return hits[0].id;
+    const names = hits.map((e) => `${e.slug ?? e.name ?? e.id} (${e.id})`).join(", ");
+    throw new WebagentApiError({
+      code: hits.length === 0 ? "not_found" : "conflict",
+      status: hits.length === 0 ? 404 : 409,
+      message: hits.length === 0 ? `Engine '${ref}' not found in this project` : `Engine '${ref}' is ambiguous in this project: ${names}`,
+      details: { ref }
+    });
+  }
+  async listWorkflows(query = {}) {
+    const q = {};
+    if (query.limit !== void 0) q.limit = String(query.limit);
+    if (query.cursor !== void 0) q.cursor = query.cursor;
+    const res = await this.send("GET", "/v1/workflows", { query: q });
+    return this.read(res, (r) => readWorkflowList(r, "GET /v1/workflows"));
+  }
+  async upsertWorkflowByKey(key, request) {
+    const path = `/v1/workflows/by-key/${encodeURIComponent(key)}`;
+    const res = await this.send("PUT", path, { body: request });
+    return this.read(res, (r) => readWorkflow(r, `PUT ${path}`));
+  }
+  async startWorkflowRun(workflowId, request, o = {}) {
+    const path = `/v1/workflows/${workflowId}/runs`;
+    const res = await this.send("POST", path, { body: request, idempotencyKey: o.idempotencyKey });
+    return this.read(res, (r) => readRun(r, `POST ${path}`));
+  }
+  async startAdhocWorkflowRun(request, o = {}) {
+    const res = await this.send("POST", "/v1/workflow-runs", {
+      body: request,
+      idempotencyKey: o.idempotencyKey
+    });
+    return this.read(res, (r) => readRun(r, "POST /v1/workflow-runs"));
+  }
+  async getWorkflowRun(runId) {
+    const path = `/v1/workflow-runs/${runId}`;
+    const res = await this.send("GET", path);
+    return this.read(res, (r) => readRun(r, `GET ${path}`));
+  }
+  async getWorkflowRunMarkdown(runId) {
+    const res = await this.send("GET", `/v1/workflow-runs/${runId}/report.md`);
+    return res.text();
+  }
+  async cancelWorkflowRun(runId) {
+    const path = `/v1/workflow-runs/${runId}/cancel`;
+    const res = await this.send("POST", path);
+    return this.read(res, (r) => readRun(r, `POST ${path}`));
+  }
+  /** Poll until the verdict is not `running`; a `timeout` error after `timeoutMs` (the run is not cancelled). */
+  async waitForWorkflowRun(runId, o = {}) {
+    const timeoutMs2 = o.timeoutMs ?? 12e5;
+    const deadline = Date.now() + timeoutMs2;
+    let wait = 1e3;
+    for (; ; ) {
+      const run = await this.getWorkflowRun(runId);
+      o.onPoll?.(run);
+      if (run.verdict !== "running") return run;
+      const left = deadline - Date.now();
+      if (left <= 0) {
+        throw new WebagentApiError({
+          code: "timeout",
+          message: `Workflow run ${runId} still running after ${timeoutMs2} ms`,
+          status: 0
+        });
+      }
+      await pause(Math.min(wait, left), o.signal);
+      wait = Math.min(Math.round(wait * 1.5), 1e4);
+    }
+  }
+};
 
 // src/args.ts
 var import_node_util = require("util");
@@ -31961,8 +34073,16 @@ Usage: webagent test [options]
   --junit <path>             write a JUnit XML report
   --markdown <path>          write the Markdown report
   --json                     print the run as JSON on stdout (messages go to stderr)
+  --ci-context <file.json>   pull request context as {"title","body","changedFiles":[...]}; wins over the
+                             WEBAGENT_CI_* variables. Sent to the run for triage, never printed in reports
+  --stop-after <n>           stop early once n required cases failed; the rest show "Not run (stopped early)"
+  --failed-only              re-run only the cases that did not pass last time (same pull request in CI);
+                             the passes are listed as carried over, not re-run and not billed
+  --rerun-of <wfr_...>       re-run this earlier run (with --failed-only: only what did not pass in it)
 
 Environment: WEBAGENT_API_KEY (required), WEBAGENT_API_URL
+Pull request context (optional): WEBAGENT_CI_TITLE, WEBAGENT_CI_BODY, WEBAGENT_CI_CHANGED_FILES (one path per line)
+CI details are read from GitHub Actions, GitLab CI and Jenkins variables
 Exit codes: 0 pass, 1 a required case failed, 2 could not test, 3 setup problem
 `;
 function list(values) {
@@ -32004,6 +34124,10 @@ function parseCli(argv) {
         junit: { type: "string" },
         markdown: { type: "string" },
         json: { type: "boolean" },
+        "ci-context": { type: "string" },
+        "stop-after": { type: "string" },
+        "failed-only": { type: "boolean" },
+        "rerun-of": { type: "string" },
         help: { type: "boolean", short: "h" }
       }
     }));
@@ -32019,6 +34143,14 @@ function parseCli(argv) {
   if (timeoutMinutes <= 0) throw new SetupError("--timeout-minutes must be more than 0");
   const waitSeconds = number4("wait-for-url-timeout", values["wait-for-url-timeout"]) ?? 120;
   if (waitSeconds <= 0) throw new SetupError("--wait-for-url-timeout must be more than 0");
+  const stopAfter = number4("stop-after", values["stop-after"]);
+  if (stopAfter !== void 0 && (!Number.isInteger(stopAfter) || stopAfter < 1 || stopAfter > 500)) {
+    throw new SetupError("--stop-after must be a whole number from 1 to 500");
+  }
+  const rerunOf = values["rerun-of"];
+  if (rerunOf !== void 0 && !idSchema("workflowRun").safeParse(rerunOf).success) {
+    throw new SetupError(`--rerun-of needs a run id (wfr_...), got "${rerunOf}"`);
+  }
   const onError = values["on-error"] ?? "block";
   if (onError !== "block" && onError !== "neutral") {
     throw new SetupError(`--on-error must be "block" or "neutral", got "${onError}"`);
@@ -32040,7 +34172,11 @@ function parseCli(argv) {
       onError,
       junit: values.junit,
       markdown: values.markdown,
-      json: values.json === true
+      json: values.json === true,
+      ciContext: values["ci-context"],
+      stopAfter,
+      failedOnly: values["failed-only"] === true,
+      rerunOf
     }
   };
 }
@@ -32067,11 +34203,27 @@ function toCliError(e, what, apiUrl) {
     );
   }
   if (e.code === "wrong_region") return new SetupError(`${what}: ${e.message}`);
+  if (e.code === "internal" && e.status >= 200 && e.status < 300) {
+    return new CouldNotTestError(`${what}: ${e.message} (update the CLI if this keeps happening)`);
+  }
   if (e.status === 0 && e.code === "internal") {
     return new SetupError(`could not reach the API at ${apiUrl}`, [e.message]);
   }
   if (isTransient(e)) return new CouldNotTestError(`${what} failed (${e.code}): ${e.message}`);
-  return new SetupError(`${what} was rejected (${e.code}): ${e.message}`);
+  return new SetupError(`${what} was rejected (${e.code}): ${e.message}`, issueLines(e));
+}
+function issueLines(e) {
+  const issues = e.details?.issues;
+  if (!Array.isArray(issues)) return [];
+  const lines = [];
+  for (const i of issues.slice(0, 10)) {
+    if (typeof i !== "object" || i === null) continue;
+    const { path, message } = i;
+    if (typeof message !== "string") continue;
+    const where = Array.isArray(path) ? path.map(String).join(".") : "";
+    lines.push(where ? `${where}: ${message}` : message);
+  }
+  return lines;
 }
 async function callApi(d2, what, fn) {
   for (let attempt = 1; ; attempt++) {
@@ -32089,13 +34241,60 @@ async function callApi(d2, what, fn) {
   }
 }
 
-// src/exit-codes.ts
-function exitCodeFor(outcome, onError) {
-  if (outcome.kind === "verdict") {
-    if (outcome.verdict === "pass") return EXIT.pass;
-    if (outcome.verdict === "fail") return EXIT.fail;
+// src/ci-context.ts
+var CI_CONTEXT_LIMITS = { title: 200, body: 2e3, files: 300, path: 300 };
+function truncate(text2, max) {
+  if (text2.length <= max) return text2;
+  const cut2 = text2.slice(0, max);
+  const last = cut2.charCodeAt(cut2.length - 1);
+  return last >= 55296 && last <= 56319 ? cut2.slice(0, -1) : cut2;
+}
+function text(value, max) {
+  if (typeof value !== "string") return void 0;
+  const v = value.replace(/\r\n?/g, "\n").trim();
+  return v === "" ? void 0 : truncate(v, max);
+}
+function files(value) {
+  const lines = Array.isArray(value) ? value.filter((v) => typeof v === "string") : typeof value === "string" ? value.split(/\r?\n/) : [];
+  const out = lines.map((l) => l.trim()).filter((l) => l !== "").slice(0, CI_CONTEXT_LIMITS.files).map((l) => truncate(l, CI_CONTEXT_LIMITS.path));
+  return out.length > 0 ? out : void 0;
+}
+function pack(title, body, changed) {
+  const t = text(title, CI_CONTEXT_LIMITS.title);
+  const b = text(body, CI_CONTEXT_LIMITS.body);
+  const f = files(changed);
+  return {
+    ...t ? { title: t } : {},
+    ...b ? { body: b } : {},
+    ...f ? { changedFiles: f } : {}
+  };
+}
+function ciContextFromEnv(env) {
+  return pack(env.WEBAGENT_CI_TITLE, env.WEBAGENT_CI_BODY, env.WEBAGENT_CI_CHANGED_FILES);
+}
+function parseCiContextFile(raw, path) {
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new SetupError(`${path} is not valid JSON`, [
+      'expected {"title": "...", "body": "...", "changedFiles": ["a.ts"]}'
+    ]);
   }
-  return onError === "neutral" ? EXIT.pass : EXIT.couldNotTest;
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    throw new SetupError(`${path} must be a JSON object`, [
+      'expected {"title": "...", "body": "...", "changedFiles": ["a.ts"]}'
+    ]);
+  }
+  const o = data;
+  return pack(o.title, o.body, o.changedFiles);
+}
+function mergeCiContext(fromEnv, fromFile) {
+  return { ...fromEnv, ...fromFile };
+}
+function withCiContext(ci, ctx) {
+  if (!ctx.title && !ctx.body && !ctx.changedFiles) return ci;
+  return { ...ci ?? { provider: "other" }, ...ctx };
 }
 
 // src/github-env.ts
@@ -32136,15 +34335,76 @@ function managedByFromEnv(env, path) {
   };
 }
 
+// src/ci-env.ts
+function isGitlab(env) {
+  return env.GITLAB_CI === "true";
+}
+function isJenkins(env) {
+  return Boolean(env.JENKINS_URL);
+}
+function cut(value, max) {
+  const v = value?.trim();
+  return v ? v.slice(0, max) : void 0;
+}
+function positiveInt(value) {
+  if (!value || !/^\d+$/.test(value.trim())) return void 0;
+  const n = Number(value);
+  return Number.isSafeInteger(n) && n > 0 ? n : void 0;
+}
+function httpUrl2(value) {
+  const v = value?.trim();
+  return v && workflowUrlSchema.safeParse(v).success ? v : void 0;
+}
+function build(fields) {
+  const out = { provider: "other" };
+  for (const [k, v] of Object.entries(fields)) {
+    if (v !== void 0) out[k] = v;
+  }
+  return out;
+}
+function gitlabCiFromEnv(env) {
+  if (!isGitlab(env)) return void 0;
+  return build({
+    repo: cut(env.CI_PROJECT_PATH, 200),
+    ref: cut(env.CI_MERGE_REQUEST_SOURCE_BRANCH_NAME || env.CI_COMMIT_REF_NAME, 200),
+    sha: cut(env.CI_COMMIT_SHA, 100),
+    pr: positiveInt(env.CI_MERGE_REQUEST_IID),
+    buildUrl: httpUrl2(env.CI_PIPELINE_URL),
+    title: cut(env.CI_MERGE_REQUEST_TITLE, 200)
+  });
+}
+function jenkinsCiFromEnv(env) {
+  if (!isJenkins(env)) return void 0;
+  return build({
+    ref: cut(env.GIT_BRANCH?.replace(/^origin\//, ""), 200),
+    sha: cut(env.GIT_COMMIT, 100),
+    pr: positiveInt(env.CHANGE_ID),
+    buildUrl: httpUrl2(env.BUILD_URL),
+    title: cut(env.CHANGE_TITLE, 200)
+  });
+}
+function detectCi(env, event) {
+  return ciFromEnv(env, event) ?? gitlabCiFromEnv(env) ?? jenkinsCiFromEnv(env);
+}
+
+// src/exit-codes.ts
+function exitCodeFor(outcome, onError) {
+  if (outcome.kind === "verdict") {
+    if (outcome.verdict === "pass") return EXIT.pass;
+    if (outcome.verdict === "fail") return EXIT.fail;
+  }
+  return onError === "neutral" ? EXIT.pass : EXIT.couldNotTest;
+}
+
 // src/report-text.ts
 function caseLabel(c) {
   const optional2 = c.required === false;
   if (c.verdict === "pass") {
-    return c.flaky ? `PASS (flaky: passed on try ${c.attempts ?? 2})` : "PASS";
+    return c.flaky || (c.flakyReasons?.length ?? 0) > 0 ? `Flaky (${qaFlakyText(c.flakyReasons, c.attempts)})` : "Passed";
   }
-  if (c.verdict === "running") return "RUNNING";
-  if (optional2) return "WARN (optional)";
-  return c.verdict === "fail" ? "FAIL" : "COULD NOT TEST";
+  if (c.verdict === "running") return "Running";
+  if (optional2) return "Warning (optional)";
+  return c.verdict === "fail" ? "Failed" : "Couldn't test";
 }
 function caseDetail(c) {
   if (c.verdict === "pass") {
@@ -32168,24 +34428,63 @@ function caseDetail(c) {
   else if (c.summary) parts.push(c.summary);
   return parts.join(" \xB7 ");
 }
+function expectedSaw(c) {
+  const f = c.failure;
+  const parts = [];
+  if (f?.expected) parts.push(`Expected ${f.expected}`);
+  if (f?.saw) parts.push(`Saw ${f.saw}`);
+  return parts.join(" \xB7 ");
+}
 function seconds(ms) {
   return ms === void 0 ? "" : `${(ms / 1e3).toFixed(1)} s`;
 }
+function splitCounts(run) {
+  if (run.cases.length === 0) {
+    return {
+      failed: run.counts.failed,
+      errored: run.counts.errored,
+      optionalFailed: run.counts.optionalFailed ?? 0
+    };
+  }
+  const required2 = (c) => c.required !== false;
+  const count4 = (f) => run.cases.filter(f).length;
+  return {
+    failed: count4((c) => required2(c) && c.verdict === "fail"),
+    errored: count4((c) => required2(c) && c.verdict === "error"),
+    optionalFailed: count4((c) => !required2(c) && (c.verdict === "fail" || c.verdict === "error"))
+  };
+}
+function verdictWord(run) {
+  if (run.verdict === "pass") return "Passed";
+  if (run.verdict === "fail") return "Failed";
+  if (run.verdict === "error") return "Couldn't test";
+  return "Running";
+}
 function summaryLine(run) {
-  const verdict = run.verdict === "error" ? "COULD NOT TEST" : run.verdict.toUpperCase();
+  const split = splitCounts(run);
   const parts = [
     "Lookover QA",
-    verdict,
+    verdictWord(run),
     `${run.counts.passed} passed`,
-    `${run.counts.failed} failed`,
-    `${run.counts.flaky ?? 0} flaky`,
-    `${run.counts.errored} could not test`
+    `${split.failed} failed`
   ];
-  if (run.counts.optionalFailed) parts.push(`${run.counts.optionalFailed} optional failed`);
+  if (run.counts.flaky) parts.push(`${run.counts.flaky} flaky`);
+  if (split.errored) parts.push(`${split.errored} couldn't test`);
+  if (split.optionalFailed) parts.push(`${split.optionalFailed} optional failed`);
   if (run.counts.running) parts.push(`${run.counts.running} still running`);
-  if (run.durationMs !== void 0) parts.push(seconds(run.durationMs));
-  parts.push(`$${(run.costMicros / 1e6).toFixed(2)}`);
   return parts.join(" \xB7 ");
+}
+function statsLine(run) {
+  const parts = [];
+  if (run.durationMs !== void 0) parts.push(`Took ${seconds(run.durationMs)}`);
+  if (run.costMicros > 0) parts.push(`Cost: $${(run.costMicros / 1e6).toFixed(2)}`);
+  return parts.join(" \xB7 ");
+}
+function failedLines(run) {
+  return run.cases.filter((c) => c.verdict === "fail" || c.verdict === "error").map((c) => {
+    const word = c.required === false ? "Warning" : c.verdict === "fail" ? "Failed" : "Couldn't test";
+    return [`${word}: ${c.title}`, expectedSaw(c) || caseDetail(c)].filter((p) => p !== "").join(" \xB7 ");
+  });
 }
 function renderTable(run) {
   const rows = run.cases.map((c) => [caseLabel(c), c.caseId, seconds(c.durationMs), caseDetail(c)]);
@@ -32193,7 +34492,15 @@ function renderTable(run) {
   const lines = rows.map(
     (r) => `${r[0].padEnd(widths[0])}  ${r[1].padEnd(widths[1])}  ${r[2].padStart(widths[2])}  ${r[3]}`.trimEnd()
   );
-  return [...lines, "", summaryLine(run)].join("\n");
+  const failed = failedLines(run);
+  const stats = statsLine(run);
+  return [
+    ...lines,
+    ...failed.length > 0 ? ["", ...failed] : [],
+    "",
+    summaryLine(run),
+    ...stats ? [stats] : []
+  ].join("\n");
 }
 
 // src/junit.ts
@@ -32202,58 +34509,73 @@ function xmlEscape(s) {
   return s.replace(BAD_XML, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 var secs = (ms) => ((ms ?? 0) / 1e3).toFixed(3);
+function slugify2(text2) {
+  const s = text2.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64);
+  return s === "" ? "tests" : s;
+}
 function renderJunit(input2) {
   const { name, run } = input2;
   const cases = [];
   let failures = 0;
   let errors = 0;
   let skipped = 0;
-  const classname = xmlEscape(name);
+  const suite = xmlEscape(name);
+  const classname = xmlEscape(input2.key ?? slugify2(name));
   if (!run) {
     errors = 1;
     cases.push(
-      `    <testcase classname="${classname}" name="${classname}" time="0.000">
+      `    <testcase classname="${classname}" name="${suite}" time="0.000">
       <error message="${xmlEscape(input2.error ?? "could not test")}" type="could_not_test"/>
     </testcase>`
     );
   } else {
     for (const c of run.cases) {
       const attrs = `classname="${classname}" name="${xmlEscape(c.title)}" time="${secs(c.durationMs)}"`;
-      const detail = xmlEscape(caseDetail(c) || c.summary);
+      const props = `
+      <properties>
+        <property name="case_id" value="${xmlEscape(c.caseId)}"/>
+      </properties>`;
+      const detail = xmlEscape(expectedSaw(c) || caseDetail(c) || c.summary);
       const optional2 = c.required === false;
       let inner = "";
       if (c.verdict === "pass") {
-        if (c.flaky)
+        if (c.flaky || (c.flakyReasons?.length ?? 0) > 0)
           inner = `
-      <system-out>flaky: passed on try ${c.attempts ?? 2}</system-out>
-    `;
+      <system-out>flaky: ${xmlEscape(qaFlakyText(c.flakyReasons, c.attempts))}</system-out>`;
       } else if (optional2) {
         skipped++;
         inner = `
-      <skipped message="optional case did not pass: ${detail}"/>
-    `;
+      <skipped message="optional case did not pass: ${detail}"/>`;
       } else if (c.verdict === "fail") {
         failures++;
         inner = `
-      <failure message="${detail}" type="failed">${detail}</failure>
-    `;
+      <failure message="${detail}" type="failed">${detail}</failure>`;
       } else {
         errors++;
         const why = c.verdict === "running" ? "did not finish" : detail;
         inner = `
-      <error message="${why}" type="could_not_test">${why}</error>
-    `;
+      <error message="${why}" type="could_not_test">${why}</error>`;
       }
-      cases.push(inner ? `    <testcase ${attrs}>${inner}</testcase>` : `    <testcase ${attrs}/>`);
+      cases.push(`    <testcase ${attrs}>${props}${inner}
+    </testcase>`);
     }
     if (run.cases.length === 0 && run.verdict !== "pass") errors = 1;
+    if (run.cases.length > 0 && failures + errors === 0 && (run.verdict === "error" || run.verdict === "running")) {
+      errors = 1;
+      const why = xmlEscape(run.summary || "the run could not be tested");
+      cases.push(
+        `    <testcase classname="${classname}" name="${suite}" time="0.000">
+      <error message="${why}" type="could_not_test">${why}</error>
+    </testcase>`
+      );
+    }
   }
   const total = cases.length;
   const time4 = secs(run?.durationMs);
   const counts = `tests="${total}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${time4}"`;
   return `<?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="${classname}" ${counts}>
-  <testsuite name="${classname}" ${counts}${run ? ` timestamp="${xmlEscape(run.startedAt)}"` : ""}>
+<testsuites name="${suite}" ${counts}>
+  <testsuite name="${suite}" ${counts}${run ? ` timestamp="${xmlEscape(run.startedAt)}"` : ""}>
 ${cases.join("\n")}
   </testsuite>
 </testsuites>
@@ -32262,16 +34584,94 @@ ${cases.join("\n")}
 
 // src/plan.ts
 var import_yaml = __toESM(require_dist(), 1);
-function loadTestsText(text, path) {
+
+// src/opaque-cases.ts
+var CLI_CASE_KEYS = [
+  "id",
+  "title",
+  "path",
+  "tags",
+  "priority",
+  "required",
+  "signedIn"
+];
+var KNOWN = new Set(CLI_CASE_KEYS);
+var isPlain2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function caseList(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (isPlain2(raw) && Array.isArray(raw.cases)) return raw.cases;
+  return void 0;
+}
+function stripOpaque(raw) {
+  const list2 = caseList(raw);
+  if (list2 === void 0) return raw;
+  const cases = list2.map(
+    (c) => isPlain2(c) ? Object.fromEntries(Object.entries(c).filter(([k]) => KNOWN.has(k))) : c
+  );
+  return Array.isArray(raw) ? cases : { ...raw, cases };
+}
+function opaqueOf(raw) {
+  return (caseList(raw) ?? []).map((c) => {
+    if (!isPlain2(c)) return { opaque: {}, signedIn: false };
+    const opaque = {};
+    for (const [k, v] of Object.entries(c)) {
+      if (!KNOWN.has(k) && k !== "__proto__") opaque[k] = v;
+    }
+    return { opaque, signedIn: c.signedIn === true };
+  });
+}
+function opaqueById(raw, ids) {
+  const byId2 = /* @__PURE__ */ new Map();
+  opaqueOf(raw).forEach((c, i) => {
+    const id = ids[i];
+    if (id !== void 0 && !c.signedIn) byId2.set(id, c.opaque);
+  });
+  return byId2;
+}
+function restoreOpaque(converted, byId2) {
+  return converted.map((c) => {
+    const opaque = byId2.get(c.id);
+    if (opaque === void 0) {
+      throw new Error(`internal: the converted case "${c.id}" is not in the tests file`);
+    }
+    return { ...c, ...opaque };
+  });
+}
+function topLevelExtras(raw, known) {
+  if (!isPlain2(raw)) return {};
+  const skip = /* @__PURE__ */ new Set([...known, ...RESERVED_TOP, "__proto__"]);
+  return Object.fromEntries(Object.entries(raw).filter(([k]) => !skip.has(k)));
+}
+var RESERVED_TOP = [
+  "trigger",
+  "ci",
+  "managedBy",
+  "workflowKey",
+  "baselineRunId",
+  "engineId",
+  "session"
+];
+
+// src/plan.ts
+function colonHint(err, text2) {
+  const e = err;
+  if (e?.code !== "BLOCK_AS_IMPLICIT_KEY") return void 0;
+  const line = e.linePos?.[0] ? text2.split(/\r?\n/)[e.linePos[0].line - 1] : void 0;
+  const m = line?.match(/^\s*(?:-\s+)?([^:\s'"][^:]*?):\s+(.*\S)\s*$/);
+  if (!m) return "quote the whole value: key: 'text with: a colon in it'";
+  return `quote the whole value: ${m[1]}: '${m[2].replace(/'/g, "''")}'`;
+}
+function loadTestsText(text2, path) {
   let raw;
   try {
-    raw = (0, import_yaml.parse)(text);
+    raw = (0, import_yaml.parse)(text2);
   } catch (err) {
-    throw new SetupError(`${path} is not valid YAML`, [
-      err instanceof Error ? err.message : String(err)
-    ]);
+    const lines = [err instanceof Error ? err.message : String(err)];
+    const hint = colonHint(err, text2);
+    if (hint) lines.push(hint);
+    throw new SetupError(`${path} is not valid YAML`, lines);
   }
-  const read = readTestsFile(raw);
+  const read = readTestsFile(withoutKeys(stripOpaque(raw), OPAQUE_TOP));
   if (!read.success) {
     throw new SetupError(
       `${path} is not a valid tests file`,
@@ -32280,11 +34680,29 @@ function loadTestsText(text, path) {
   }
   try {
     const { request, engineSlug, warnings } = testsFileToWorkflowRequest(read.data);
-    return { request, engineSlug, warnings };
+    const byId2 = opaqueById(raw, deriveCaseIds(read.data.cases));
+    return {
+      request: { ...request, cases: restoreOpaque(request.cases, byId2) },
+      // File-level keys this CLI's contracts do not know travel to the server unchanged.
+      // WATCH(qa-next): "known" is this build's `testsFileSchema.shape`; a key the contracts add later
+      // is handled by the contracts converter, and a key that is both extra and set by the CLI loses
+      // (the request builders in run-test.ts put the CLI's fields last).
+      extra: topLevelExtras(
+        raw,
+        Object.keys(testsFileSchema.shape).filter((k) => !OPAQUE_TOP.includes(k))
+      ),
+      engineSlug,
+      warnings
+    };
   } catch (err) {
     if (err instanceof TestsFileError) throw new SetupError(`${path} cannot run`, err.issues);
     throw err;
   }
+}
+var OPAQUE_TOP = ["variables", "vars", "before", "after"];
+function withoutKeys(raw, keys) {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return raw;
+  return Object.fromEntries(Object.entries(raw).filter(([k]) => !keys.includes(k)));
 }
 function chooseMode(opts, defaultFileExists) {
   if (opts.file === void 0 && !defaultFileExists && opts.workflow !== void 0) {
@@ -32318,7 +34736,12 @@ function filterCases(cases, opts) {
   const out = cases.filter(
     (c) => (opts.caseIds.length === 0 || opts.caseIds.includes(c.id)) && (opts.tags.length === 0 || c.tags.some((t) => opts.tags.includes(t)))
   );
-  if (out.length === 0) throw new SetupError("--case-ids / --tags match no case in the file");
+  if (out.length === 0) {
+    const noTag = opts.tags.length > 0 && !cases.some((c) => c.tags.some((t) => opts.tags.includes(t)));
+    throw new SetupError(
+      noTag ? `No tests have this tag: ${opts.tags.join(", ")}` : "--case-ids / --tags match no case in the file"
+    );
+  }
   return out;
 }
 
@@ -32340,7 +34763,10 @@ async function waitForUrl(url2, maxSeconds, deps, everyMs = 3e3) {
       last = "did not answer";
     }
     if (deps.now() + everyMs > deadline) {
-      return { ok: false, reason: `the preview ${last} for ${maxSeconds} s (${url2})` };
+      return {
+        ok: false,
+        reason: `preview never became ready: it ${last} for ${maxSeconds} s (${url2})`
+      };
     }
     await deps.sleep(everyMs, deps.signal);
   }
@@ -32349,12 +34775,13 @@ async function waitForUrl(url2, maxSeconds, deps, everyMs = 3e3) {
 // src/run-test.ts
 async function runTest(opts, d2) {
   const log = opts.json ? d2.err : d2.out;
-  let name = opts.workflow ?? "tests";
+  const who = { name: opts.workflow ?? "tests", key: opts.workflow };
   try {
-    const fin = await execute(opts, d2, log, (n) => {
-      name = n;
+    const fin = await execute(opts, d2, log, (n, key) => {
+      who.name = n;
+      who.key = key;
     });
-    return await finish(opts, d2, log, name, fin);
+    return await finish(opts, d2, log, who, fin);
   } catch (e) {
     if (e instanceof SetupError) {
       d2.err(`Setup problem: ${e.message}`);
@@ -32362,7 +34789,7 @@ async function runTest(opts, d2) {
       return EXIT.setup;
     }
     if (e instanceof CouldNotTestError) {
-      return finish(opts, d2, log, name, {
+      return finish(opts, d2, log, who, {
         outcome: { kind: "unreachable" },
         run: void 0,
         reason: e.message
@@ -32374,9 +34801,9 @@ async function runTest(opts, d2) {
 async function execute(opts, d2, log, setName) {
   const api = { apiUrl: d2.apiUrl, sleep: d2.sleep, signal: d2.signal };
   const path = opts.file ?? DEFAULT_FILE;
-  let text;
+  let text2;
   try {
-    text = await d2.readFile(path);
+    text2 = await d2.readFile(path);
   } catch (e) {
     const missing = e.code === "ENOENT";
     if (opts.file !== void 0 || !missing) {
@@ -32385,16 +34812,20 @@ async function execute(opts, d2, log, setName) {
       );
     }
   }
-  const mode = chooseMode(opts, text !== void 0);
-  const ci = ciFromEnv(d2.env, await d2.readEvent());
+  const mode = chooseMode(opts, text2 !== void 0);
+  const ci = withCiContext(detectCi(d2.env, await d2.readEvent()), await loadCiContext(opts, d2));
   const common = {
     trigger: "ci",
     ...ci ? { ci } : {},
-    ...opts.retries !== void 0 ? { retries: opts.retries } : {}
+    ...opts.retries !== void 0 ? { retries: opts.retries } : {},
+    // Fail-fast and re-run (contracts 0.47.0); the api picks the earlier run for `failedOnly` alone.
+    ...opts.stopAfter !== void 0 ? { stopAfterFailures: opts.stopAfter } : {},
+    ...opts.failedOnly ? { failedOnly: true } : {},
+    ...opts.rerunOf !== void 0 ? { rerunOf: opts.rerunOf } : {}
   };
   if (mode === "saved") {
     const key2 = opts.workflow;
-    setName(key2);
+    setName(key2, key2);
     if (opts.url === void 0)
       throw new SetupError("running a saved workflow needs --url (the site to test)");
     const wf = await findByKey(d2, key2);
@@ -32403,12 +34834,12 @@ async function execute(opts, d2, log, setName) {
     const run2 = await startSaved(d2, wf.id, opts, { ...common, url: opts.url });
     return waitForRun(run2, opts, d2, log);
   }
-  if (text === void 0) {
+  if (text2 === void 0) {
     throw new SetupError(`tests file not found: ${path} (create it, or pass --file)`);
   }
-  const loaded = loadTestsText(text, path);
+  const loaded = loadTestsText(text2, path);
   const request = loaded.request;
-  setName(opts.workflow ?? request.key ?? request.name);
+  setName(opts.workflow ?? request.key ?? request.name, opts.workflow ?? request.key);
   for (const w of loaded.warnings) d2.err(`Warning: ${w}`);
   const engineRef = loaded.engineSlug ?? request.engineId;
   if (engineRef !== void 0) {
@@ -32431,7 +34862,7 @@ async function execute(opts, d2, log, setName) {
     const wf = await callApi(
       api,
       `saving workflow ${key2}`,
-      () => d2.client.upsertWorkflowByKey(key2, { ...request, key: key2, managedBy })
+      () => d2.client.upsertWorkflowByKey(key2, { ...loaded.extra, ...request, key: key2, managedBy })
     );
     log(`Synced workflow ${key2} (v${wf.version}); running it against ${target.url}`);
     const run2 = await startSaved(d2, wf.id, opts, { ...common, url: target.url });
@@ -32453,12 +34884,27 @@ async function execute(opts, d2, log, setName) {
   };
   log(`Running ${adhoc.cases.length} case(s) ad hoc against ${target.url} (nothing is saved)`);
   const key = d2.randomId();
+  const body = { ...loaded.extra, ...adhoc };
   const run = await callApi(
     api,
     "starting the run",
-    () => d2.client.startAdhocWorkflowRun(adhoc, { idempotencyKey: key })
+    () => d2.client.startAdhocWorkflowRun(body, { idempotencyKey: key })
   );
   return waitForRun(run, opts, d2, log);
+}
+async function loadCiContext(opts, d2) {
+  const fromEnv = ciContextFromEnv(d2.env);
+  if (opts.ciContext === void 0) return fromEnv;
+  let raw;
+  try {
+    raw = await d2.readFile(opts.ciContext);
+  } catch (e) {
+    const missing = e.code === "ENOENT";
+    throw new SetupError(
+      missing ? `--ci-context file not found: ${opts.ciContext}` : `cannot read ${opts.ciContext}: ${String(e)}`
+    );
+  }
+  return mergeCiContext(fromEnv, parseCiContextFile(raw, opts.ciContext));
 }
 async function resolveEngineRef(d2, api, ref) {
   return callApi(api, "looking up the engine", async () => {
@@ -32576,13 +35022,13 @@ async function cancelQuietly(d2, last) {
     }
   }
 }
-async function finish(opts, d2, log, name, fin) {
+async function finish(opts, d2, log, who, fin) {
   const { run } = fin;
   if (run) {
     log("");
     log(renderTable(run));
     for (const n of run.notes) log(`Note: ${n}`);
-    if (opts.json) d2.out(JSON.stringify(run, null, 2));
+    if (opts.json) d2.out(JSON.stringify(run.raw ?? run, null, 2));
   }
   const code = exitCodeFor(fin.outcome, opts.onError);
   const couldNotTest = fin.outcome.kind !== "verdict" || fin.outcome.verdict === "error" || fin.outcome.verdict === "running";
@@ -32591,12 +35037,12 @@ async function finish(opts, d2, log, name, fin) {
     log(`Could not test (not an app failure): ${why ?? "no verdict"}`);
     if (code === EXIT.pass) log("Exiting 0 because of --on-error neutral.");
   }
-  await writeReports(opts, d2, name, run, why);
+  await writeReports(opts, d2, who, run, why);
   return code;
 }
-async function writeReports(opts, d2, name, run, error62) {
+async function writeReports(opts, d2, who, run, error62) {
   if (opts.markdown) {
-    let md = `# Lookover QA \xB7 could not test
+    let md = `# Lookover QA \xB7 Couldn't test
 
 ${error62 ?? "no result"}
 `;
@@ -32616,24 +35062,25 @@ ${error62 ?? "no result"}
       d2,
       opts.junit,
       renderJunit({
-        name: run?.name ?? name,
+        name: run?.name ?? who.name,
+        ...who.key ? { key: who.key } : {},
         ...run ? { run } : {},
         ...error62 ? { error: error62 } : {}
       })
     );
   }
 }
-async function safeWrite(d2, path, text) {
+async function safeWrite(d2, path, text2) {
   try {
-    await d2.writeFile(path, text);
+    await d2.writeFile(path, text2);
   } catch (e) {
     d2.err(`Warning: could not write ${path}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
 // src/main.ts
-var VERSION = true ? "0.1.1" : "0.1.0";
-function sleep2(ms, signal) {
+var VERSION = true ? "0.3.0" : "0.1.0";
+function sleep(ms, signal) {
   return new Promise((resolve2, reject) => {
     if (signal?.aborted) return reject(signal.reason);
     const t = setTimeout(() => {
@@ -32691,17 +35138,17 @@ ${HELP}`);
   try {
     return await runTest(parsed.options, {
       env,
-      client: new WebagentClient({ apiKey, baseUrl: apiUrl, timeoutMs: 3e4 }),
+      client: new TolerantClient({ apiKey, baseUrl: apiUrl, timeoutMs: 3e4 }),
       apiUrl,
       cwd: process.cwd(),
       readFile: (p) => (0, import_promises.readFile)(p, "utf8"),
-      writeFile: async (p, text) => {
+      writeFile: async (p, text2) => {
         await (0, import_promises.mkdir)((0, import_node_path2.dirname)(p), { recursive: true });
-        await (0, import_promises.writeFile)(p, text, "utf8");
+        await (0, import_promises.writeFile)(p, text2, "utf8");
       },
       fetch: (...a) => globalThis.fetch(...a),
       now: () => Date.now(),
-      sleep: sleep2,
+      sleep,
       randomId: () => (0, import_node_crypto.randomUUID)(),
       readEvent: () => readEvent(env),
       out: (l) => console.log(l),

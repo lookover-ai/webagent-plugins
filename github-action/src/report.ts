@@ -45,16 +45,21 @@ export async function finalCases(d: ShareDeps, runId: string): Promise<RunCase[]
   }
 }
 
+/** Shown on top of the summary and the comment in `mode: practice`. */
+export const PRACTICE_BANNER = "Practice mode: this check does not block merging yet.";
+
 /** A 7-day replay link per failed required case (max 10). A case without a recording yields none; never throws. */
 export async function replayLinks(
   d: ShareDeps,
   cases: RunCase[],
 ): Promise<{ caseId: string; url: string }[]> {
   const out: { caseId: string; url: string }[] = [];
-  const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && c.sessionId);
+  // Only a case the reply calls "fail" gets a link: a verdict this Action does not know (or none) is never treated as a failure
+  // or a pass here, it just has no link. The pass/fail of the job comes from the CLI's exit code, not from these cases.
+  const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && typeof c.sessionId === "string" && c.sessionId !== "");
   for (const c of bad.slice(0, MAX_LINKS)) {
     try {
-      const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/sessions/${c.sessionId}/share`, {
+      const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/sessions/${encodeURIComponent(c.sessionId ?? "")}/share`, {
         method: "POST",
         headers: { authorization: `Bearer ${d.apiKey}`, "content-type": "application/json" },
         body: JSON.stringify({ kind: "replay", ttlSeconds: SEVEN_DAYS }),
@@ -75,14 +80,21 @@ export interface BodyParts {
   report: string;
   links: { caseId: string; url: string }[];
   buildUrl: string;
+  /** `mode: practice`: the banner goes on top. */
+  practice?: boolean;
 }
 
 const footer = (buildUrl: string): string =>
   `Re-run: push a commit, or "Re-run jobs" in Actions${buildUrl ? ` · [This job](${buildUrl})` : ""}`;
 
+/** Job summary text of a finished run: the report (it carries the cost and time line itself) with the practice banner on top. */
+export function summaryBody(p: Pick<BodyParts, "report" | "practice">): string {
+  return `${p.practice ? `${PRACTICE_BANNER}\n\n` : ""}${p.report.trimEnd()}\n`;
+}
+
 /** The sticky comment once the run is over. */
 export function finalBody(p: BodyParts): string {
-  const lines = [marker(p.workflowKey), p.report.trimEnd(), ""];
+  const lines = [marker(p.workflowKey), ...(p.practice ? [PRACTICE_BANNER, ""] : []), p.report.trimEnd(), ""];
   if (p.links.length > 0) {
     lines.push(
       "Replays (anyone with the link can watch, 7 days):",
@@ -95,12 +107,31 @@ export function finalBody(p: BodyParts): string {
 }
 
 /** The sticky comment while the run is going (replaced by the final one). */
-export function runningBody(workflowKey: string, url: string, sha: string, buildUrl: string): string {
+export function runningBody(workflowKey: string, url: string, sha: string, buildUrl: string, practice = false): string {
   return [
     marker(workflowKey),
+    ...(practice ? [PRACTICE_BANNER, ""] : []),
     `Lookover QA · RUNNING${url ? ` · testing ${url}` : ""}${sha ? ` · commit ${sha.slice(0, 7)}` : ""}`,
     "",
     `The result replaces this comment when the run ends.${buildUrl ? ` [Watch the job](${buildUrl})` : ""}`,
+    "",
+  ].join("\n");
+}
+
+/**
+ * The sticky comment when a newer commit of the pull request cancelled this run (qa-next C1). The newer job wrote its
+ * own RUNNING comment first; this one keeps the place until that job's result replaces it, so it never shows the old run's
+ * report as if it were the latest.
+ */
+export function cancelledBody(workflowKey: string, bySha: string, buildUrl: string): string {
+  const sha = bySha.slice(0, 7);
+  return [
+    marker(workflowKey),
+    `Lookover QA · Cancelled: newer commit${sha ? ` ${sha}` : ""}`,
+    "",
+    "A newer push started a run for this pull request, so this one stopped. Its result replaces this comment when it ends. The tests that did not run are not billed.",
+    "",
+    footer(buildUrl),
     "",
   ].join("\n");
 }
@@ -140,9 +171,9 @@ export const noticeForFork =
   "Nothing was tested and nothing failed. The check runs when a maintainer pushes the branch to this repo.";
 
 const HEADING: Record<Outcome["verdict"], string> = {
-  pass: "PASS",
-  fail: "FAIL",
-  error: "COULD NOT TEST (not an app failure)",
+  pass: "Passed",
+  fail: "Failed",
+  error: "Couldn't test (not an app failure)",
   setup: "NOT RUN (setup problem, your app was not tested)",
   skipped: "SKIPPED",
 };

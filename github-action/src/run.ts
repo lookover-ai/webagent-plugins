@@ -12,8 +12,9 @@ import {
   resolveSync,
   secretsWithheld,
 } from "./inputs.js";
-import { outcomeFor, type RunLike, type VerdictOutput } from "./outcome.js";
+import { outcomeFor, type VerdictOutput } from "./outcome.js";
 import {
+  cancelledBody,
   dashboardUrl,
   finalBody,
   finalCases,
@@ -23,8 +24,10 @@ import {
   replayLinks,
   runningBody,
   setupLines,
+  summaryBody,
   summaryFor,
 } from "./report.js";
+import { prContextEnv } from "./context.js";
 
 /** Same constant as the CLI's `src/constants.ts` (staging until production exists): change both together. */
 export const DEFAULT_API_URL = "https://webagent-staging-in-api.lookover.ai";
@@ -59,14 +62,43 @@ const ANNOTATE = { notice: "notice", warning: "warning", error: "error" } as con
 /** `%`, CR and LF in a workflow-command message must be escaped. */
 const esc = (s: string): string => s.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
 
-function parseRun(stdout: string): (RunLike & { cases?: RunCase[] }) | undefined {
+/** What the Action takes from the CLI's `--json` output: the run id (outputs), the flaky count and the cases (share links). */
+interface RunFacts {
+  id: string;
+  flaky: number;
+  cases: RunCase[];
+  /** Set when a newer commit of the PR cancelled the run (`cancelled.reason: "superseded"`); its sha, maybe empty. */
+  supersededBy?: string;
+}
+
+/**
+ * The CLI prints the API's reply as it came. It is NOT validated here and NEVER gives the verdict (the exit code does):
+ * each field is read only if it has the expected type, anything else is left out. Not JSON: `undefined`.
+ */
+function parseRun(stdout: string): RunFacts | undefined {
   const text = stdout.trim();
   if (!text.startsWith("{")) return undefined;
+  let raw: unknown;
   try {
-    return JSON.parse(text) as RunLike & { cases?: RunCase[] };
+    raw = JSON.parse(text);
   } catch {
     return undefined;
   }
+  if (typeof raw !== "object" || raw === null) return undefined;
+  const r = raw as {
+    id?: unknown;
+    counts?: { flaky?: unknown } | null;
+    cases?: unknown;
+    cancelled?: { reason?: unknown; bySha?: unknown } | null;
+  };
+  const flaky = r.counts?.flaky;
+  const superseded = r.cancelled?.reason === "superseded";
+  return {
+    id: typeof r.id === "string" ? r.id : "",
+    flaky: typeof flaky === "number" && Number.isFinite(flaky) ? flaky : 0,
+    cases: Array.isArray(r.cases) ? (r.cases as RunCase[]) : [],
+    ...(superseded ? { supersededBy: typeof r.cancelled?.bySha === "string" ? r.cancelled.bySha : "" } : {}),
+  };
 }
 
 /** `key:` of the tests file (a plain top-level line), which names the sticky comment. */
@@ -104,6 +136,18 @@ export async function run(d: Deps): Promise<number> {
     return finish("setup", 3);
   }
   d.log(`::add-mask::${inputs.apiKey}`);
+
+  // A preview deployment event: test the URL it carries when `url` is empty, and wait for a successful deployment.
+  if (ctx.eventName === "deployment_status" && inputs.url === "") {
+    const ds = d.event.deployment_status;
+    if (ds?.state !== "success") {
+      const msg = `Lookover QA skipped: the deployment is not ready (state: ${ds?.state ?? "unknown"}). The check runs when the deployment succeeds.`;
+      d.log(`::notice title=Lookover QA skipped::${esc(msg)}`);
+      await d.appendSummary(`### Lookover QA · skipped\n\n${msg}\n`);
+      return finish("skipped", 0);
+    }
+    inputs.url = (ds.environment_url || ds.target_url || "").trim();
+  }
 
   const reportPath = `${d.tmpDir}/report.md`;
   let mapped: ReturnType<typeof mapToCliArgs>;
@@ -150,39 +194,60 @@ export async function run(d: Deps): Promise<number> {
     }
   };
 
-  await comment(runningBody(workflowKey, inputs.url, sha, buildUrl));
+  const practice = inputs.mode === "practice";
+  await comment(runningBody(workflowKey, inputs.url, sha, buildUrl, practice));
 
   const env: Record<string, string | undefined> = { ...d.env, WEBAGENT_API_KEY: inputs.apiKey };
   if (inputs.apiUrl) env.WEBAGENT_API_URL = inputs.apiUrl;
+  // Untrusted PR text and changed paths for the CLI (never logged or echoed here).
+  Object.assign(env, await prContextEnv(gh, ctx));
   const res = await d.runCli(mapped.args, env);
 
   const runJson = parseRun(res.stdout);
   const report = await d.readText(reportPath);
-  const out = outcomeFor(res.code, runJson, inputs.failOn as "fail" | "never");
+  const out = outcomeFor(
+    res.code,
+    inputs.failOn as "fail" | "never",
+    inputs.onError as "block" | "neutral",
+    inputs.mode as "enforce" | "practice",
+  );
   const url = report ? dashboardUrl(report) : "";
+  const setup = out.verdict === "setup" ? setupLines(res.stderr) : [];
+
+  // A newer commit cancelled this run (qa-next C1): not an app result. The summary keeps the report, the sticky comment says
+  // "Cancelled: newer commit" until the newer job replaces it, and the job ends neutral so the old commit is not marked red.
+  // WATCH(qa-next-wave): the one place the Action reads more than the exit code; it only softens CLI exit 2 for a superseded run.
+  if (runJson?.supersededBy !== undefined && res.code === 2) {
+    const sha = runJson.supersededBy;
+    if (report) await d.appendSummary(summaryBody({ report, practice }));
+    await comment(cancelledBody(workflowKey, sha, buildUrl));
+    const msg = `Cancelled: newer commit${sha ? ` ${sha.slice(0, 7)}` : ""}. The newer run reports on this pull request.`;
+    d.log(`::notice title=Lookover QA::${esc(msg)}`);
+    return finish("skipped", 0, runJson.id, url, runJson.flaky);
+  }
 
   if (report) {
     let links: { caseId: string; url: string }[] = [];
+    const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
     if (shareLinks) {
-      const share = { fetch: d.fetch, apiUrl: inputs.apiUrl || d.env.WEBAGENT_API_URL || DEFAULT_API_URL, apiKey: inputs.apiKey };
       // Links follow the settled run (a retried case's LAST attempt), not the CLI's copy; the CLI's JSON is the fallback.
-      const settled = await finalCases(share, runJson?.id ?? "");
-      links = await replayLinks(share, settled ?? runJson?.cases ?? []);
+      links = await replayLinks(share, (await finalCases(share, runJson?.id ?? "")) ?? runJson?.cases ?? []);
     }
-    await d.appendSummary(`${report.trimEnd()}\n`);
-    await comment(finalBody({ workflowKey, report, links, buildUrl }));
+    await d.appendSummary(summaryBody({ report, practice }));
+    await comment(finalBody({ workflowKey, report, links, buildUrl, practice }));
   } else if (out.verdict === "setup") {
-    const lines = setupLines(res.stderr);
-    await d.appendSummary(summaryFor(out, lines.map((l) => `- ${l}`).join("\n") || "See the job log."));
-    await comment(notRunBody(workflowKey, lines, buildUrl));
+    await d.appendSummary(summaryFor(out, setup.map((l) => `- ${l}`).join("\n") || "See the job log."));
+    await comment(notRunBody(workflowKey, setup, buildUrl));
   } else {
-    const text = "# Lookover QA · could not test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
-    await d.appendSummary(text);
-    await comment(finalBody({ workflowKey, report: text, links: [], buildUrl }));
+    const text = "# Lookover QA · Couldn't test\n\nNo report was produced (the job was stopped or the CLI crashed). See the job log.\n";
+    await d.appendSummary(summaryBody({ report: text, practice }));
+    await comment(finalBody({ workflowKey, report: text, links: [], buildUrl, practice }));
   }
 
   if (out.message) {
-    d.log(`::${ANNOTATE[out.level]} title=Lookover QA::${esc(out.message)}`);
+    // Exit 3: the CLI's sentence (often the server's own, for a refused steps/expect) is in the annotation, not only the log above it.
+    const message = out.verdict === "setup" && setup.length > 0 ? `Setup problem: ${setup.join(" · ")}` : out.message;
+    d.log(`::${ANNOTATE[out.level]} title=Lookover QA::${esc(message)}`);
   }
-  return finish(out.verdict, out.exitCode, runJson?.id ?? "", url, runJson?.counts?.flaky ?? 0);
+  return finish(out.verdict, out.exitCode, runJson?.id ?? "", url, runJson?.flaky ?? 0);
 }

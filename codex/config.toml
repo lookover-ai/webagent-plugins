@@ -10,3 +10,12 @@ startup_timeout_sec = 20
 # smoke_test waits up to 60 s and run_task up to 90 s for one answer. Codex's default tool timeout is 60 s,
 # which would cut a normal test short, so raise it.
 tool_timeout_sec = 120
+
+# QA only (optional): the same api, only the four QA tools (qa_run, qa_status, qa_report, qa_quick_check) and no
+# browse tools. Use it INSTEAD of the block above (two servers would both offer qa_run), same API key variable.
+# To switch: comment out [mcp_servers.webagent] above and remove the leading "# " here.
+# [mcp_servers.webagent]
+# url = "https://webagent-staging-in-api.lookover.ai/mcp/qa"
+# bearer_token_env_var = "WEBAGENT_API_KEY"
+# startup_timeout_sec = 20
+# tool_timeout_sec = 120

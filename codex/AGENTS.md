@@ -26,6 +26,7 @@ every session-starting tool returns a `Watch live: <url>` link). Do not use a lo
 Testing my own web app. You know the code, so you decide what to test. webagent decides how to test and keeps the evidence.
 
 ### Rules
+- Tool names: on the QA-only endpoint `qa_report` is `get_report` and `qa_quick_check` is `smoke_test` (same args). Use whichever is in your tool list.
 - Never put a secret (API key, password, token, `.env` value) in a tool call, step, goal or answer. Step and goal text is stored with the run.
   Test logins come from the webagent vault (by namespace) or a throwaway account I named in this conversation.
 - `pass` and `fail` are the app's result. `error` means the test could not run (CAPTCHA, `navigation_blocked`, capacity, timeout).
@@ -42,7 +43,19 @@ and tell me what you skipped. Append new cases for new behaviour to `tests.yaml`
 
 ### Target URL
 My URL, else the `tests.yaml` target I name, else ask once. The cloud browser cannot open `localhost`, private IPs or `.internal`
-(by design). For a local app, tell me in one line that a tunnel exposes the dev server to the internet while it runs (use test data),
+(by design). For `localhost:<port>` (also `127.0.0.1`, `[::1]`) try connecting my machine first, only if ALL hold: `webagent-device` is on PATH and
+`webagent-device --help` lists `connect`; `qa_run` in your tool list has a `localApp` argument; `webagent-device status` exits 0 with an `alias`
+(a machine paired for a local app; the first pairing needs a one-time code that I type in my own terminal, never ask me for it). Otherwise say
+one line, "Local-app mode is coming soon; using a tunnel", and use the tunnel below (never tell me how to install anything).
+Connect: tell me in one line that while it runs my webagent test sessions (not the internet) can open that port, use test data. Run in the background, without `--yes`:
+`nohup webagent-device connect <port> [<port>...] --json >$LOG 2>$LOG.err </dev/null &` (1 to 8 ports, 1024 and up; it keeps running), wait up to 30 s for ONE
+stdout line `{"alias","urls","ports","status":"connected"}` (optional `notes`: pass them on). If it exits `Nothing shared.` it asked yes/no and a background shell cannot answer: show me what it
+exposes (only those ports on this computer, to my own cloud test sessions; pages, API answers and secrets the app shows are kept as test evidence; dev tools on those ports are reachable; stop with Ctrl+C), ask me
+yes/no in chat, and only on a yes run it again with `--yes`. Then `qa_run` with `url: "http://localhost:<port>"` (the server swaps it for the alias; `localApp: { ports: [<more>] }` only for extra ports,
+`localApp.deviceId` only with several machines). Say "testing http://<alias>:<port>/ through your connected machine", never that the cloud browser opened localhost. A dev server "Blocked request" / "Invalid Host header" / 403
+or a note about the host name: tell me once "Your dev server refused the host name <alias>. Allow the alias ending once, for any device (Vite `server.allowedHosts`, webpack-dev-server `devServer.allowedHosts`
+and Angular `allowedHosts`: `".local-app.invalid"`; Next.js `allowedDevOrigins`: `"*.local-app.invalid"`), or only this alias, and reload." Never suggest `true` or `all`. Mark the case could-not-test, never fail; the same when my laptop sleeps or the connection drops. Kill the `connect` process when done, also after a failure.
+Tunnel (any other private host, or when the connect gate fails): tell me in one line that a tunnel exposes the dev server to the internet while it runs (use test data),
 then run `cloudflared tunnel --url http://localhost:<port>` in the background (default, no account), wait about 10 s, read the
 `https://...trycloudflare.com` address from its output, and use that. Second choice `ngrok http <port>` (its free plan needs header
 `ngrok-skip-browser-warning`, see below). Stop the tunnel when done, also after a failure.
@@ -89,6 +102,6 @@ At most 2 fix rounds per case. For `error`: do not change app code, say what unb
 QA <target> · <n> passed · <n> failed · <n> could not test
 PASS / FAIL / COULD NOT TEST  <case id> - <one line>. For FAIL: cause file:line and whether it is fixed and re-run.
 Watch live / replay: <dashboardUrl>. Evidence: report link (expires <urlsExpireAt>). Warnings: <Warning: lines>.
-Changed: files, tests.yaml. Skipped: cases. Tunnel: closed.
+Changed: files, tests.yaml. Skipped: cases. Tunnel / connect: closed.
 ```
 Say only what the tool results show. A `run_task` pass means "the agent says it is done".

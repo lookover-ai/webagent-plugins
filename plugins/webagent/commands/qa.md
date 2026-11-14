@@ -1,7 +1,7 @@
 ---
 description: Test your web app in a real cloud browser with webagent, read the report, fix bugs and re-run the failed cases.
 argument-hint: [what to test, a URL, "all", or "rerun failed"]
-allowed-tools: mcp__plugin_webagent_webagent__smoke_test mcp__plugin_webagent_webagent__run_task mcp__plugin_webagent_webagent__get_report mcp__plugin_webagent_webagent__get_task mcp__plugin_webagent_webagent__create_session mcp__plugin_webagent_webagent__stop_session mcp__plugin_webagent_webagent__qa_run mcp__plugin_webagent_webagent__qa_status Read Grep Glob Bash(git status *) Bash(git diff *)
+allowed-tools: mcp__plugin_webagent_webagent__smoke_test mcp__plugin_webagent_webagent__run_task mcp__plugin_webagent_webagent__get_report mcp__plugin_webagent_webagent__get_task mcp__plugin_webagent_webagent__create_session mcp__plugin_webagent_webagent__stop_session mcp__plugin_webagent_webagent__qa_run mcp__plugin_webagent_webagent__qa_status mcp__plugin_webagent_webagent__qa_report mcp__plugin_webagent_webagent__qa_quick_check Read Grep Glob Bash(git status *) Bash(git diff *)
 ---
 
 Run a QA pass with webagent.
@@ -13,8 +13,9 @@ What to test: $ARGUMENTS
 
 Default path: read `.webagent/tests.yaml`, pick the cases, and run them in ONE `qa_run`: every case, send the file's raw text as `testsYaml`
 (not re-written as JSON); only some cases, send `testsFile` filtered to those cases (`caseIds` / `tags` do not work with a file); add `target` and,
-for a local app, the tunnel `url`. No `tests.yaml`: send `cases`. Do not fill ids, paths or steps. Give the user the
-`Watch live:` link once and pass on any `Warning:` lines. `smoke_test` only when `qa_run` is not in your tool list.
+for a local app, the tunnel `url` (or, if the skill's local-app gate passes, `url: "http://localhost:<port>"` after `webagent-device connect`, section 7A; if not, one line "Local-app mode is coming soon; using a tunnel"). No `tests.yaml`: send `cases`. Do not fill ids, paths or steps. Give the user the
+`Watch live:` link once and pass on any `Warning:` lines. `smoke_test` (or `qa_quick_check`) only when `qa_run` is not in your tool list.
+Failures to sort out or file as a bug: `/webagent:qa-triage`.
 
 If the argument is empty, test what the current diff changed plus the smoke cases in `.webagent/tests.yaml` (at most 10 cases). If it is `all`, run every
 case. If it is `rerun failed`, re-run only the cases that failed earlier in this conversation. If it is a URL, use it as the

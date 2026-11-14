@@ -17,7 +17,7 @@ plugins/webagent/                   the plugin (installs copy ONLY this folder: 
   .mcp.json                         http MCP server `webagent` (${user_config.api_key}, ${user_config.api_url})
   skills/browse/SKILL.md            general web tasks (hub D66); reference.md beside it
   skills/qa-test/SKILL.md           the QA workflow, written for a model; long reference in reference.md
-  commands/run.md, engines.md, qa.md, qa-init.md, qa-ci.md   /webagent:run, :engines, :qa, :qa-init, :qa-ci
+  commands/run.md, engines.md, qa.md, qa-triage.md, qa-init.md, qa-ci.md   /webagent:run, :engines, :qa, :qa-triage, :qa-init, :qa-ci
   templates/.webagent/              config.yaml, product.md, tests.yaml starters
   templates/github/webagent-qa.yml  the workflow /webagent:qa-init offers (checked against github-action/action.yml)
 codex/AGENTS.md, config.toml        the same workflow for Codex
@@ -58,5 +58,5 @@ claude -p --plugin-dir plugins/webagent --output-format stream-json --verbose "h
 H=$(mktemp -d) && cp codex/config.toml "$H" && CODEX_HOME="$H" codex mcp get webagent   # Codex parses the TOML
 python3 scripts/check-templates.py   # templates parse and match the format (WEBAGENT_CONTRACTS_DIST=../webagent-contracts/dist adds the contract reader)
 ```
-The plugin has no build and no dependencies. `github-action/` does: `cd github-action && VITEST_MAX_WORKERS=4 flock /tmp/claude-1000/webagent-heavy.lock pnpm check` (typecheck, tests, build; commit `dist/`; re-vendor `dist/webagent.cjs` from `../webagent-contracts/cli/dist/webagent.cjs` after `pnpm -C cli build` there). The Action only maps inputs to the CLI's flags: the CLI and the api own behaviour. No dev server. Commits: one block, check green, then a PR into `development` (see Branches).
+The plugin has no build and no dependencies. `github-action/` does: `cd github-action && VITEST_MAX_WORKERS=4 flock /tmp/claude-1000/webagent-heavy.lock pnpm check` (typecheck, tests, build; commit `dist/`; re-vendor `dist/webagent.cjs` from `../webagent-contracts/cli/dist/webagent.cjs` after `pnpm -C cli build` there). `github-action/CLI-SOURCE` records the vendored CLI version + contracts sha: update it with the bundle (from a worktree, `WEBAGENT_CLI_BUNDLE=<abs path>/cli/dist/webagent.cjs pnpm build`). The Action only maps inputs to the CLI's flags and follows its exit code: the CLI and the api own behaviour (it never parses steps/expect or reads a verdict from the reply). No dev server. Commits: one block, check green, then a PR into `development` (see Branches).
 PROGRESS.md entry per task (max 10 lines: `## <date> <id> done`, `Done:`, `Next:`, `Gotchas:`).

@@ -109,6 +109,22 @@ export async function upsertComment(
   }
 }
 
+/** Paths of the files a pull request changes (paths only, at most `max`). `[]` on any error: this is a bonus, never a failure. */
+export async function changedFiles(d: GithubDeps, pr: number, max: number): Promise<string[]> {
+  const out: string[] = [];
+  try {
+    for (let page = 1; out.length < max && page <= Math.ceil(max / 100) + 1; page++) {
+      const list = await call<{ filename?: unknown }[]>(d, "GET", `/repos/${d.repo}/pulls/${pr}/files?per_page=100&page=${page}`);
+      if (!Array.isArray(list)) return [];
+      for (const f of list) if (typeof f.filename === "string" && f.filename !== "") out.push(f.filename);
+      if (list.length < 100) break;
+    }
+  } catch {
+    return [];
+  }
+  return out.slice(0, max);
+}
+
 /** The open pull request of a commit (for `deployment_status` and push events, which carry no PR number). */
 export async function pullForCommit(d: GithubDeps, sha: string): Promise<number | undefined> {
   try {

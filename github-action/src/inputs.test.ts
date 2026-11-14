@@ -39,7 +39,7 @@ describe("mapToCliArgs", () => {
       "test", "--json", "--markdown", "/tmp/r.md", "--file", "qa/t.yaml",
       "--url", "https://pr-1.example.com", "--workflow", "checkout", "--target", "staging",
       "--tags", "smoke,pay", "--case-ids", "a,b", "--sync", "--retries", "2",
-      "--timeout-minutes", "20", "--on-error", "neutral", "--wait-for-url", "--wait-for-url-timeout", "30",
+      "--timeout-minutes", "20", "--on-error", "block", "--wait-for-url", "--wait-for-url-timeout", "30", // neutral is applied by the Action, not the CLI
     ]);
   });
 
@@ -63,13 +63,36 @@ describe("mapToCliArgs", () => {
   it.each([
     [{ "on-error": "maybe" }, /on-error/],
     [{ "fail-on": "always" }, /fail-on/],
+    [{ mode: "soft" }, /mode.*enforce or practice/],
     [{ retries: "3" }, /retries/],
     [{ retries: "x" }, /retries/],
     [{ "timeout-minutes": "0" }, /timeout-minutes/],
     [{ "wait-for-url": "500" }, /wait-for-url/],
+    [{ "stop-after": "0" }, /stop-after/],
+    [{ "failed-only": "yes" }, /failed-only/],
   ])("rejects bad input %j", (o, re) => {
     expect(() => mapToCliArgs(inputs(o), false, true, md)).toThrow(InputError);
     expect(() => mapToCliArgs(inputs(o), false, true, md)).toThrow(re);
+  });
+});
+
+describe("run-control inputs", () => {
+  it("maps failed-only and stop-after to the CLI flags, off when empty", () => {
+    const on = mapToCliArgs(inputs({ "failed-only": "true", "stop-after": "3" }), false, true, md).args;
+    expect(on).toContain("--failed-only");
+    expect(on.join(" ")).toContain("--stop-after 3");
+    const off = mapToCliArgs(inputs(), false, true, md).args;
+    expect(off).not.toContain("--failed-only");
+    expect(off).not.toContain("--stop-after");
+  });
+});
+
+describe("mode input", () => {
+  it("defaults to enforce, reads practice in any case, and is not a CLI flag", () => {
+    expect(inputs().mode).toBe("enforce");
+    expect(inputs({ mode: "Practice" }).mode).toBe("practice");
+    const args = mapToCliArgs(inputs({ mode: "practice" }), false, true, md).args;
+    expect(args).not.toContain("practice");
   });
 });
 

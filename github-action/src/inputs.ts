@@ -18,6 +18,10 @@ export interface Inputs {
   target: string;
   tags: string;
   caseIds: string;
+  /** `true` re-runs only what did not pass last time (CLI `--failed-only`); `""` or `false`: off. */
+  failedOnly: string;
+  /** Fail-fast threshold (CLI `--stop-after`), 1..500; `""`: off. */
+  stopAfter: string;
   /** `""` means auto: on only for a push to the default branch. */
   sync: string;
   waitForUrl: string;
@@ -25,6 +29,8 @@ export interface Inputs {
   retries: string;
   onError: string;
   failOn: string;
+  /** `enforce` (default) or `practice` (a failed case does not fail the job). */
+  mode: string;
   comment: string;
   /** `""` means auto: on for private repos only. */
   shareLinks: string;
@@ -48,12 +54,15 @@ export function readInputs(env: Env): Inputs {
     target: input(env, "target"),
     tags: input(env, "tags"),
     caseIds: input(env, "case-ids"),
+    failedOnly: input(env, "failed-only").toLowerCase(),
+    stopAfter: input(env, "stop-after"),
     sync: input(env, "sync").toLowerCase(),
     waitForUrl: input(env, "wait-for-url") || "120",
     timeoutMinutes: input(env, "timeout-minutes") || "15",
     retries: input(env, "retries"),
     onError: input(env, "on-error").toLowerCase() || "block",
     failOn: input(env, "fail-on").toLowerCase() || "fail",
+    mode: input(env, "mode").toLowerCase() || "enforce",
     comment: input(env, "comment").toLowerCase() || "true",
     shareLinks: input(env, "share-links").toLowerCase(),
     githubToken: input(env, "github-token"),
@@ -65,7 +74,14 @@ export interface GithubEvent {
   number?: number;
   pull_request?: {
     number?: number;
+    title?: string | null;
+    body?: string | null;
     head?: { sha?: string; repo?: { full_name?: string; fork?: boolean } | null };
+  };
+  deployment_status?: {
+    state?: string;
+    environment_url?: string | null;
+    target_url?: string | null;
   };
   repository?: { private?: boolean; default_branch?: string; full_name?: string };
 }
@@ -151,6 +167,9 @@ export function mapToCliArgs(
   if (i.failOn !== "fail" && i.failOn !== "never") {
     throw new InputError(`input "fail-on" must be fail or never, got "${i.failOn}"`);
   }
+  if (i.mode !== "enforce" && i.mode !== "practice") {
+    throw new InputError(`input "mode" must be enforce or practice, got "${i.mode}"`);
+  }
   const args = ["test", "--json", "--markdown", reports.markdown];
   const flag = (name: string, value: string) => {
     if (value !== "") args.push(`--${name}`, value);
@@ -162,9 +181,13 @@ export function mapToCliArgs(
   flag("tags", i.tags);
   flag("case-ids", i.caseIds);
   if (sync) args.push("--sync");
+  if (bool("failed-only", i.failedOnly) === true) args.push("--failed-only");
+  if (i.stopAfter !== "") args.push("--stop-after", String(intIn("stop-after", i.stopAfter, 1, 500)));
   if (i.retries !== "") args.push("--retries", String(intIn("retries", i.retries, 0, 2)));
   args.push("--timeout-minutes", String(intIn("timeout-minutes", i.timeoutMinutes, 1, 360)));
-  args.push("--on-error", i.onError);
+  // `on-error: neutral` is applied by `outcomeFor` from the CLI's exit 2, so the CLI always runs with `block`: its exit 0
+  // then means "the CLI saw a pass", never "could not test, made neutral".
+  args.push("--on-error", "block");
   let waitSeconds = 0;
   if (i.waitForUrl !== "false" && i.waitForUrl !== "0") {
     waitSeconds = intIn("wait-for-url", i.waitForUrl === "true" ? "120" : i.waitForUrl, 1, 180);

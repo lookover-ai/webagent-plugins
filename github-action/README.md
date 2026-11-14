@@ -90,6 +90,30 @@ jobs:
           url: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
 ```
 
+You can leave `url` out on a `deployment_status` event: the action then takes `environment_url` (else `target_url`) from the event
+itself, and skips with a notice (verdict `skipped`, job passes) when the deployment state is not `success`:
+
+```yaml
+name: Lookover QA
+on: deployment_status
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  qa:
+    name: Lookover QA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lookover-ai/webagent-plugins/github-action@v1
+        with:
+          api-key: ${{ secrets.WEBAGENT_API_KEY }}     # no url: the deployment's URL is used
+```
+
+An explicit `url` always wins. `wait-for-url` applies to the deployment URL as usual.
+
 The comment goes to the PR that owns the deployed commit. If your preview is behind Vercel's login page (Deployment Protection), the
 cloud browser sees the login page, not your app: use a staging URL, or turn protection off for previews you test.
 
@@ -120,20 +144,23 @@ on: pull_request
 | `file` | `.webagent/tests.yaml` | The tests file. If this default is missing and `workflow` is set, the saved workflow of that key runs (needs `url`) |
 | `workflow` | `key` in the file | Workflow key; also names the PR comment |
 | `target` | `defaultTarget` of the file | A target name from the file |
-| `tags` / `case-ids` | all cases | Comma-separated; run a subset |
+| `tags` / `case-ids` | all cases | Comma-separated; run a subset. A tag no test has stops the job as a setup problem ("No tests have this tag"), never a green empty run |
+| `failed-only` | off | `true`: only the cases that did not pass in the last finished run of this PR (or workflow). Passes are listed as carried over, not re-run, not billed |
+| `stop-after` | off | Stop early once this many required cases failed (1 to 500); the rest show "Not run (stopped early)". 3 suits pull requests |
 | `sync` | on for a push to the default branch, else off | Save the file as the workflow before running |
 | `wait-for-url` | `120` | Seconds (1 to 180) to wait for the URL to answer. `0` or `false`: do not wait |
 | `timeout-minutes` | `15` | Give up and cancel the run |
 | `retries` | the API default (1 for CI) | Extra tries for a failed case, 0 to 2. A case that passes on a retry is "flaky": it passes the job and is flagged |
 | `on-error` | `block` | `block`: could not test fails the job (exit 2). `neutral`: it passes with a warning |
 | `fail-on` | `fail` | `never`: report only, a result never fails the job (run it a week as a non-required check, then require it) |
+| `mode` | `enforce` | `enforce`: a failed required case fails the job. `practice`: it does not (see "Practice mode") |
 | `comment` | `true` | Keep one PR comment |
 | `share-links` | on for private repos, off for public | A 7-day replay link per failed case in the comment. Anyone with the link can watch, so it is off by default on public repos |
 | `github-token` | `${{ github.token }}` | For the PR comment |
 
 | Output | Value |
 |---|---|
-| `verdict` | `pass`, `fail`, `error` (could not test), `setup` (not run: setup problem), `skipped` (fork PR without the secret) |
+| `verdict` | `pass`, `fail`, `error` (could not test), `setup` (not run: setup problem), `skipped` (fork PR without the secret, a `deployment_status` that is not `success` yet, or a run a newer commit cancelled) |
 | `run-id` | the run id (empty when no run started) |
 | `run-url` | dashboard page of the run |
 | `flaky` | how many cases passed only on a retry |
@@ -145,13 +172,14 @@ Use outputs in a later step: `if: steps.qa.outputs.verdict == 'fail'` (give the 
 | State | Job | PR comment |
 |---|---|---|
 | Running | in progress | `Lookover QA · RUNNING · testing <url>`, replaced when the run ends |
-| Pass (flaky passes included) | exit 0 | `PASS`, counts, case table; flaky cases marked `PASS (flaky: passed on try 2 of 2)` |
-| A required case failed | exit **1** | `FAIL`, the failed step, expected vs actual, page, console error, failed request, replay link |
-| Could not test (preview never answered, capacity, timeout; **not** an app failure) | exit **2** (`on-error: neutral`: 0 with a warning) | `COULD NOT TEST`, in plain words why |
+| Pass (flaky passes included) | exit 0 | `Passed`, counts, case table; flaky cases marked `Passed (flaky: passed on try 2)` |
+| A required case failed | exit **1** | `Failed`, the failed step, expected vs actual, page, console error, failed request, replay link |
+| Could not test (preview never answered, capacity, timeout; **not** an app failure) | exit **2** (`on-error: neutral`: 0 with a warning) | `Couldn't test`, in plain words why |
 | Setup problem (no key, key rejected or revoked, bad file, bad input, `engine:` not found) | exit **3** | `NOT RUN · setup problem`: what to fix, for example "API key rejected: make a new one in API keys" or "Engine 'my-qa' not found in this project" |
 | Fork PR, or Dependabot (GitHub gives no secrets) | exit 0, one notice | none |
 | No `pull-requests: write` | unchanged | one notice in the log; the job summary still has the report |
 | Job cancelled (new push) | the cloud run is cancelled | updated to could not test (best effort) |
+| Newer commit pushed while the run was going (the API cancels the older run of the same PR) | exit 0, one notice | `Cancelled: newer commit abc1234`, replaced by the newer run's result |
 
 | Exit code | Meaning |
 |---|---|
@@ -160,8 +188,33 @@ Use outputs in a later step: `if: steps.qa.outputs.verdict == 'fail'` (give the 
 | 2 | could not test: not an app failure |
 | 3 | setup problem: your configuration (`fail-on: never` does not hide these) |
 
+The words are the same everywhere (CLI 0.2.0, the dashboard and this action): "Passed", "Failed" and "Couldn't test". The report text comes
+from the CLI and the API, including its one `Took … · Cost: $x.xx` line; the action adds no cost line of its own. The job's result never
+depends on those words: it comes from the CLI's exit code (0, 1, 2, 3) and the `verdict` output.
+
 Failed cases show the replay link only when `share-links` allows it; the dashboard link works for every member of your project.
 The status check is the job: name it `Lookover QA`. GitHub only blocks merging on checks you mark **required** (Settings, Branches).
+
+### Practice mode
+
+`mode: practice` is for the first week: the check runs and reports, but a failed case does not fail the job, so it cannot block a merge.
+
+- A failed case (CLI exit 1): the step succeeds. The `verdict` output stays `fail` (the real result), the job summary and the PR comment
+  start with "Practice mode: this check does not block merging yet." and the log has one warning.
+- Could not test follows `on-error` as always (`block` fails with exit 2, `neutral` passes).
+- Setup problems (exit 3: bad key, bad file, bad input such as `mode: soft`) still fail the job, and `mode` accepts only `enforce` or `practice`.
+
+Switch to `mode: enforce` (the default, or leave the input out) when you trust the checks, then mark `Lookover QA` as required.
+`fail-on: never` is the older, blunter switch: it also passes on could not test.
+
+### Pull request context
+
+On `pull_request` and `pull_request_target` runs (not from forks) the action sends the PR title (200 characters), the PR description
+(2000 characters) and the paths of the changed files (up to 300 paths, 300 characters each, paths only, read with your `github-token`)
+to the CLI as the environment variables `WEBAGENT_CI_TITLE`, `WEBAGENT_CI_BODY` and `WEBAGENT_CI_CHANGED_FILES` (one path per line),
+as untrusted context for Lookover (the bundled CLI, 0.2.0 and later, reads exactly these three names and sends them with the run). The text is never
+printed in the log, summary or comment.
+If GitHub's file list cannot be read, the paths are left out and the job is not affected.
 
 ## 6. Fork pull requests
 
@@ -178,6 +231,17 @@ VITEST_MAX_WORKERS=4 pnpm check     # typecheck, tests, build (dist/index.cjs + 
 ```
 
 `dist/` is committed (a JavaScript action runs what is in the repo). `dist/webagent.cjs` is the CLI bundle from
-`webagent-contracts/cli/dist/webagent.cjs` (`pnpm build` there first; `WEBAGENT_CLI_BUNDLE` points elsewhere): re-vendor it when the
-CLI changes. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
+`webagent-contracts/cli/dist/webagent.cjs` (build contracts, `sdk` and `cli` there first; `WEBAGENT_CLI_BUNDLE` points elsewhere): re-vendor it when the
+CLI changes. `src/cli-contract.test.ts` reads the committed bundle and fails if the `WEBAGENT_CI_*` names differ from what the Action sets.
+
+**Vendored now:** `@lookover-ai/webagent-cli` **0.3.0**, built from contracts `development` commit `722e5b8` (PR #22),
+bundle 1.29 MB. Re-vendor from a release tag before moving the Action's `v1` tag. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
 writes the summary, outputs and the sticky comment (hidden marker `<!-- lookover-qa:<workflow key> -->`).
+`CLI-SOURCE` records which CLI version and contracts commit the vendored bundle is (a test checks it).
+
+Rules the Action keeps so a newer API or tests file never breaks a published `@v1`:
+- It never parses or validates `steps`, `expect` or case keys of the tests file: the CLI sends them untouched and the server decides.
+  A refusal is exit 3 with the server's sentence (and the failing paths) in the log, the job summary and the PR comment.
+- The job's pass or fail comes from the CLI's exit code only. The run reply is read just for the run id, the flaky count and the
+  failed cases' replay links; a verdict it does not know is "could not test" (exit 2), never a pass. `on-error: neutral` is applied by
+  the Action (it starts the CLI with `--on-error block`), so a CLI exit 0 always means pass.

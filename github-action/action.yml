@@ -34,6 +34,12 @@ inputs:
   sync:
     description: "`true` saves the file as the workflow (by key) before the run; `false` runs ad hoc and saves nothing. Empty: true only on a push to the default branch, so a pull request never changes the saved workflow."
     required: false
+  failed-only:
+    description: "`true` runs only the cases that did not pass in the last finished run of this pull request (or workflow); the passes are listed as carried over, not re-run and not billed. Empty or `false`: every case runs."
+    required: false
+  stop-after:
+    description: "Stop early once this many required cases failed (1 to 500); the cases not started yet show Not run (stopped early). Empty: off. 3 suits pull requests."
+    required: false
   wait-for-url:
     description: Seconds to wait for the URL to answer 2xx or 3xx before the run starts (1 to 180). `0` or `false` skips the wait.
     required: false
@@ -53,6 +59,10 @@ inputs:
     description: "`fail` (default): a failed required case fails the job. `never`: report only, the job never fails because of a result (setup problems still fail it)."
     required: false
     default: fail
+  mode:
+    description: "`enforce` (default): a failed required case fails the job. `practice`: a failed case does not fail the job (the verdict output still says `fail`, and the summary and comment say the check does not block merging yet); could-not-test still follows `on-error`, setup problems still fail the job."
+    required: false
+    default: enforce
   comment:
     description: "Keep one comment on the pull request, updated in place on every push. Needs `pull-requests: write`."
     required: false
@@ -67,7 +77,7 @@ inputs:
 
 outputs:
   verdict:
-    description: "pass, fail, error (could not test), setup (not run: setup problem) or skipped (fork PR without the secret)."
+    description: "pass, fail, error (could not test), setup (not run: setup problem) or skipped (fork PR without the secret, or the run was cancelled by a newer commit of the pull request)."
   run-id:
     description: The workflow run id (empty when no run started).
   run-url:
