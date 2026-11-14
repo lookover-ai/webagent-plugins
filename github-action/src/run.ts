@@ -14,6 +14,7 @@ import {
 } from "./inputs.js";
 import { outcomeFor, type VerdictOutput } from "./outcome.js";
 import {
+  cancelledBody,
   dashboardUrl,
   finalBody,
   finalCases,
@@ -66,6 +67,8 @@ interface RunFacts {
   id: string;
   flaky: number;
   cases: RunCase[];
+  /** Set when a newer commit of the PR cancelled the run (`cancelled.reason: "superseded"`); its sha, maybe empty. */
+  supersededBy?: string;
 }
 
 /**
@@ -82,12 +85,19 @@ function parseRun(stdout: string): RunFacts | undefined {
     return undefined;
   }
   if (typeof raw !== "object" || raw === null) return undefined;
-  const r = raw as { id?: unknown; counts?: { flaky?: unknown } | null; cases?: unknown };
+  const r = raw as {
+    id?: unknown;
+    counts?: { flaky?: unknown } | null;
+    cases?: unknown;
+    cancelled?: { reason?: unknown; bySha?: unknown } | null;
+  };
   const flaky = r.counts?.flaky;
+  const superseded = r.cancelled?.reason === "superseded";
   return {
     id: typeof r.id === "string" ? r.id : "",
     flaky: typeof flaky === "number" && Number.isFinite(flaky) ? flaky : 0,
     cases: Array.isArray(r.cases) ? (r.cases as RunCase[]) : [],
+    ...(superseded ? { supersededBy: typeof r.cancelled?.bySha === "string" ? r.cancelled.bySha : "" } : {}),
   };
 }
 
@@ -203,6 +213,18 @@ export async function run(d: Deps): Promise<number> {
   );
   const url = report ? dashboardUrl(report) : "";
   const setup = out.verdict === "setup" ? setupLines(res.stderr) : [];
+
+  // A newer commit cancelled this run (qa-next C1): not an app result. The summary keeps the report, the sticky comment says
+  // "Cancelled: newer commit" until the newer job replaces it, and the job ends neutral so the old commit is not marked red.
+  // WATCH(qa-next-wave): the one place the Action reads more than the exit code; it only softens CLI exit 2 for a superseded run.
+  if (runJson?.supersededBy !== undefined && res.code === 2) {
+    const sha = runJson.supersededBy;
+    if (report) await d.appendSummary(summaryBody({ report, practice }));
+    await comment(cancelledBody(workflowKey, sha, buildUrl));
+    const msg = `Cancelled: newer commit${sha ? ` ${sha.slice(0, 7)}` : ""}. The newer run reports on this pull request.`;
+    d.log(`::notice title=Lookover QA::${esc(msg)}`);
+    return finish("skipped", 0, runJson.id, url, runJson.flaky);
+  }
 
   if (report) {
     let links: { caseId: string; url: string }[] = [];

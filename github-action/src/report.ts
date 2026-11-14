@@ -118,6 +118,24 @@ export function runningBody(workflowKey: string, url: string, sha: string, build
   ].join("\n");
 }
 
+/**
+ * The sticky comment when a newer commit of the pull request cancelled this run (qa-next C1). The newer job wrote its
+ * own RUNNING comment first; this one keeps the place until that job's result replaces it, so it never shows the old run's
+ * report as if it were the latest.
+ */
+export function cancelledBody(workflowKey: string, bySha: string, buildUrl: string): string {
+  const sha = bySha.slice(0, 7);
+  return [
+    marker(workflowKey),
+    `Lookover QA · Cancelled: newer commit${sha ? ` ${sha}` : ""}`,
+    "",
+    "A newer push started a run for this pull request, so this one stopped. Its result replaces this comment when it ends. The tests that did not run are not billed.",
+    "",
+    footer(buildUrl),
+    "",
+  ].join("\n");
+}
+
 /** Comment (and summary) when no run happened: a setup problem, with the CLI's own lines. */
 export function notRunBody(workflowKey: string, problem: string[], buildUrl: string): string {
   return [

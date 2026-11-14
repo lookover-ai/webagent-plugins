@@ -68,9 +68,22 @@ describe("mapToCliArgs", () => {
     [{ retries: "x" }, /retries/],
     [{ "timeout-minutes": "0" }, /timeout-minutes/],
     [{ "wait-for-url": "500" }, /wait-for-url/],
+    [{ "stop-after": "0" }, /stop-after/],
+    [{ "failed-only": "yes" }, /failed-only/],
   ])("rejects bad input %j", (o, re) => {
     expect(() => mapToCliArgs(inputs(o), false, true, md)).toThrow(InputError);
     expect(() => mapToCliArgs(inputs(o), false, true, md)).toThrow(re);
+  });
+});
+
+describe("run-control inputs", () => {
+  it("maps failed-only and stop-after to the CLI flags, off when empty", () => {
+    const on = mapToCliArgs(inputs({ "failed-only": "true", "stop-after": "3" }), false, true, md).args;
+    expect(on).toContain("--failed-only");
+    expect(on.join(" ")).toContain("--stop-after 3");
+    const off = mapToCliArgs(inputs(), false, true, md).args;
+    expect(off).not.toContain("--failed-only");
+    expect(off).not.toContain("--stop-after");
   });
 });
 
