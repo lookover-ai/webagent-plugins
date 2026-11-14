@@ -54,10 +54,12 @@ export async function replayLinks(
   cases: RunCase[],
 ): Promise<{ caseId: string; url: string }[]> {
   const out: { caseId: string; url: string }[] = [];
-  const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && c.sessionId);
+  // Only a case the reply calls "fail" gets a link: a verdict this Action does not know (or none) is never treated as a failure
+  // or a pass here, it just has no link. The pass/fail of the job comes from the CLI's exit code, not from these cases.
+  const bad = cases.filter((c) => c.verdict === "fail" && c.required !== false && typeof c.sessionId === "string" && c.sessionId !== "");
   for (const c of bad.slice(0, MAX_LINKS)) {
     try {
-      const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/sessions/${c.sessionId}/share`, {
+      const res = await d.fetch(`${d.apiUrl.replace(/\/+$/, "")}/v1/sessions/${encodeURIComponent(c.sessionId ?? "")}/share`, {
         method: "POST",
         headers: { authorization: `Bearer ${d.apiKey}`, "content-type": "application/json" },
         body: JSON.stringify({ kind: "replay", ttlSeconds: SEVEN_DAYS }),

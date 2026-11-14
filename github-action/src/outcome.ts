@@ -1,13 +1,7 @@
-/** What the CLI's exit code and run mean for the job: the `verdict` output and the job's own exit code. */
+/** What the CLI's exit code means for the job: the `verdict` output and the job's own exit code. */
 
 /** `pass`, `fail`, `error` (could not test) come from the run; `setup` and `skipped` mean no run happened. */
 export type VerdictOutput = "pass" | "fail" | "error" | "setup" | "skipped";
-
-export interface RunLike {
-  id?: string;
-  verdict?: string;
-  counts?: { flaky?: number };
-}
 
 export interface Outcome {
   verdict: VerdictOutput;
@@ -18,24 +12,22 @@ export interface Outcome {
   level: "notice" | "warning" | "error";
 }
 
-/** CLI exit code (0 pass, 1 fail, 2 could not test, 3 setup; anything else is a crash = 3) to the job outcome. */
+/**
+ * CLI exit code (0 pass, 1 fail, 2 could not test, 3 setup; anything else is a crash = 3) to the job outcome.
+ *
+ * The exit code is the ONLY signal: the run reply is never read for a verdict, because a reply may carry a verdict
+ * this Action does not know. CLI 0.3.0 turns an unknown verdict (run or case) into "could not test" = exit 2, so
+ * 0 means the CLI saw a pass. `on-error: neutral` is applied here, not by the CLI (the Action always starts the CLI
+ * with `--on-error block`): a CLI exit 0 can then never hide a could-not-test.
+ * `mode: practice` only softens exit 1 (a failed required case); a could-not-test is never reported as a pass.
+ */
 export function outcomeFor(
   cliCode: number | null,
-  run: RunLike | undefined,
   failOn: "fail" | "never",
+  onError: "block" | "neutral",
   mode: "enforce" | "practice" = "enforce",
 ): Outcome {
-  if (cliCode === 0) {
-    if (run?.verdict === "error" || run?.verdict === "running") {
-      return {
-        verdict: "error",
-        exitCode: 0,
-        level: "warning",
-        message: "Could not test (not an app failure). The job passes because on-error is neutral.",
-      };
-    }
-    return { verdict: "pass", exitCode: 0, level: "notice" };
-  }
+  if (cliCode === 0) return { verdict: "pass", exitCode: 0, level: "notice" };
   if (cliCode === 1) {
     if (mode === "practice") {
       return {
@@ -55,19 +47,20 @@ export function outcomeFor(
       : { verdict: "fail", exitCode: 1, level: "error", message: "A required case failed." };
   }
   if (cliCode === 2) {
-    return failOn === "never"
-      ? {
-          verdict: "error",
-          exitCode: 0,
-          level: "warning",
-          message: "Could not test (not an app failure). The job passes because fail-on is never.",
-        }
-      : {
-          verdict: "error",
-          exitCode: 2,
-          level: "error",
-          message: "Could not test (not an app failure): see the report for why.",
-        };
+    if (failOn === "never" || onError === "neutral") {
+      return {
+        verdict: "error",
+        exitCode: 0,
+        level: "warning",
+        message: `Could not test (not an app failure). The job passes because ${failOn === "never" ? "fail-on is never" : "on-error is neutral"}.`,
+      };
+    }
+    return {
+      verdict: "error",
+      exitCode: 2,
+      level: "error",
+      message: "Could not test (not an app failure): see the report for why.",
+    };
   }
   return {
     verdict: "setup",

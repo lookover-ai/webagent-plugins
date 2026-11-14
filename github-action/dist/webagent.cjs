@@ -977,13 +977,13 @@ var require_Collection = __commonJS({
 var require_stringifyComment = __commonJS({
   "../node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/stringify/stringifyComment.js"(exports2) {
     "use strict";
-    var stringifyComment = (str) => str.replace(/^(?!$)(?: $)?/gm, "#");
+    var stringifyComment = (str2) => str2.replace(/^(?!$)(?: $)?/gm, "#");
     function indentComment(comment, indent) {
       if (/^\n+$/.test(comment))
         return comment.substring(1);
       return indent ? comment.replace(/^(?! *$)/gm, indent) : comment;
     }
-    var lineComment = (str, indent, comment) => str.endsWith("\n") ? indentComment(comment, indent) : comment.includes("\n") ? "\n" + indentComment(comment, indent) : (str.endsWith(" ") ? "" : " ") + comment;
+    var lineComment = (str2, indent, comment) => str2.endsWith("\n") ? indentComment(comment, indent) : comment.includes("\n") ? "\n" + indentComment(comment, indent) : (str2.endsWith(" ") ? "" : " ") + comment;
     exports2.indentComment = indentComment;
     exports2.lineComment = lineComment;
     exports2.stringifyComment = stringifyComment;
@@ -1137,16 +1137,16 @@ var require_stringifyString = __commonJS({
       lineWidth: ctx.options.lineWidth,
       minContentWidth: ctx.options.minContentWidth
     });
-    var containsDocumentMarker = (str) => /^(%|---|\.\.\.)/m.test(str);
-    function lineLengthOverLimit(str, lineWidth, indentLength) {
+    var containsDocumentMarker = (str2) => /^(%|---|\.\.\.)/m.test(str2);
+    function lineLengthOverLimit(str2, lineWidth, indentLength) {
       if (!lineWidth || lineWidth < 0)
         return false;
       const limit = lineWidth - indentLength;
-      const strLen = str.length;
+      const strLen = str2.length;
       if (strLen <= limit)
         return false;
       for (let i = 0, start = 0; i < strLen; ++i) {
-        if (str[i] === "\n") {
+        if (str2[i] === "\n") {
           if (i - start > limit)
             return true;
           start = i + 1;
@@ -1163,11 +1163,11 @@ var require_stringifyString = __commonJS({
       const { implicitKey } = ctx;
       const minMultiLineLength = ctx.options.doubleQuotedMinMultiLineLength;
       const indent = ctx.indent || (containsDocumentMarker(value) ? "  " : "");
-      let str = "";
+      let str2 = "";
       let start = 0;
       for (let i = 0, ch = json2[i]; ch; ch = json2[++i]) {
         if (ch === " " && json2[i + 1] === "\\" && json2[i + 2] === "n") {
-          str += json2.slice(start, i) + "\\ ";
+          str2 += json2.slice(start, i) + "\\ ";
           i += 1;
           start = i;
           ch = "\\";
@@ -1176,38 +1176,38 @@ var require_stringifyString = __commonJS({
           switch (json2[i + 1]) {
             case "u":
               {
-                str += json2.slice(start, i);
+                str2 += json2.slice(start, i);
                 const code = json2.substr(i + 2, 4);
                 switch (code) {
                   case "0000":
-                    str += "\\0";
+                    str2 += "\\0";
                     break;
                   case "0007":
-                    str += "\\a";
+                    str2 += "\\a";
                     break;
                   case "000b":
-                    str += "\\v";
+                    str2 += "\\v";
                     break;
                   case "001b":
-                    str += "\\e";
+                    str2 += "\\e";
                     break;
                   case "0085":
-                    str += "\\N";
+                    str2 += "\\N";
                     break;
                   case "00a0":
-                    str += "\\_";
+                    str2 += "\\_";
                     break;
                   case "2028":
-                    str += "\\L";
+                    str2 += "\\L";
                     break;
                   case "2029":
-                    str += "\\P";
+                    str2 += "\\P";
                     break;
                   default:
                     if (code.substr(0, 2) === "00")
-                      str += "\\x" + code.substr(2);
+                      str2 += "\\x" + code.substr(2);
                     else
-                      str += json2.substr(i, 6);
+                      str2 += json2.substr(i, 6);
                 }
                 i += 5;
                 start = i + 1;
@@ -1217,14 +1217,14 @@ var require_stringifyString = __commonJS({
               if (implicitKey || json2[i + 2] === '"' || json2.length < minMultiLineLength) {
                 i += 1;
               } else {
-                str += json2.slice(start, i) + "\n\n";
+                str2 += json2.slice(start, i) + "\n\n";
                 while (json2[i + 2] === "\\" && json2[i + 3] === "n" && json2[i + 4] !== '"') {
-                  str += "\n";
+                  str2 += "\n";
                   i += 2;
                 }
-                str += indent;
+                str2 += indent;
                 if (json2[i + 2] === " ")
-                  str += "\\";
+                  str2 += "\\";
                 i += 1;
                 start = i + 1;
               }
@@ -1233,8 +1233,8 @@ var require_stringifyString = __commonJS({
               i += 1;
           }
       }
-      str = start ? str + json2.slice(start) : json2;
-      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx, false));
+      str2 = start ? str2 + json2.slice(start) : json2;
+      return implicitKey ? str2 : foldFlowLines.foldFlowLines(str2, indent, foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx, false));
     }
     function singleQuotedString(value, ctx) {
       if (ctx.options.singleQuote === false || ctx.implicitKey && value.includes("\n") || /[ \t]\n|\n[ \t]/.test(value))
@@ -1362,15 +1362,15 @@ ${indent}${start}${value}${end}`;
           return quotedString(value, ctx);
         }
       }
-      const str = value.replace(/\n+/g, `$&
+      const str2 = value.replace(/\n+/g, `$&
 ${indent}`);
       if (actualString) {
-        const test = (tag) => tag.default && tag.tag !== "tag:yaml.org,2002:str" && tag.test?.test(str);
+        const test = (tag) => tag.default && tag.tag !== "tag:yaml.org,2002:str" && tag.test?.test(str2);
         const { compat, tags } = ctx.doc.schema;
         if (tags.some(test) || compat?.some(test))
           return quotedString(value, ctx);
       }
-      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx, false));
+      return implicitKey ? str2 : foldFlowLines.foldFlowLines(str2, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx, false));
     }
     function stringifyString(item, ctx, onComment, onChompKeep) {
       const { implicitKey, inFlow } = ctx;
@@ -1522,11 +1522,11 @@ var require_stringify = __commonJS({
       const props = stringifyProps(node2, tagObj, ctx);
       if (props.length > 0)
         ctx.indentAtStart = (ctx.indentAtStart ?? 0) + props.length + 1;
-      const str = typeof tagObj.stringify === "function" ? tagObj.stringify(node2, ctx, onComment, onChompKeep) : identity.isScalar(node2) ? stringifyString.stringifyString(node2, ctx, onComment, onChompKeep) : node2.toString(ctx, onComment, onChompKeep);
+      const str2 = typeof tagObj.stringify === "function" ? tagObj.stringify(node2, ctx, onComment, onChompKeep) : identity.isScalar(node2) ? stringifyString.stringifyString(node2, ctx, onComment, onChompKeep) : node2.toString(ctx, onComment, onChompKeep);
       if (!props)
-        return str;
-      return identity.isScalar(node2) || str[0] === "{" || str[0] === "[" ? `${props} ${str}` : `${props}
-${ctx.indent}${str}`;
+        return str2;
+      return identity.isScalar(node2) || str2[0] === "{" || str2[0] === "[" ? `${props} ${str2}` : `${props}
+${ctx.indent}${str2}`;
     }
     exports2.createStringifyContext = createStringifyContext;
     exports2.stringify = stringify;
@@ -1561,8 +1561,8 @@ var require_stringifyPair = __commonJS({
       });
       let keyCommentDone = false;
       let chompKeep = false;
-      let str = stringify.stringify(key, ctx, () => keyCommentDone = true, () => chompKeep = true);
-      if (!explicitKey && !ctx.inFlow && str.length > 1024) {
+      let str2 = stringify.stringify(key, ctx, () => keyCommentDone = true, () => chompKeep = true);
+      if (!explicitKey && !ctx.inFlow && str2.length > 1024) {
         if (simpleKeys)
           throw new Error("With simple keys, single line scalar must not span more than 1024 characters");
         explicitKey = true;
@@ -1571,27 +1571,27 @@ var require_stringifyPair = __commonJS({
         if (allNullValues || value == null) {
           if (keyCommentDone && onComment)
             onComment();
-          return str === "" ? "?" : explicitKey ? `? ${str}` : str;
+          return str2 === "" ? "?" : explicitKey ? `? ${str2}` : str2;
         }
       } else if (allNullValues && !simpleKeys || value == null && explicitKey) {
-        str = `? ${str}`;
+        str2 = `? ${str2}`;
         if (keyComment && !keyCommentDone) {
-          str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
+          str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(keyComment));
         } else if (chompKeep && onChompKeep)
           onChompKeep();
-        return str;
+        return str2;
       }
       if (keyCommentDone)
         keyComment = null;
       if (explicitKey) {
         if (keyComment)
-          str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
-        str = `? ${str}
+          str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(keyComment));
+        str2 = `? ${str2}
 ${indent}:`;
       } else {
-        str = `${str}:`;
+        str2 = `${str2}:`;
         if (keyComment)
-          str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
+          str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(keyComment));
       }
       let vsb, vcb, valueComment;
       if (identity.isNode(value)) {
@@ -1607,7 +1607,7 @@ ${indent}:`;
       }
       ctx.implicitKey = false;
       if (!explicitKey && !keyComment && identity.isScalar(value))
-        ctx.indentAtStart = str.length + 1;
+        ctx.indentAtStart = str2.length + 1;
       chompKeep = false;
       if (!indentSeq && indentStep.length >= 2 && !ctx.inFlow && !explicitKey && identity.isSeq(value) && !value.flow && !value.tag && !value.anchor) {
         ctx.indent = ctx.indent.substring(2);
@@ -1651,16 +1651,16 @@ ${ctx.indent}`;
       } else if (valueStr === "" || valueStr[0] === "\n") {
         ws = "";
       }
-      str += ws + valueStr;
+      str2 += ws + valueStr;
       if (ctx.inFlow) {
         if (valueCommentDone && onComment)
           onComment();
       } else if (valueComment && !valueCommentDone) {
-        str += stringifyComment.lineComment(str, ctx.indent, commentString(valueComment));
+        str2 += stringifyComment.lineComment(str2, ctx.indent, commentString(valueComment));
       } else if (chompKeep && onChompKeep) {
         onChompKeep();
       }
-      return str;
+      return str2;
     }
     exports2.stringifyPair = stringifyPair;
   }
@@ -1887,31 +1887,31 @@ var require_stringifyCollection = __commonJS({
           }
         }
         chompKeep = false;
-        let str2 = stringify.stringify(item, itemCtx, () => comment2 = null, () => chompKeep = true);
+        let str3 = stringify.stringify(item, itemCtx, () => comment2 = null, () => chompKeep = true);
         if (comment2)
-          str2 += stringifyComment.lineComment(str2, itemIndent, commentString(comment2));
+          str3 += stringifyComment.lineComment(str3, itemIndent, commentString(comment2));
         if (chompKeep && comment2)
           chompKeep = false;
-        lines.push(blockItemPrefix + str2);
+        lines.push(blockItemPrefix + str3);
       }
-      let str;
+      let str2;
       if (lines.length === 0) {
-        str = flowChars.start + flowChars.end;
+        str2 = flowChars.start + flowChars.end;
       } else {
-        str = lines[0];
+        str2 = lines[0];
         for (let i = 1; i < lines.length; ++i) {
           const line = lines[i];
-          str += line ? `
+          str2 += line ? `
 ${indent}${line}` : "\n";
         }
       }
       if (comment) {
-        str += "\n" + stringifyComment.indentComment(commentString(comment), indent);
+        str2 += "\n" + stringifyComment.indentComment(commentString(comment), indent);
         if (onComment)
           onComment();
       } else if (chompKeep && onChompKeep)
         onChompKeep();
-      return str;
+      return str2;
     }
     function stringifyFlowCollection({ items }, ctx, { flowChars, itemIndent }) {
       const { indent, indentStep, flowCollectionPadding: fcPadding, options: { commentString } } = ctx;
@@ -1954,21 +1954,21 @@ ${indent}${line}` : "\n";
         }
         if (comment)
           reqNewline = true;
-        let str = stringify.stringify(item, itemCtx, () => comment = null);
-        reqNewline || (reqNewline = lines.length > linesAtValue || str.includes("\n"));
+        let str2 = stringify.stringify(item, itemCtx, () => comment = null);
+        reqNewline || (reqNewline = lines.length > linesAtValue || str2.includes("\n"));
         if (i < items.length - 1) {
-          str += ",";
+          str2 += ",";
         } else if (ctx.options.trailingComma) {
           if (ctx.options.lineWidth > 0) {
-            reqNewline || (reqNewline = lines.reduce((sum, line) => sum + line.length + 2, 2) + (str.length + 2) > ctx.options.lineWidth);
+            reqNewline || (reqNewline = lines.reduce((sum, line) => sum + line.length + 2, 2) + (str2.length + 2) > ctx.options.lineWidth);
           }
           if (reqNewline) {
-            str += ",";
+            str2 += ",";
           }
         }
         if (comment)
-          str += stringifyComment.lineComment(str, itemIndent, commentString(comment));
-        lines.push(str);
+          str2 += stringifyComment.lineComment(str2, itemIndent, commentString(comment));
+        lines.push(str2);
         linesAtValue = lines.length;
       }
       const { start, end } = flowChars;
@@ -1980,11 +1980,11 @@ ${indent}${line}` : "\n";
           reqNewline = ctx.options.lineWidth > 0 && len > ctx.options.lineWidth;
         }
         if (reqNewline) {
-          let str = start;
+          let str2 = start;
           for (const line of lines)
-            str += line ? `
+            str2 += line ? `
 ${indentStep}${indent}${line}` : "\n";
-          return `${str}
+          return `${str2}
 ${indent}${end}`;
         } else {
           return `${start}${fcPadding}${lines.join(" ")}${fcPadding}${end}`;
@@ -2316,7 +2316,7 @@ var require_string = __commonJS({
       identify: (value) => typeof value === "string",
       default: true,
       tag: "tag:yaml.org,2002:str",
-      resolve: (str) => str,
+      resolve: (str2) => str2,
       stringify(item, ctx, onComment, onChompKeep) {
         ctx = Object.assign({ actualString: true }, ctx);
         return stringifyString.stringifyString(item, ctx, onComment, onChompKeep);
@@ -2354,7 +2354,7 @@ var require_bool = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:bool",
       test: /^(?:[Tt]rue|TRUE|[Ff]alse|FALSE)$/,
-      resolve: (str) => new Scalar.Scalar(str[0] === "t" || str[0] === "T"),
+      resolve: (str2) => new Scalar.Scalar(str2[0] === "t" || str2[0] === "T"),
       stringify({ source, value }, ctx) {
         if (source && boolTag.test.test(source)) {
           const sv = source[0] === "t" || source[0] === "T";
@@ -2375,9 +2375,9 @@ var require_stringifyNumber = __commonJS({
     function stringifyNumber({ format, minFractionDigits, tag, value }) {
       if (typeof value === "bigint")
         return String(value);
-      const num = typeof value === "number" ? value : Number(value);
-      if (!isFinite(num))
-        return isNaN(num) ? ".nan" : num < 0 ? "-.inf" : ".inf";
+      const num2 = typeof value === "number" ? value : Number(value);
+      if (!isFinite(num2))
+        return isNaN(num2) ? ".nan" : num2 < 0 ? "-.inf" : ".inf";
       let n = Object.is(value, -0) ? "-0" : JSON.stringify(value);
       if (!format && minFractionDigits && (!tag || tag === "tag:yaml.org,2002:float") && /^-?\d/.test(n) && !n.includes("e")) {
         let i = n.indexOf(".");
@@ -2406,7 +2406,7 @@ var require_float = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^(?:[-+]?\.(?:inf|Inf|INF)|\.nan|\.NaN|\.NAN)$/,
-      resolve: (str) => str.slice(-3).toLowerCase() === "nan" ? NaN : str[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
+      resolve: (str2) => str2.slice(-3).toLowerCase() === "nan" ? NaN : str2[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
       stringify: stringifyNumber.stringifyNumber
     };
     var floatExp = {
@@ -2415,10 +2415,10 @@ var require_float = __commonJS({
       tag: "tag:yaml.org,2002:float",
       format: "EXP",
       test: /^[-+]?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)[eE][-+]?[0-9]+$/,
-      resolve: (str) => parseFloat(str),
+      resolve: (str2) => parseFloat(str2),
       stringify(node2) {
-        const num = Number(node2.value);
-        return isFinite(num) ? num.toExponential() : stringifyNumber.stringifyNumber(node2);
+        const num2 = Number(node2.value);
+        return isFinite(num2) ? num2.toExponential() : stringifyNumber.stringifyNumber(node2);
       }
     };
     var float = {
@@ -2426,11 +2426,11 @@ var require_float = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^[-+]?(?:\.[0-9]+|[0-9]+\.[0-9]*)$/,
-      resolve(str) {
-        const node2 = new Scalar.Scalar(parseFloat(str));
-        const dot = str.indexOf(".");
-        if (dot !== -1 && str[str.length - 1] === "0")
-          node2.minFractionDigits = str.length - dot - 1;
+      resolve(str2) {
+        const node2 = new Scalar.Scalar(parseFloat(str2));
+        const dot = str2.indexOf(".");
+        if (dot !== -1 && str2[str2.length - 1] === "0")
+          node2.minFractionDigits = str2.length - dot - 1;
         return node2;
       },
       stringify: stringifyNumber.stringifyNumber
@@ -2447,7 +2447,7 @@ var require_int = __commonJS({
     "use strict";
     var stringifyNumber = require_stringifyNumber();
     var intIdentify = (value) => typeof value === "bigint" || Number.isInteger(value);
-    var intResolve = (str, offset, radix, { intAsBigInt }) => intAsBigInt ? BigInt(str) : parseInt(str.substring(offset), radix);
+    var intResolve = (str2, offset, radix, { intAsBigInt }) => intAsBigInt ? BigInt(str2) : parseInt(str2.substring(offset), radix);
     function intStringify(node2, radix, prefix) {
       const { value } = node2;
       if (intIdentify(value) && value >= 0)
@@ -2460,7 +2460,7 @@ var require_int = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "OCT",
       test: /^0o[0-7]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 8, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 8, opt),
       stringify: (node2) => intStringify(node2, 8, "0o")
     };
     var int2 = {
@@ -2468,7 +2468,7 @@ var require_int = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:int",
       test: /^[-+]?[0-9]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 0, 10, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 0, 10, opt),
       stringify: stringifyNumber.stringifyNumber
     };
     var intHex = {
@@ -2477,7 +2477,7 @@ var require_int = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "HEX",
       test: /^0x[0-9a-fA-F]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 16, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 16, opt),
       stringify: (node2) => intStringify(node2, 16, "0x")
     };
     exports2.int = int2;
@@ -2494,7 +2494,7 @@ var require_schema = __commonJS({
     var _null4 = require_null();
     var seq = require_seq();
     var string4 = require_string();
-    var bool = require_bool();
+    var bool2 = require_bool();
     var float = require_float();
     var int2 = require_int();
     var schema = [
@@ -2502,7 +2502,7 @@ var require_schema = __commonJS({
       seq.seq,
       string4.string,
       _null4.nullTag,
-      bool.boolTag,
+      bool2.boolTag,
       int2.intOct,
       int2.int,
       int2.intHex,
@@ -2530,7 +2530,7 @@ var require_schema2 = __commonJS({
         identify: (value) => typeof value === "string",
         default: true,
         tag: "tag:yaml.org,2002:str",
-        resolve: (str) => str,
+        resolve: (str2) => str2,
         stringify: stringifyJSON
       },
       {
@@ -2547,7 +2547,7 @@ var require_schema2 = __commonJS({
         default: true,
         tag: "tag:yaml.org,2002:bool",
         test: /^true$|^false$/,
-        resolve: (str) => str === "true",
+        resolve: (str2) => str2 === "true",
         stringify: stringifyJSON
       },
       {
@@ -2555,7 +2555,7 @@ var require_schema2 = __commonJS({
         default: true,
         tag: "tag:yaml.org,2002:int",
         test: /^-?(?:0|[1-9][0-9]*)$/,
-        resolve: (str, _onError, { intAsBigInt }) => intAsBigInt ? BigInt(str) : parseInt(str, 10),
+        resolve: (str2, _onError, { intAsBigInt }) => intAsBigInt ? BigInt(str2) : parseInt(str2, 10),
         stringify: ({ value }) => intIdentify(value) ? value.toString() : JSON.stringify(value)
       },
       {
@@ -2563,7 +2563,7 @@ var require_schema2 = __commonJS({
         default: true,
         tag: "tag:yaml.org,2002:float",
         test: /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?$/,
-        resolve: (str) => parseFloat(str),
+        resolve: (str2) => parseFloat(str2),
         stringify: stringifyJSON
       }
     ];
@@ -2571,9 +2571,9 @@ var require_schema2 = __commonJS({
       default: true,
       tag: "",
       test: /^/,
-      resolve(str, onError) {
-        onError(`Unresolved plain scalar ${JSON.stringify(str)}`);
-        return str;
+      resolve(str2, onError) {
+        onError(`Unresolved plain scalar ${JSON.stringify(str2)}`);
+        return str2;
       }
     };
     var schema = [map2.map, seq.seq].concat(jsonScalars, jsonError);
@@ -2605,10 +2605,10 @@ var require_binary = __commonJS({
         if (typeof node_buffer.Buffer === "function") {
           return node_buffer.Buffer.from(src, "base64");
         } else if (typeof atob === "function") {
-          const str = atob(src.replace(/[\n\r]/g, ""));
-          const buffer = new Uint8Array(str.length);
-          for (let i = 0; i < str.length; ++i)
-            buffer[i] = str.charCodeAt(i);
+          const str2 = atob(src.replace(/[\n\r]/g, ""));
+          const buffer = new Uint8Array(str2.length);
+          for (let i = 0; i < str2.length; ++i)
+            buffer[i] = str2.charCodeAt(i);
           return buffer;
         } else {
           onError("This environment does not support reading binary tags; either Buffer or atob is required");
@@ -2619,28 +2619,28 @@ var require_binary = __commonJS({
         if (!value)
           return "";
         const buf = value;
-        let str;
+        let str2;
         if (typeof node_buffer.Buffer === "function") {
-          str = buf instanceof node_buffer.Buffer ? buf.toString("base64") : node_buffer.Buffer.from(buf.buffer).toString("base64");
+          str2 = buf instanceof node_buffer.Buffer ? buf.toString("base64") : node_buffer.Buffer.from(buf.buffer).toString("base64");
         } else if (typeof btoa === "function") {
           let s = "";
           for (let i = 0; i < buf.length; ++i)
             s += String.fromCharCode(buf[i]);
-          str = btoa(s);
+          str2 = btoa(s);
         } else {
           throw new Error("This environment does not support writing binary tags; either Buffer or btoa is required");
         }
         type ?? (type = Scalar.Scalar.BLOCK_LITERAL);
         if (type !== Scalar.Scalar.QUOTE_DOUBLE) {
           const lineWidth = Math.max(ctx.options.lineWidth - ctx.indent.length, ctx.options.minContentWidth);
-          const n = Math.ceil(str.length / lineWidth);
+          const n = Math.ceil(str2.length / lineWidth);
           const lines = new Array(n);
           for (let i = 0, o = 0; i < n; ++i, o += lineWidth) {
-            lines[i] = str.substr(o, lineWidth);
+            lines[i] = str2.substr(o, lineWidth);
           }
-          str = lines.join(type === Scalar.Scalar.BLOCK_LITERAL ? "\n" : " ");
+          str2 = lines.join(type === Scalar.Scalar.BLOCK_LITERAL ? "\n" : " ");
         }
-        return stringifyString.stringifyString({ comment, type, value: str }, ctx, onComment, onChompKeep);
+        return stringifyString.stringifyString({ comment, type, value: str2 }, ctx, onComment, onChompKeep);
       }
     };
     exports2.binary = binary;
@@ -2846,7 +2846,7 @@ var require_float2 = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^(?:[-+]?\.(?:inf|Inf|INF)|\.nan|\.NaN|\.NAN)$/,
-      resolve: (str) => str.slice(-3).toLowerCase() === "nan" ? NaN : str[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
+      resolve: (str2) => str2.slice(-3).toLowerCase() === "nan" ? NaN : str2[0] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
       stringify: stringifyNumber.stringifyNumber
     };
     var floatExp = {
@@ -2855,10 +2855,10 @@ var require_float2 = __commonJS({
       tag: "tag:yaml.org,2002:float",
       format: "EXP",
       test: /^[-+]?(?:[0-9][0-9_]*)?(?:\.[0-9_]*)?[eE][-+]?[0-9]+$/,
-      resolve: (str) => parseFloat(str.replace(/_/g, "")),
+      resolve: (str2) => parseFloat(str2.replace(/_/g, "")),
       stringify(node2) {
-        const num = Number(node2.value);
-        return isFinite(num) ? num.toExponential() : stringifyNumber.stringifyNumber(node2);
+        const num2 = Number(node2.value);
+        return isFinite(num2) ? num2.toExponential() : stringifyNumber.stringifyNumber(node2);
       }
     };
     var float = {
@@ -2866,11 +2866,11 @@ var require_float2 = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:float",
       test: /^[-+]?(?:[0-9][0-9_]*)?\.[0-9_]*$/,
-      resolve(str) {
-        const node2 = new Scalar.Scalar(parseFloat(str.replace(/_/g, "")));
-        const dot = str.indexOf(".");
+      resolve(str2) {
+        const node2 = new Scalar.Scalar(parseFloat(str2.replace(/_/g, "")));
+        const dot = str2.indexOf(".");
         if (dot !== -1) {
-          const f = str.substring(dot + 1).replace(/_/g, "");
+          const f = str2.substring(dot + 1).replace(/_/g, "");
           if (f[f.length - 1] === "0")
             node2.minFractionDigits = f.length;
         }
@@ -2890,34 +2890,34 @@ var require_int2 = __commonJS({
     "use strict";
     var stringifyNumber = require_stringifyNumber();
     var intIdentify = (value) => typeof value === "bigint" || Number.isInteger(value);
-    function intResolve(str, offset, radix, { intAsBigInt }) {
-      const sign = str[0];
+    function intResolve(str2, offset, radix, { intAsBigInt }) {
+      const sign = str2[0];
       if (sign === "-" || sign === "+")
         offset += 1;
-      str = str.substring(offset).replace(/_/g, "");
+      str2 = str2.substring(offset).replace(/_/g, "");
       if (intAsBigInt) {
         switch (radix) {
           case 2:
-            str = `0b${str}`;
+            str2 = `0b${str2}`;
             break;
           case 8:
-            str = `0o${str}`;
+            str2 = `0o${str2}`;
             break;
           case 16:
-            str = `0x${str}`;
+            str2 = `0x${str2}`;
             break;
         }
-        const n2 = BigInt(str);
+        const n2 = BigInt(str2);
         return sign === "-" ? BigInt(-1) * n2 : n2;
       }
-      const n = parseInt(str, radix);
+      const n = parseInt(str2, radix);
       return sign === "-" ? -1 * n : n;
     }
     function intStringify(node2, radix, prefix) {
       const { value } = node2;
       if (intIdentify(value)) {
-        const str = value.toString(radix);
-        return value < 0 ? "-" + prefix + str.substr(1) : prefix + str;
+        const str2 = value.toString(radix);
+        return value < 0 ? "-" + prefix + str2.substr(1) : prefix + str2;
       }
       return stringifyNumber.stringifyNumber(node2);
     }
@@ -2927,7 +2927,7 @@ var require_int2 = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "BIN",
       test: /^[-+]?0b[0-1_]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 2, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 2, opt),
       stringify: (node2) => intStringify(node2, 2, "0b")
     };
     var intOct = {
@@ -2936,7 +2936,7 @@ var require_int2 = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "OCT",
       test: /^[-+]?0[0-7_]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 1, 8, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 1, 8, opt),
       stringify: (node2) => intStringify(node2, 8, "0")
     };
     var int2 = {
@@ -2944,7 +2944,7 @@ var require_int2 = __commonJS({
       default: true,
       tag: "tag:yaml.org,2002:int",
       test: /^[-+]?[0-9][0-9_]*$/,
-      resolve: (str, _onError, opt) => intResolve(str, 0, 10, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 0, 10, opt),
       stringify: stringifyNumber.stringifyNumber
     };
     var intHex = {
@@ -2953,7 +2953,7 @@ var require_int2 = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "HEX",
       test: /^[-+]?0x[0-9a-fA-F_]+$/,
-      resolve: (str, _onError, opt) => intResolve(str, 2, 16, opt),
+      resolve: (str2, _onError, opt) => intResolve(str2, 2, 16, opt),
       stringify: (node2) => intStringify(node2, 16, "0x")
     };
     exports2.int = int2;
@@ -3057,26 +3057,26 @@ var require_timestamp = __commonJS({
   "../node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/schema/yaml-1.1/timestamp.js"(exports2) {
     "use strict";
     var stringifyNumber = require_stringifyNumber();
-    function parseSexagesimal(str, asBigInt) {
-      const sign = str[0];
-      const parts = sign === "-" || sign === "+" ? str.substring(1) : str;
-      const num = (n) => asBigInt ? BigInt(n) : Number(n);
-      const res = parts.replace(/_/g, "").split(":").reduce((res2, p) => res2 * num(60) + num(p), num(0));
-      return sign === "-" ? num(-1) * res : res;
+    function parseSexagesimal(str2, asBigInt) {
+      const sign = str2[0];
+      const parts = sign === "-" || sign === "+" ? str2.substring(1) : str2;
+      const num2 = (n) => asBigInt ? BigInt(n) : Number(n);
+      const res = parts.replace(/_/g, "").split(":").reduce((res2, p) => res2 * num2(60) + num2(p), num2(0));
+      return sign === "-" ? num2(-1) * res : res;
     }
     function stringifySexagesimal(node2) {
       let { value } = node2;
-      let num = (n) => n;
+      let num2 = (n) => n;
       if (typeof value === "bigint")
-        num = (n) => BigInt(n);
+        num2 = (n) => BigInt(n);
       else if (isNaN(value) || !isFinite(value))
         return stringifyNumber.stringifyNumber(node2);
       let sign = "";
       if (value < 0) {
         sign = "-";
-        value *= num(-1);
+        value *= num2(-1);
       }
-      const _60 = num(60);
+      const _60 = num2(60);
       const parts = [value % _60];
       if (value < 60) {
         parts.unshift(0);
@@ -3096,7 +3096,7 @@ var require_timestamp = __commonJS({
       tag: "tag:yaml.org,2002:int",
       format: "TIME",
       test: /^[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+$/,
-      resolve: (str, _onError, { intAsBigInt }) => parseSexagesimal(str, intAsBigInt),
+      resolve: (str2, _onError, { intAsBigInt }) => parseSexagesimal(str2, intAsBigInt),
       stringify: stringifySexagesimal
     };
     var floatTime = {
@@ -3105,7 +3105,7 @@ var require_timestamp = __commonJS({
       tag: "tag:yaml.org,2002:float",
       format: "TIME",
       test: /^[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*$/,
-      resolve: (str) => parseSexagesimal(str, false),
+      resolve: (str2) => parseSexagesimal(str2, false),
       stringify: stringifySexagesimal
     };
     var timestamp = {
@@ -3116,8 +3116,8 @@ var require_timestamp = __commonJS({
       // may be omitted altogether, resulting in a date format. In such a case, the time part is
       // assumed to be 00:00:00Z (start of day, UTC).
       test: RegExp("^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})(?:(?:t|T|[ \\t]+)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}(\\.[0-9]+)?)(?:[ \\t]*(Z|[-+][012]?[0-9](?::[0-9]{2})?))?)?$"),
-      resolve(str) {
-        const match = str.match(timestamp.test);
+      resolve(str2) {
+        const match = str2.match(timestamp.test);
         if (!match)
           throw new Error("!!timestamp expects a date, starting with yyyy-mm-dd");
         const [, year, month, day, hour, minute, second] = match.map(Number);
@@ -3149,7 +3149,7 @@ var require_schema3 = __commonJS({
     var seq = require_seq();
     var string4 = require_string();
     var binary = require_binary();
-    var bool = require_bool2();
+    var bool2 = require_bool2();
     var float = require_float2();
     var int2 = require_int2();
     var merge2 = require_merge();
@@ -3162,8 +3162,8 @@ var require_schema3 = __commonJS({
       seq.seq,
       string4.string,
       _null4.nullTag,
-      bool.trueTag,
-      bool.falseTag,
+      bool2.trueTag,
+      bool2.falseTag,
       int2.intBin,
       int2.intOct,
       int2.int,
@@ -3192,7 +3192,7 @@ var require_tags = __commonJS({
     var _null4 = require_null();
     var seq = require_seq();
     var string4 = require_string();
-    var bool = require_bool();
+    var bool2 = require_bool();
     var float = require_float();
     var int2 = require_int();
     var schema = require_schema();
@@ -3213,7 +3213,7 @@ var require_tags = __commonJS({
     ]);
     var tagsByName = {
       binary: binary.binary,
-      bool: bool.boolTag,
+      bool: bool2.boolTag,
       float: float.float,
       floatExp: float.floatExp,
       floatNaN: float.floatNaN,
@@ -8200,14 +8200,14 @@ function promiseAllObject(promisesObj) {
 }
 function randomString(length = 10) {
   const chars = "abcdefghijklmnopqrstuvwxyz";
-  let str = "";
+  let str2 = "";
   for (let i = 0; i < length; i++) {
-    str += chars[Math.floor(Math.random() * chars.length)];
+    str2 += chars[Math.floor(Math.random() * chars.length)];
   }
-  return str;
+  return str2;
 }
-function esc(str) {
-  return JSON.stringify(str);
+function esc(str2) {
+  return JSON.stringify(str2);
 }
 function slugify(input2) {
   return input2.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "");
@@ -8321,8 +8321,8 @@ var primitiveTypes = /* @__PURE__ */ new Set([
   "symbol",
   "undefined"
 ]);
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function escapeRegex(str2) {
+  return str2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function clone(inst, def, params) {
   const cl = new inst._zod.constr(def ?? inst._zod.def);
@@ -8588,13 +8588,13 @@ function getSizableOrigin(input2) {
   return "unknown";
 }
 var highSurrogate = /[\uD800-\uDBFF]/;
-function codePointLength(str) {
-  const units = str.length;
-  if (!highSurrogate.test(str))
+function codePointLength(str2) {
+  const units = str2.length;
+  if (!highSurrogate.test(str2))
     return units;
   let count4 = units;
   for (let i = 0; i < units - 1; i++) {
-    if ((str.charCodeAt(i) & 64512) === 55296 && (str.charCodeAt(i + 1) & 64512) === 56320) {
+    if ((str2.charCodeAt(i) & 64512) === 55296 && (str2.charCodeAt(i + 1) & 64512) === 56320) {
       count4--;
       i++;
     }
@@ -10927,7 +10927,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
     }
     return propValues;
   });
-  const isObject2 = isObject;
+  const isObject3 = isObject;
   const catchall = def.catchall;
   let value;
   const memo2 = globalConfig.memoizer;
@@ -10935,7 +10935,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
   inst._zod.parse = (payload, ctx) => {
     value ?? (value = _normalized.value);
     const input2 = payload.value;
-    if (!isObject2(input2)) {
+    if (!isObject3(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -11071,7 +11071,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     return doc.compile();
   };
   let fastpass;
-  const isObject2 = isObject;
+  const isObject3 = isObject;
   const jit = !globalConfig.jitless;
   const allowsEval2 = allowsEval;
   const fastEnabled = jit && allowsEval2.value;
@@ -11080,7 +11080,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
   inst._zod.parse = (payload, ctx) => {
     value ?? (value = _normalized.value);
     const input2 = payload.value;
-    if (!isObject2(input2)) {
+    if (!isObject3(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -27082,7 +27082,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// ../dist/chunk-CFSOTYA5.js
+// ../dist/chunk-V7IXF2BL.js
 var webagentEnvSchema = external_exports.enum(["local", "staging", "production"]);
 var regionCodeSchema = external_exports.enum(["us", "in"]);
 var hosts = {
@@ -27154,6 +27154,7 @@ function idSchema(kind) {
     `expected a ${kind} id`
   );
 }
+var identityUserIdSchema = external_exports.string().min(1).max(200);
 var apiKeySecretSchema = external_exports.string().regex(new RegExp(`^wa_(${REGION_ALT})_[A-Za-z0-9_-]{43}$`), "malformed API key");
 var engineSchema = external_exports.enum(["chromium", "firefox", "webkit"]);
 var ENGINES = engineSchema.options;
@@ -27283,8 +27284,13 @@ var sessionOptionsSchema = external_exports.object({
   /** IANA zone, e.g. `Europe/Berlin`. */
   timezone: external_exports.string().max(64).optional(),
   blockAds: external_exports.boolean().optional(),
-  /** `http://user:pass@host:port` or `socks5://host:port`. Forces a cold launch. */
-  proxyUrl: external_exports.string().url().optional(),
+  /**
+   * `http://user:pass@host:port` (http(s) only; `socks5://` is refused, 0.46.0). Forces a cold
+   * launch.
+   */
+  proxyUrl: external_exports.string().url().refine((u) => /^https?:\/\//i.test(u), {
+    message: "proxyUrl must be http:// or https:// (socks5 is not supported)"
+  }).optional(),
   /**
    * Route through the managed proxy network (when the server has one configured), optionally
    * from a country. Billed per GB received. Forces a cold launch.
@@ -30203,7 +30209,8 @@ var proxyDeviceInfoSchema = external_exports.object({
   id: idSchema("proxyDevice"),
   name: proxyDeviceNameSchema,
   status: proxyDeviceStatusSchema,
-  ownerUserId: idSchema("user"),
+  /** Identity user id (opaque, not `usr_`; 0.46.1). */
+  ownerUserId: identityUserIdSchema,
   restrictToUser: external_exports.boolean(),
   /** 0.43.0. Old payloads read as `proxy`. */
   purpose: proxyDevicePurposeSchema.default("proxy"),
@@ -30234,7 +30241,8 @@ var relayDeviceAuthRequestSchema = external_exports.object({ token: proxyDeviceT
 var relayDeviceAuthResponseSchema = external_exports.object({
   deviceId: idSchema("proxyDevice"),
   tenantId: idSchema("tenant"),
-  ownerUserId: idSchema("user"),
+  /** Identity user id (opaque, not `usr_`; 0.46.1). */
+  ownerUserId: identityUserIdSchema,
   restrictToUser: external_exports.boolean(),
   /** What the device was paired for (0.43.0); the relay serves aliases only for `local_app` and exits only for `proxy`. Absent: `proxy`. */
   purpose: proxyDevicePurposeSchema.default("proxy"),
@@ -30263,7 +30271,7 @@ var proxyStreamClaimsSchema = external_exports.object({
   sub: idSchema("session"),
   ten: idSchema("tenant"),
   /** The dashboard user who started the session; absent for API-key sessions. */
-  usr: idSchema("user").optional(),
+  usr: identityUserIdSchema.optional(),
   /** The proxy device this session exits through. */
   dev: idSchema("proxyDevice"),
   exp: external_exports.number().int(),
@@ -30818,7 +30826,7 @@ var integrationStatusSchema = external_exports.object({
   installed: external_exports.boolean(),
   /** GitHub org/user login or Slack workspace name. */
   account: external_exports.string().max(200).optional(),
-  installedBy: idSchema("user").optional(),
+  installedBy: identityUserIdSchema.optional(),
   installedAt: unixMs22.optional(),
   scopes: external_exports.array(external_exports.string().max(100)).max(100).optional(),
   /** Slack only, when installed: the notification settings. */
@@ -31188,12 +31196,15 @@ var proxyHostSchema = external_exports.string().max(253).refine((h) => HOSTNAME_
   message: "a hostname or IP address only: no scheme, path, port or credentials"
 });
 var proxyProtocolSchema = external_exports.enum(["http", "https", "socks5"]);
+var createProxyProtocolSchema = external_exports.enum(["http", "https"], {
+  error: "protocol must be http or https (socks5 is not supported)"
+});
 var proxyNameSchema = external_exports.string().trim().min(1).max(100);
 var proxyPortSchema = external_exports.number().int().min(1).max(65535);
 var bypassHostsSchema = external_exports.array(proxyHostSchema).max(50);
 var createProxyRequestSchema = external_exports.object({
   name: proxyNameSchema,
-  protocol: proxyProtocolSchema,
+  protocol: createProxyProtocolSchema,
   host: proxyHostSchema,
   port: proxyPortSchema,
   username: external_exports.string().min(1).max(256).optional(),
@@ -32129,8 +32140,9 @@ var qaQuickCheckSuggestionSchema = external_exports.object({
   expect: external_exports.string().max(1e3)
 });
 var qaQuickCheckStatusSchema = external_exports.enum(["running", "done", "failed"]);
+var qaPollRunIdSchema = external_exports.union([idSchema("workflowRun"), idSchema("skillRun")]);
 var qaQuickCheckResultSchema = external_exports.object({
-  runId: idSchema("workflowRun"),
+  runId: qaPollRunIdSchema,
   /**
    * Run state (0.45.0): stop polling at `done` or `failed`. Absent in an answer from before 0.45.0
    * reads as `done`, so old fixtures still parse. The api always sends it.
@@ -32214,7 +32226,7 @@ var qaRunInputSchema = external_exports.object({
 }).refine((v) => v.suiteId === void 0 || v.tests === void 0, {
   message: "send suiteId or tests, not both"
 });
-var qaStatusInputSchema = external_exports.object({ runId: runIdSchema });
+var qaStatusInputSchema = external_exports.object({ runId: qaPollRunIdSchema });
 var qaListRunsInputSchema = external_exports.object({
   environmentId: idSchema("qaEnvironment").optional(),
   trigger: workflowTriggerSchema.optional(),
@@ -32828,453 +32840,156 @@ var WebagentApiError = class extends Error {
     this.retryAfterS = init.retryAfterS;
   }
 };
-function errorFromResponse(res, text2) {
-  const raw = res.headers.get("retry-after");
-  const header = raw !== null && Number.isFinite(Number(raw)) ? Number(raw) : void 0;
-  let parsed;
-  try {
-    parsed = errorBodySchema.safeParse(JSON.parse(text2));
-  } catch {
-    parsed = void 0;
+var engineReplySchema = external_exports.looseObject({ ok: external_exports.boolean() });
+var snapshotSchema = external_exports.record(external_exports.string(), external_exports.unknown());
+
+// src/run-reply.ts
+var isPlain = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+var str = (v) => typeof v === "string" ? v : void 0;
+var num = (v) => typeof v === "number" && Number.isFinite(v) ? v : void 0;
+var bool = (v) => typeof v === "boolean" ? v : void 0;
+var ReplyError = class extends Error {
+  constructor(what, problem) {
+    super(`unexpected reply from ${what}: ${problem}`);
+    this.name = "ReplyError";
   }
-  if (parsed?.success) {
-    const e = parsed.data.error;
-    const fromDetails = e.details?.retryAfterS;
+};
+var VERDICTS = /* @__PURE__ */ new Set(["pass", "fail", "error", "running"]);
+function readCase(raw, i, what) {
+  if (!isPlain(raw)) throw new ReplyError(what, `cases[${i}] is not an object`);
+  const caseId = str(raw.caseId);
+  if (caseId === void 0) throw new ReplyError(what, `cases[${i}] has no caseId`);
+  const verdictRaw = str(raw.verdict);
+  const known = verdictRaw !== void 0 && VERDICTS.has(verdictRaw);
+  const f = isPlain(raw.failure) ? raw.failure : void 0;
+  const req = f && isPlain(f.request) && str(f.request.url) !== void 0 ? f.request : void 0;
+  const out = {
+    caseId,
+    title: str(raw.title) ?? caseId,
+    verdict: known ? verdictRaw : "error",
+    summary: known ? str(raw.summary) ?? "" : `the API reported case "${caseId}" as ${describe3(raw.verdict)}, which this CLI does not know (update the CLI)`,
+    attempts: num(raw.attempts),
+    flaky: bool(raw.flaky),
+    required: bool(raw.required),
+    durationMs: num(raw.durationMs),
+    modelSteps: num(raw.modelSteps),
+    replayedSteps: num(raw.replayedSteps)
+  };
+  if (f && known) {
+    out.failure = {
+      step: str(f.step),
+      error: str(f.error),
+      expected: str(f.expected),
+      saw: str(f.saw),
+      ...req ? { request: { method: str(req.method), url: req.url, status: num(req.status) } } : {}
+    };
+  }
+  return out;
+}
+var describe3 = (v) => typeof v === "string" ? `"${v}"` : "a missing verdict";
+function readRun(raw, what) {
+  if (!isPlain(raw)) throw new ReplyError(what, "not a JSON object");
+  const id = str(raw.id);
+  if (id === void 0) throw new ReplyError(what, "no run id");
+  if (raw.verdict === void 0) throw new ReplyError(what, "no verdict");
+  const list2 = raw.cases === void 0 ? [] : raw.cases;
+  if (!Array.isArray(list2)) throw new ReplyError(what, "cases is not a list");
+  const cases = list2.map((c2, i) => readCase(c2, i, what));
+  const c = isPlain(raw.counts) ? raw.counts : {};
+  const verdictRaw = str(raw.verdict);
+  const known = verdictRaw !== void 0 && VERDICTS.has(verdictRaw);
+  let verdict = known ? verdictRaw : "error";
+  let summary = str(raw.summary) ?? "";
+  if (!known) {
+    summary = `the API reported the run as ${describe3(raw.verdict)}, which this CLI does not know (update the CLI); treated as could not test`;
+  } else if (verdict === "pass") {
+    const bad = cases.find(
+      (_, i) => !VERDICTS.has(String(list2[i].verdict)) && cases[i]?.required !== false
+    );
+    if (bad) {
+      verdict = "error";
+      summary = bad.summary;
+    }
+  }
+  return {
+    id,
+    name: str(raw.name) ?? "tests",
+    verdict,
+    summary,
+    counts: {
+      cases: num(c.cases) ?? cases.length,
+      passed: num(c.passed) ?? 0,
+      failed: num(c.failed) ?? 0,
+      errored: num(c.errored) ?? 0,
+      running: num(c.running) ?? 0,
+      flaky: num(c.flaky),
+      optionalFailed: num(c.optionalFailed)
+    },
+    cases,
+    costMicros: num(raw.costMicros) ?? 0,
+    startedAt: str(raw.startedAt) ?? "",
+    durationMs: num(raw.durationMs),
+    notes: Array.isArray(raw.notes) ? raw.notes.filter((n) => typeof n === "string") : [],
+    raw
+  };
+}
+function readWorkflow(raw, what) {
+  if (!isPlain(raw)) throw new ReplyError(what, "not a JSON object");
+  const id = str(raw.id);
+  if (id === void 0) throw new ReplyError(what, "no workflow id");
+  return { id, key: str(raw.key), version: num(raw.version) ?? 0 };
+}
+function readWorkflowList(raw, what) {
+  if (!isPlain(raw) || !Array.isArray(raw.workflows))
+    throw new ReplyError(what, "no workflows list");
+  return {
+    workflows: raw.workflows.map((w) => readWorkflow(w, what)),
+    next: str(raw.next)
+  };
+}
+function readEngines(raw, what) {
+  if (!isPlain(raw) || !Array.isArray(raw.engines)) throw new ReplyError(what, "no engines list");
+  return raw.engines.flatMap((e) => {
+    if (!isPlain(e) || str(e.id) === void 0) return [];
+    const slug = str(e.slug);
+    const name = str(e.name);
+    return [{ id: e.id, ...slug ? { slug } : {}, ...name ? { name } : {} }];
+  });
+}
+
+// src/api-client.ts
+var isObject2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function errorFromReply(res, text2) {
+  const header = res.headers.get("retry-after");
+  const fromHeader = header !== null && Number.isFinite(Number(header)) ? Number(header) : void 0;
+  let body;
+  try {
+    body = JSON.parse(text2);
+  } catch {
+    body = void 0;
+  }
+  const e = isObject2(body) && isObject2(body.error) ? body.error : void 0;
+  if (e && typeof e.message === "string") {
+    const details = isObject2(e.details) ? e.details : void 0;
+    const fromDetails = details?.retryAfterS;
     return new WebagentApiError({
-      code: e.code,
+      code: typeof e.code === "string" ? e.code : "",
       message: e.message,
       status: res.status,
-      details: e.details,
-      requestId: e.requestId ?? res.headers.get("x-request-id") ?? void 0,
-      retryAfterS: typeof fromDetails === "number" ? fromDetails : header
+      details,
+      requestId: (typeof e.requestId === "string" ? e.requestId : void 0) ?? res.headers.get("x-request-id") ?? void 0,
+      retryAfterS: typeof fromDetails === "number" ? fromDetails : fromHeader
     });
   }
   return new WebagentApiError({
-    code: CODE_BY_STATUS[res.status] ?? "internal",
+    code: "",
     message: `HTTP ${res.status}${res.statusText ? ` ${res.statusText}` : ""}`,
     status: res.status,
     requestId: res.headers.get("x-request-id") ?? void 0,
-    retryAfterS: header
+    retryAfterS: fromHeader
   });
 }
-var Transport = class {
-  constructor(opts) {
-    this.opts = opts;
-  }
-  opts;
-  url(path, query) {
-    const base2 = /^https?:\/\//.test(path) ? path : this.opts.baseUrl.replace(/\/+$/, "") + path;
-    const qs = new URLSearchParams();
-    for (const [k, v] of Object.entries(query ?? {})) {
-      if (v === void 0) continue;
-      if (Array.isArray(v)) for (const x of v) qs.append(k, String(x));
-      else qs.set(k, String(v));
-    }
-    const s = qs.toString();
-    return s ? `${base2}${base2.includes("?") ? "&" : "?"}${s}` : base2;
-  }
-  async send(method, path, o = {}) {
-    const headers = {
-      accept: "application/json",
-      authorization: `Bearer ${await this.opts.token()}`,
-      ...o.headers
-    };
-    if (o.idempotencyKey) headers["idempotency-key"] = o.idempotencyKey;
-    let body;
-    if (o.rawBody !== void 0) {
-      body = o.rawBody;
-    } else if (o.body !== void 0) {
-      body = JSON.stringify(o.body);
-      headers["content-type"] = "application/json";
-    }
-    const timeout = AbortSignal.timeout(this.opts.timeoutMs);
-    const signal = o.signal ? AbortSignal.any([o.signal, timeout]) : timeout;
-    const url2 = this.url(path, o.query);
-    let res;
-    try {
-      res = await this.opts.fetch(url2, { method, headers, signal, ...body ? { body } : {} });
-    } catch (err) {
-      if (o.signal?.aborted) throw err;
-      const timedOut = timeout.aborted;
-      throw new WebagentApiError({
-        code: timedOut ? "timeout" : "internal",
-        message: timedOut ? `${method} ${path} timed out after ${this.opts.timeoutMs} ms` : `${method} ${path} failed: ${err instanceof Error ? err.message : String(err)}`,
-        status: 0,
-        details: timedOut ? { ms: this.opts.timeoutMs } : void 0,
-        cause: err
-      });
-    }
-    if (!res.ok) throw errorFromResponse(res, await res.text());
-    return res;
-  }
-  /** JSON reply, checked with the contracts schema. */
-  async json(method, path, schema, o = {}) {
-    const res = await this.send(method, path, o);
-    const parsed = schema.safeParse(await res.json());
-    if (parsed.success) return parsed.data;
-    throw new WebagentApiError({
-      code: "internal",
-      message: `Unexpected reply from ${method} ${path}: ${parsed.error.issues[0]?.message ?? "bad shape"}`,
-      status: res.status,
-      details: { issues: parsed.error.issues },
-      requestId: res.headers.get("x-request-id") ?? void 0
-    });
-  }
-  async bytes(method, path, o = {}) {
-    const res = await this.send(method, path, { ...o, headers: { accept: "*/*", ...o.headers } });
-    return new Uint8Array(await res.arrayBuffer());
-  }
-  async text(method, path, o = {}) {
-    const res = await this.send(method, path, { ...o, headers: { accept: "*/*", ...o.headers } });
-    return res.text();
-  }
-};
-var engineReplySchema = external_exports.looseObject({ ok: external_exports.boolean() });
-var snapshotSchema = external_exports.record(external_exports.string(), external_exports.unknown());
-var REFRESH_WINDOW_MS = 3e4;
-var SessionHandle = class {
-  constructor(info, deps) {
-    this.deps = deps;
-    this.info = info;
-    this.http = new Transport({
-      baseUrl: info.endpoints.http,
-      token: () => this.freshToken(),
-      fetch: deps.fetch,
-      timeoutMs: deps.timeoutMs
-    });
-  }
-  deps;
-  info;
-  http;
-  get id() {
-    return this.info.id;
-  }
-  get endpoints() {
-    return this.info.endpoints;
-  }
-  /** The current session token (may be refreshed by a later call). */
-  get token() {
-    return this.info.token;
-  }
-  get tokenExpiresAt() {
-    return this.info.tokenExpiresAt;
-  }
-  /** The create reply, as last updated. */
-  get session() {
-    return this.info;
-  }
-  /** Mint a new token now (the old one stays valid until it expires). */
-  async refreshToken() {
-    const t = await this.deps.api.json(
-      "POST",
-      `/v1/sessions/${this.id}/token`,
-      sessionTokenResponseSchema
-    );
-    this.info = { ...this.info, token: t.token, tokenExpiresAt: t.tokenExpiresAt };
-    return t;
-  }
-  async freshToken() {
-    if (Date.parse(this.info.tokenExpiresAt) - Date.now() < REFRESH_WINDOW_MS) {
-      await this.refreshToken();
-    }
-    return this.info.token;
-  }
-  /** Run one action. Failures of the page (element not found...) come back as `ok: false`. */
-  act(action) {
-    return this.http.json("POST", "/actions", engineReplySchema, { body: action });
-  }
-  snapshot(opts = {}) {
-    return this.http.json("GET", "/snapshot", snapshotSchema, { query: opts });
-  }
-  /** The snapshot as the text the agent reads. */
-  snapshotText(opts = {}) {
-    return this.http.text("GET", "/snapshot", { query: { ...opts, format: "text" } });
-  }
-  screenshot(opts = {}) {
-    return this.http.bytes("GET", "/screenshot", { query: { ...opts } });
-  }
-  cookies() {
-    return this.http.json("GET", "/cookies", listCookiesResponseSchema);
-  }
-  setCookies(cookies) {
-    return this.http.json("PUT", "/cookies", putCookiesResponseSchema, { body: { cookies } });
-  }
-  /** No filter clears all cookies. */
-  clearCookies(filter = {}) {
-    return this.http.json("DELETE", "/cookies", okResponseSchema, { query: filter });
-  }
-  tabs() {
-    return this.http.json("GET", "/tabs", tabListSchema);
-  }
-  openTab(url2) {
-    return this.http.json("POST", "/tabs", tabInfoSchema, { body: url2 ? { url: url2 } : {} });
-  }
-  activateTab(tabId) {
-    return this.http.json("POST", `/tabs/${encodeURIComponent(tabId)}/activate`, okResponseSchema);
-  }
-  closeTab(tabId) {
-    return this.http.json("DELETE", `/tabs/${encodeURIComponent(tabId)}`, okResponseSchema);
-  }
-  /** A human takes over: actions answer `session_paused` until `resume()`. */
-  pause(by) {
-    return this.http.json("POST", "/pause", pauseSessionResponseSchema, {
-      body: by ? { by } : {}
-    });
-  }
-  resume() {
-    return this.http.json("POST", "/resume", resumeSessionResponseSchema);
-  }
-  /** End the session (idempotent). */
-  close() {
-    return this.deps.api.json("DELETE", `/v1/sessions/${this.id}`, deleteSessionResponseSchema);
-  }
-};
-var WebagentClient = class {
-  baseUrl;
-  http;
-  fetchFn;
-  timeoutMs;
-  constructor(options) {
-    this.baseUrl = resolveBaseUrl(options.apiKey, options.baseUrl);
-    this.fetchFn = options.fetch ?? ((...args) => globalThis.fetch(...args));
-    this.timeoutMs = options.timeoutMs ?? 6e4;
-    this.http = new Transport({
-      baseUrl: this.baseUrl,
-      token: () => options.apiKey,
-      fetch: this.fetchFn,
-      timeoutMs: this.timeoutMs
-    });
-  }
-  // Sessions
-  /** Start a browser session. `endpoints` on the result say where to connect. */
-  async createSession(request = {}, o = {}) {
-    const info = await this.http.json("POST", "/v1/sessions", createSessionResponseSchema, {
-      body: request,
-      ...o
-    });
-    return new SessionHandle(info, {
-      api: this.http,
-      fetch: this.fetchFn,
-      timeoutMs: this.timeoutMs
-    });
-  }
-  async listSessions() {
-    return (await this.http.json("GET", "/v1/sessions", listSessionsResponseSchema)).sessions;
-  }
-  /** One session; `endpoints` and `startedBy` come back when the API sends them. */
-  getSession(id) {
-    return this.http.json("GET", `/v1/sessions/${id}`, getSessionResponseSchema);
-  }
-  closeSession(id) {
-    return this.http.json("DELETE", `/v1/sessions/${id}`, deleteSessionResponseSchema);
-  }
-  // Engines
-  /** The project's engines: built-in and its own (`GET /v1/engines`). */
-  async listEngines() {
-    const res = await this.http.json(
-      "GET",
-      "/v1/engines",
-      listEnginesResponseSchema
-    );
-    return res.engines;
-  }
-  /**
-   * Turn an engine reference (`eng_...` id or a slug such as `qa` or `my-qa`) into the engine id,
-   * checked against this project's engines. Throws `WebagentApiError` with code `not_found`
-   * ("Engine '<ref>' not found in this project") or `conflict` (more than one engine matches).
-   * `details.ref` carries the reference.
-   */
-  async resolveEngine(ref) {
-    const engines = await this.listEngines();
-    const hits = engines.filter((e) => e.id === ref || e.slug === ref);
-    if (hits.length === 1) return hits[0].id;
-    const names = hits.map((e) => `${e.slug ?? e.name} (${e.id})`).join(", ");
-    throw new WebagentApiError({
-      code: hits.length === 0 ? "not_found" : "conflict",
-      status: hits.length === 0 ? 404 : 409,
-      message: hits.length === 0 ? `Engine '${ref}' not found in this project` : `Engine '${ref}' is ambiguous in this project: ${names}`,
-      details: { ref }
-    });
-  }
-  // Skills
-  async listSkills() {
-    return (await this.http.json("GET", "/v1/skills", listSkillsResponseSchema)).skills;
-  }
-  getSkill(name, version2) {
-    return this.http.json("GET", `/v1/skills/${name}`, skillDetailResponseSchema, {
-      query: { version: version2 }
-    });
-  }
-  /** Check a SKILL.md text without saving it. */
-  validateSkill(text2) {
-    return this.http.json("POST", "/v1/skills/validate", skillValidationSchema, { body: { text: text2 } });
-  }
-  /** Start a run. It is async: poll with `getSkillRun` or use `waitForSkillRun`. */
-  runSkill(name, request = {}, o = {}) {
-    return this.http.json("POST", `/v1/skills/${name}/run`, skillRunAcceptedSchema, {
-      body: request,
-      ...o
-    });
-  }
-  /** Newest first. Pass the reply's `next` as `cursor` for the following page; `status` may repeat. */
-  listSkillRuns(query = {}) {
-    return this.http.json("GET", "/v1/skill-runs", listSkillRunsResponseSchema, {
-      query: { status: query.status, skill: query.skill, limit: query.limit, cursor: query.cursor }
-    });
-  }
-  getSkillRun(runId) {
-    return this.http.json("GET", `/v1/skill-runs/${runId}`, skillRunDetailSchema);
-  }
-  /** The finished run's HTML report (the API redirects to a short-lived URL; `hasReport`). */
-  skillRunReport(runId) {
-    return this.http.text("GET", `/v1/skill-runs/${runId}/report`);
-  }
-  /** JSON test report of a skill run (verdict, steps, findings, console and network failures). */
-  getSkillRunReport(runId) {
-    return this.http.json("GET", `/v1/skill-runs/${runId}/report.json`, runReportSchema);
-  }
-  /** Poll until the run is no longer `running`. */
-  async waitForSkillRun(runId, o = {}) {
-    const deadline = Date.now() + (o.timeoutMs ?? 3e5);
-    for (; ; ) {
-      const run = await this.getSkillRun(runId);
-      if (run.status !== "running") return run;
-      const left = deadline - Date.now();
-      if (left <= 0) {
-        throw new WebagentApiError({
-          code: "timeout",
-          message: `Skill run ${runId} still running after ${o.timeoutMs ?? 3e5} ms`,
-          status: 0,
-          details: { ms: o.timeoutMs ?? 3e5 }
-        });
-      }
-      await sleep(Math.min(o.pollMs ?? 1e3, left), o.signal);
-    }
-  }
-  // Workflows (D63): saved QA cases and their runs
-  /** Newest page first as the API orders it; pass the reply's `next` as `cursor` for the following page. */
-  listWorkflows(query = {}) {
-    return this.http.json("GET", "/v1/workflows", listWorkflowsResponseSchema, {
-      query: { limit: query.limit, cursor: query.cursor }
-    });
-  }
-  createWorkflow(request, o = {}) {
-    return this.http.json("POST", "/v1/workflows", workflowSchema, { body: request, ...o });
-  }
-  getWorkflow(id) {
-    return this.http.json("GET", `/v1/workflows/${id}`, workflowSchema);
-  }
-  /** Create or fully replace the workflow with this `key` (what CI does on the default branch). `version` goes up on every call. */
-  upsertWorkflowByKey(key, request) {
-    return this.http.json(
-      "PUT",
-      `/v1/workflows/by-key/${encodeURIComponent(key)}`,
-      workflowSchema,
-      {
-        body: request
-      }
-    );
-  }
-  /** Start a saved workflow. Async (202): poll with `getWorkflowRun` or use `waitForWorkflowRun`. */
-  startWorkflowRun(workflowId, request = {}, o = {}) {
-    return this.http.json("POST", `/v1/workflows/${workflowId}/runs`, workflowRunSchema, {
-      body: request,
-      ...o
-    });
-  }
-  /** Run cases sent inline, nothing saved (PR runs in CI; `workflowKey` groups them under the saved workflow). */
-  startAdhocWorkflowRun(request, o = {}) {
-    return this.http.json("POST", "/v1/workflow-runs", workflowRunSchema, { body: request, ...o });
-  }
-  getWorkflowRun(runId) {
-    return this.http.json("GET", `/v1/workflow-runs/${runId}`, workflowRunSchema);
-  }
-  /** The run as Markdown (for PR comments and CI logs). */
-  getWorkflowRunMarkdown(runId) {
-    return this.http.text("GET", `/v1/workflow-runs/${runId}/report.md`);
-  }
-  /** Stop a running run. A finished run is a `conflict` error. */
-  cancelWorkflowRun(runId) {
-    return this.http.json("POST", `/v1/workflow-runs/${runId}/cancel`, workflowRunSchema);
-  }
-  /** Poll until the verdict is no longer `running`; throws a `timeout` error after `timeoutMs` (default 20 min; the run is not cancelled). */
-  async waitForWorkflowRun(runId, o = {}) {
-    const timeoutMs2 = o.timeoutMs ?? 12e5;
-    const deadline = Date.now() + timeoutMs2;
-    let pause = o.pollMs ?? 1e3;
-    for (; ; ) {
-      const run = await this.getWorkflowRun(runId);
-      o.onPoll?.(run);
-      if (run.verdict !== "running") return run;
-      const left = deadline - Date.now();
-      if (left <= 0) {
-        throw new WebagentApiError({
-          code: "timeout",
-          message: `Workflow run ${runId} still running after ${timeoutMs2} ms`,
-          status: 0,
-          details: { ms: timeoutMs2 }
-        });
-      }
-      await sleep(Math.min(pause, left), o.signal);
-      pause = Math.min(Math.round(pause * 1.5), o.maxPollMs ?? 1e4);
-    }
-  }
-  // Tasks
-  /** The project's goal tasks, newest first (at most 200); `sessionId` narrows to one session. */
-  async listTasks(sessionId) {
-    return (await this.http.json("GET", "/v1/tasks", listTasksResponseSchema, { query: { sessionId } })).tasks;
-  }
-  /** JSON test report of a goal task. A task has no assertions: the report says so. */
-  getTaskReport(taskId) {
-    return this.http.json("GET", `/v1/tasks/${taskId}/report.json`, runReportSchema);
-  }
-  // Quick tools
-  scrape(request, o = {}) {
-    return this.http.json("POST", "/v1/scrape", scrapeResponseSchema, { body: request, ...o });
-  }
-  crawl(request, o = {}) {
-    return this.http.json("POST", "/v1/crawl", crawlResponseSchema, { body: request, ...o });
-  }
-  /** The image bytes (png, jpeg or webp by `format`). */
-  screenshot(request, o = {}) {
-    return this.http.bytes("POST", "/v1/screenshot", { body: request, ...o });
-  }
-  /** The PDF bytes. */
-  pdf(request, o = {}) {
-    return this.http.bytes("POST", "/v1/pdf", { body: request, ...o });
-  }
-  // Schedules
-  async listSchedules() {
-    return (await this.http.json("GET", "/v1/schedules", listSchedulesResponseSchema)).schedules;
-  }
-  createSchedule(request, o = {}) {
-    return this.http.json("POST", "/v1/schedules", scheduleSchema, { body: request, ...o });
-  }
-  getSchedule(id) {
-    return this.http.json("GET", `/v1/schedules/${id}`, scheduleSchema);
-  }
-  updateSchedule(id, patch) {
-    return this.http.json("PATCH", `/v1/schedules/${id}`, scheduleSchema, { body: patch });
-  }
-  deleteSchedule(id) {
-    return this.http.json("DELETE", `/v1/schedules/${id}`, deleteScheduleResponseSchema);
-  }
-  runScheduleNow(id) {
-    return this.http.json("POST", `/v1/schedules/${id}/run`, runScheduleNowResponseSchema);
-  }
-  // Account
-  tenant() {
-    return this.http.json("GET", "/v1/tenant", tenantResponseSchema);
-  }
-  billing() {
-    return this.http.json("GET", "/v1/billing", billingResponseSchema);
-  }
-  /** Ledger totals; `sinceMs` is a unix time in ms. */
-  usage(sinceMs) {
-    return this.http.json("GET", "/v1/usage", usageTotalsSchema, { query: { sinceMs } });
-  }
-};
-function sleep(ms, signal) {
+function pause(ms, signal) {
   return new Promise((resolve2, reject) => {
     if (signal?.aborted) return reject(signal.reason);
     const t = setTimeout(() => {
@@ -33288,6 +33003,132 @@ function sleep(ms, signal) {
     signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
+var TolerantClient = class {
+  constructor(o) {
+    this.o = o;
+    this.base = resolveBaseUrl(o.apiKey, o.baseUrl);
+    this.fetchFn = o.fetch ?? ((...a) => globalThis.fetch(...a));
+  }
+  o;
+  base;
+  fetchFn;
+  async send(method, path, x = {}) {
+    const qs = new URLSearchParams(x.query).toString();
+    const url2 = `${this.base}${path}${qs ? `?${qs}` : ""}`;
+    const headers = {
+      accept: "application/json",
+      authorization: `Bearer ${this.o.apiKey}`
+    };
+    if (x.idempotencyKey) headers["idempotency-key"] = x.idempotencyKey;
+    if (x.body !== void 0) headers["content-type"] = "application/json";
+    const timeout = AbortSignal.timeout(this.o.timeoutMs);
+    let res;
+    try {
+      res = await this.fetchFn(url2, {
+        method,
+        headers,
+        signal: timeout,
+        ...x.body !== void 0 ? { body: JSON.stringify(x.body) } : {}
+      });
+    } catch (err) {
+      const timedOut = timeout.aborted;
+      throw new WebagentApiError({
+        code: timedOut ? "timeout" : "internal",
+        message: timedOut ? `${method} ${path} timed out after ${this.o.timeoutMs} ms` : `${method} ${path} failed: ${err instanceof Error ? err.message : String(err)}`,
+        status: 0,
+        cause: err
+      });
+    }
+    if (!res.ok) throw errorFromReply(res, await res.text());
+    return res;
+  }
+  /** A 2xx reply with a body the CLI cannot read at all: reported as `internal` with the 2xx status. */
+  async read(res, reader) {
+    try {
+      return reader(await res.json());
+    } catch (err) {
+      throw new WebagentApiError({
+        code: "internal",
+        message: err instanceof ReplyError ? err.message : "the reply was not JSON",
+        status: res.status,
+        requestId: res.headers.get("x-request-id") ?? void 0,
+        cause: err
+      });
+    }
+  }
+  async resolveEngine(ref) {
+    const res = await this.send("GET", "/v1/engines");
+    const engines = await this.read(res, (r) => readEngines(r, "GET /v1/engines"));
+    const hits = engines.filter((e) => e.id === ref || e.slug === ref);
+    if (hits.length === 1) return hits[0].id;
+    const names = hits.map((e) => `${e.slug ?? e.name ?? e.id} (${e.id})`).join(", ");
+    throw new WebagentApiError({
+      code: hits.length === 0 ? "not_found" : "conflict",
+      status: hits.length === 0 ? 404 : 409,
+      message: hits.length === 0 ? `Engine '${ref}' not found in this project` : `Engine '${ref}' is ambiguous in this project: ${names}`,
+      details: { ref }
+    });
+  }
+  async listWorkflows(query = {}) {
+    const q = {};
+    if (query.limit !== void 0) q.limit = String(query.limit);
+    if (query.cursor !== void 0) q.cursor = query.cursor;
+    const res = await this.send("GET", "/v1/workflows", { query: q });
+    return this.read(res, (r) => readWorkflowList(r, "GET /v1/workflows"));
+  }
+  async upsertWorkflowByKey(key, request) {
+    const path = `/v1/workflows/by-key/${encodeURIComponent(key)}`;
+    const res = await this.send("PUT", path, { body: request });
+    return this.read(res, (r) => readWorkflow(r, `PUT ${path}`));
+  }
+  async startWorkflowRun(workflowId, request, o = {}) {
+    const path = `/v1/workflows/${workflowId}/runs`;
+    const res = await this.send("POST", path, { body: request, idempotencyKey: o.idempotencyKey });
+    return this.read(res, (r) => readRun(r, `POST ${path}`));
+  }
+  async startAdhocWorkflowRun(request, o = {}) {
+    const res = await this.send("POST", "/v1/workflow-runs", {
+      body: request,
+      idempotencyKey: o.idempotencyKey
+    });
+    return this.read(res, (r) => readRun(r, "POST /v1/workflow-runs"));
+  }
+  async getWorkflowRun(runId) {
+    const path = `/v1/workflow-runs/${runId}`;
+    const res = await this.send("GET", path);
+    return this.read(res, (r) => readRun(r, `GET ${path}`));
+  }
+  async getWorkflowRunMarkdown(runId) {
+    const res = await this.send("GET", `/v1/workflow-runs/${runId}/report.md`);
+    return res.text();
+  }
+  async cancelWorkflowRun(runId) {
+    const path = `/v1/workflow-runs/${runId}/cancel`;
+    const res = await this.send("POST", path);
+    return this.read(res, (r) => readRun(r, `POST ${path}`));
+  }
+  /** Poll until the verdict is not `running`; a `timeout` error after `timeoutMs` (the run is not cancelled). */
+  async waitForWorkflowRun(runId, o = {}) {
+    const timeoutMs2 = o.timeoutMs ?? 12e5;
+    const deadline = Date.now() + timeoutMs2;
+    let wait = 1e3;
+    for (; ; ) {
+      const run = await this.getWorkflowRun(runId);
+      o.onPoll?.(run);
+      if (run.verdict !== "running") return run;
+      const left = deadline - Date.now();
+      if (left <= 0) {
+        throw new WebagentApiError({
+          code: "timeout",
+          message: `Workflow run ${runId} still running after ${timeoutMs2} ms`,
+          status: 0
+        });
+      }
+      await pause(Math.min(wait, left), o.signal);
+      wait = Math.min(Math.round(wait * 1.5), 1e4);
+    }
+  }
+};
 
 // src/args.ts
 var import_node_util = require("util");
@@ -33454,11 +33295,27 @@ function toCliError(e, what, apiUrl) {
     );
   }
   if (e.code === "wrong_region") return new SetupError(`${what}: ${e.message}`);
+  if (e.code === "internal" && e.status >= 200 && e.status < 300) {
+    return new CouldNotTestError(`${what}: ${e.message} (update the CLI if this keeps happening)`);
+  }
   if (e.status === 0 && e.code === "internal") {
     return new SetupError(`could not reach the API at ${apiUrl}`, [e.message]);
   }
   if (isTransient(e)) return new CouldNotTestError(`${what} failed (${e.code}): ${e.message}`);
-  return new SetupError(`${what} was rejected (${e.code}): ${e.message}`);
+  return new SetupError(`${what} was rejected (${e.code}): ${e.message}`, issueLines(e));
+}
+function issueLines(e) {
+  const issues = e.details?.issues;
+  if (!Array.isArray(issues)) return [];
+  const lines = [];
+  for (const i of issues.slice(0, 10)) {
+    if (typeof i !== "object" || i === null) continue;
+    const { path, message } = i;
+    if (typeof message !== "string") continue;
+    const where = Array.isArray(path) ? path.map(String).join(".") : "";
+    lines.push(where ? `${where}: ${message}` : message);
+  }
+  return lines;
 }
 async function callApi(d2, what, fn) {
   for (let attempt = 1; ; attempt++) {
@@ -33795,6 +33652,15 @@ function renderJunit(input2) {
     </testcase>`);
     }
     if (run.cases.length === 0 && run.verdict !== "pass") errors = 1;
+    if (run.cases.length > 0 && failures + errors === 0 && (run.verdict === "error" || run.verdict === "running")) {
+      errors = 1;
+      const why = xmlEscape(run.summary || "the run could not be tested");
+      cases.push(
+        `    <testcase classname="${classname}" name="${suite}" time="0.000">
+      <error message="${why}" type="could_not_test">${why}</error>
+    </testcase>`
+      );
+    }
   }
   const total = cases.length;
   const time4 = secs(run?.durationMs);
@@ -33810,6 +33676,75 @@ ${cases.join("\n")}
 
 // src/plan.ts
 var import_yaml = __toESM(require_dist(), 1);
+
+// src/opaque-cases.ts
+var CLI_CASE_KEYS = [
+  "id",
+  "title",
+  "path",
+  "tags",
+  "priority",
+  "required",
+  "signedIn"
+];
+var KNOWN = new Set(CLI_CASE_KEYS);
+var isPlain2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function caseList(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (isPlain2(raw) && Array.isArray(raw.cases)) return raw.cases;
+  return void 0;
+}
+function stripOpaque(raw) {
+  const list2 = caseList(raw);
+  if (list2 === void 0) return raw;
+  const cases = list2.map(
+    (c) => isPlain2(c) ? Object.fromEntries(Object.entries(c).filter(([k]) => KNOWN.has(k))) : c
+  );
+  return Array.isArray(raw) ? cases : { ...raw, cases };
+}
+function opaqueOf(raw) {
+  return (caseList(raw) ?? []).map((c) => {
+    if (!isPlain2(c)) return { opaque: {}, signedIn: false };
+    const opaque = {};
+    for (const [k, v] of Object.entries(c)) {
+      if (!KNOWN.has(k) && k !== "__proto__") opaque[k] = v;
+    }
+    return { opaque, signedIn: c.signedIn === true };
+  });
+}
+function opaqueById(raw, ids) {
+  const byId2 = /* @__PURE__ */ new Map();
+  opaqueOf(raw).forEach((c, i) => {
+    const id = ids[i];
+    if (id !== void 0 && !c.signedIn) byId2.set(id, c.opaque);
+  });
+  return byId2;
+}
+function restoreOpaque(converted, byId2) {
+  return converted.map((c) => {
+    const opaque = byId2.get(c.id);
+    if (opaque === void 0) {
+      throw new Error(`internal: the converted case "${c.id}" is not in the tests file`);
+    }
+    return { ...c, ...opaque };
+  });
+}
+function topLevelExtras(raw, known) {
+  if (!isPlain2(raw)) return {};
+  const skip = /* @__PURE__ */ new Set([...known, ...RESERVED_TOP, "__proto__"]);
+  return Object.fromEntries(Object.entries(raw).filter(([k]) => !skip.has(k)));
+}
+var RESERVED_TOP = [
+  "trigger",
+  "ci",
+  "managedBy",
+  "workflowKey",
+  "baselineRunId",
+  "engineId",
+  "session"
+];
+
+// src/plan.ts
 function colonHint(err, text2) {
   const e = err;
   if (e?.code !== "BLOCK_AS_IMPLICIT_KEY") return void 0;
@@ -33828,7 +33763,7 @@ function loadTestsText(text2, path) {
     if (hint) lines.push(hint);
     throw new SetupError(`${path} is not valid YAML`, lines);
   }
-  const read = readTestsFile(raw);
+  const read = readTestsFile(stripOpaque(raw));
   if (!read.success) {
     throw new SetupError(
       `${path} is not a valid tests file`,
@@ -33837,7 +33772,17 @@ function loadTestsText(text2, path) {
   }
   try {
     const { request, engineSlug, warnings } = testsFileToWorkflowRequest(read.data);
-    return { request, engineSlug, warnings };
+    const byId2 = opaqueById(raw, deriveCaseIds(read.data.cases));
+    return {
+      request: { ...request, cases: restoreOpaque(request.cases, byId2) },
+      // File-level keys this CLI's contracts do not know travel to the server unchanged.
+      // WATCH(qa-next): "known" is this build's `testsFileSchema.shape`; a key the contracts add later
+      // is handled by the contracts converter, and a key that is both extra and set by the CLI loses
+      // (the request builders in run-test.ts put the CLI's fields last).
+      extra: topLevelExtras(raw, Object.keys(testsFileSchema.shape)),
+      engineSlug,
+      warnings
+    };
   } catch (err) {
     if (err instanceof TestsFileError) throw new SetupError(`${path} cannot run`, err.issues);
     throw err;
@@ -33989,7 +33934,7 @@ async function execute(opts, d2, log, setName) {
     const wf = await callApi(
       api,
       `saving workflow ${key2}`,
-      () => d2.client.upsertWorkflowByKey(key2, { ...request, key: key2, managedBy })
+      () => d2.client.upsertWorkflowByKey(key2, { ...loaded.extra, ...request, key: key2, managedBy })
     );
     log(`Synced workflow ${key2} (v${wf.version}); running it against ${target.url}`);
     const run2 = await startSaved(d2, wf.id, opts, { ...common, url: target.url });
@@ -34011,10 +33956,11 @@ async function execute(opts, d2, log, setName) {
   };
   log(`Running ${adhoc.cases.length} case(s) ad hoc against ${target.url} (nothing is saved)`);
   const key = d2.randomId();
+  const body = { ...loaded.extra, ...adhoc };
   const run = await callApi(
     api,
     "starting the run",
-    () => d2.client.startAdhocWorkflowRun(adhoc, { idempotencyKey: key })
+    () => d2.client.startAdhocWorkflowRun(body, { idempotencyKey: key })
   );
   return waitForRun(run, opts, d2, log);
 }
@@ -34154,7 +34100,7 @@ async function finish(opts, d2, log, who, fin) {
     log("");
     log(renderTable(run));
     for (const n of run.notes) log(`Note: ${n}`);
-    if (opts.json) d2.out(JSON.stringify(run, null, 2));
+    if (opts.json) d2.out(JSON.stringify(run.raw ?? run, null, 2));
   }
   const code = exitCodeFor(fin.outcome, opts.onError);
   const couldNotTest = fin.outcome.kind !== "verdict" || fin.outcome.verdict === "error" || fin.outcome.verdict === "running";
@@ -34205,8 +34151,8 @@ async function safeWrite(d2, path, text2) {
 }
 
 // src/main.ts
-var VERSION = true ? "0.2.0" : "0.1.0";
-function sleep2(ms, signal) {
+var VERSION = true ? "0.3.0" : "0.1.0";
+function sleep(ms, signal) {
   return new Promise((resolve2, reject) => {
     if (signal?.aborted) return reject(signal.reason);
     const t = setTimeout(() => {
@@ -34264,7 +34210,7 @@ ${HELP}`);
   try {
     return await runTest(parsed.options, {
       env,
-      client: new WebagentClient({ apiKey, baseUrl: apiUrl, timeoutMs: 3e4 }),
+      client: new TolerantClient({ apiKey, baseUrl: apiUrl, timeoutMs: 3e4 }),
       apiUrl,
       cwd: process.cwd(),
       readFile: (p) => (0, import_promises.readFile)(p, "utf8"),
@@ -34274,7 +34220,7 @@ ${HELP}`);
       },
       fetch: (...a) => globalThis.fetch(...a),
       now: () => Date.now(),
-      sleep: sleep2,
+      sleep,
       randomId: () => (0, import_node_crypto.randomUUID)(),
       readEvent: () => readEvent(env),
       out: (l) => console.log(l),

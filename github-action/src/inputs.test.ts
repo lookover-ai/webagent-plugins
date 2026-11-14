@@ -39,7 +39,7 @@ describe("mapToCliArgs", () => {
       "test", "--json", "--markdown", "/tmp/r.md", "--file", "qa/t.yaml",
       "--url", "https://pr-1.example.com", "--workflow", "checkout", "--target", "staging",
       "--tags", "smoke,pay", "--case-ids", "a,b", "--sync", "--retries", "2",
-      "--timeout-minutes", "20", "--on-error", "neutral", "--wait-for-url", "--wait-for-url-timeout", "30",
+      "--timeout-minutes", "20", "--on-error", "block", "--wait-for-url", "--wait-for-url-timeout", "30", // neutral is applied by the Action, not the CLI
     ]);
   });
 

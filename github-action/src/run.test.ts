@@ -177,10 +177,63 @@ describe("run", () => {
     expect(await run(r.deps)).toBe(2);
     expect(r.outputs.verdict).toBe("error");
     expect(r.gh.filter((c) => c.method !== "GET").at(-1)?.body?.body).toContain("answered 502");
-    const n = rig({ env: { "INPUT_ON-ERROR": "neutral" }, cli: { ...e, code: 0 } });
+    const n = rig({ env: { "INPUT_ON-ERROR": "neutral" }, cli: e });
     expect(await run(n.deps)).toBe(0);
     expect(n.outputs.verdict).toBe("error");
     expect(n.logs.some((l) => l.startsWith("::warning"))).toBe(true);
+    expect(n.cliCalls[0]?.args.join(" ")).toContain("--on-error block"); // neutral is the Action's, so a CLI exit 0 is always a pass
+  });
+
+  it("unknown verdict words in the reply never make a pass: the CLI's exit code decides, the reply is not read for a verdict", async () => {
+    // CLI 0.3.0 exits 2 for these; the raw reply it prints still says "skipped" / "pass".
+    for (const stdout of [
+      JSON.stringify({ id: "wfr_1", verdict: "skipped", counts: { flaky: 0 }, cases: [{ caseId: "a", verdict: "skipped", sessionId: "ses_1" }] }),
+      JSON.stringify({ id: "wfr_1", verdict: "pass", cases: [{ caseId: "a", verdict: "quarantined" }] }),
+    ]) {
+      const r = rig({ cli: { code: 2, stdout } });
+      expect(await run(r.deps)).toBe(2);
+      expect(r.outputs.verdict).toBe("error");
+      expect(r.shares).toHaveLength(0); // a case the Action cannot read gets no replay link
+      const n = rig({ env: { "INPUT_ON-ERROR": "neutral" }, cli: { code: 2, stdout } });
+      expect(await run(n.deps)).toBe(0);
+      expect(n.outputs.verdict).toBe("error"); // never "pass", even when the job is green
+    }
+  });
+
+  it("a reply of any shape cannot break the Action: odd or missing fields are left out", async () => {
+    for (const stdout of [
+      JSON.stringify({ id: 7, verdict: 3, counts: null, cases: "many" }),
+      JSON.stringify({ id: "wfr_9", counts: { flaky: "lots" }, cases: [{ caseId: "a", verdict: "fail", sessionId: 5 }] }),
+      "[1,2]",
+      '{"id": ',
+      "",
+    ]) {
+      const r = rig({ cli: { code: 1, stdout } });
+      expect(await run(r.deps)).toBe(1);
+      expect(r.outputs.verdict).toBe("fail");
+      expect(r.outputs.flaky).toBe("0");
+    }
+  });
+
+  it("a tests file with step kinds, expectations and keys the Action has never seen: passed to the CLI by path, never read", async () => {
+    const odd = "name: x\nkey: odd\nvars: {a: 1}\ncases:\n  - title: T\n    steps: [{ kind: warp, to: 9 }]\n    expect: [{ kind: telepathy }]\n";
+    const r = rig({ files: { ".webagent/tests.yaml": odd }, cli: { code: 0 } });
+    expect(await run(r.deps)).toBe(0);
+    expect(r.outputs.verdict).toBe("pass");
+    expect(r.cliCalls[0]?.args).toEqual(expect.arrayContaining(["--file", ".webagent/tests.yaml"]));
+    expect(r.cliCalls[0]?.args.join(" ")).not.toContain("warp"); // content is not turned into flags
+    expect(r.gh.find((c) => c.method === "POST")?.body?.body).toContain("<!-- lookover-qa:odd -->");
+  });
+
+  it("exit 3 from a server refusal: the server's sentence is in the log annotation, the summary and the comment", async () => {
+    const sentence = 'starting the run was rejected (invalid_input): Case "pay": step 2 has an unknown kind "zoom"';
+    const r = rig({ cli: { code: 3, stdout: "", report: null, stderr: `Setup problem: ${sentence}\n  - cases.0.steps.1.kind: unknown step kind\n` } });
+    expect(await run(r.deps)).toBe(3);
+    const annotation = r.logs.find((l) => l.startsWith("::error title=Lookover QA::")) ?? "";
+    expect(annotation).toContain("step 2 has an unknown kind");
+    expect(annotation).toContain("cases.0.steps.1.kind");
+    expect(r.summary.join("")).toContain(sentence);
+    expect(r.gh.filter((c) => c.method !== "GET").at(-1)?.body?.body).toContain("cases.0.steps.1.kind: unknown step kind");
   });
 
   it("fail-on never: red result, green job", async () => {
@@ -342,9 +395,25 @@ describe("mode", () => {
   it("practice: could not test still follows on-error (block fails with 2, neutral passes)", async () => {
     const e = { code: 2, stdout: JSON.stringify({ id: "wfr_1", verdict: "error", counts: {}, cases: [] }) };
     expect(await run(rig({ env: { INPUT_MODE: "practice" }, cli: e }).deps)).toBe(2);
-    const n = rig({ env: { INPUT_MODE: "practice", "INPUT_ON-ERROR": "neutral" }, cli: { ...e, code: 0 } });
+    const n = rig({ env: { INPUT_MODE: "practice", "INPUT_ON-ERROR": "neutral" }, cli: e });
     expect(await run(n.deps)).toBe(0);
     expect(n.outputs.verdict).toBe("error");
+  });
+
+  it("practice + an unknown verdict in the reply (CLI 0.3.0 exits 2): never reported as pass, banner still shown", async () => {
+    for (const stdout of [
+      JSON.stringify({ id: "wfr_1", verdict: "skipped", counts: {}, cases: [{ caseId: "a", verdict: "skipped" }] }),
+      JSON.stringify({ id: "wfr_1", verdict: "pass", counts: {}, cases: [{ caseId: "a", verdict: "quarantined" }] }),
+    ]) {
+      const blocked = rig({ env: { INPUT_MODE: "practice" }, cli: { code: 2, stdout } });
+      expect(await run(blocked.deps)).toBe(2);
+      expect(blocked.outputs.verdict).toBe("error");
+      expect(blocked.summary.join("").startsWith("Practice mode")).toBe(true);
+      const neutral = rig({ env: { INPUT_MODE: "practice", "INPUT_ON-ERROR": "neutral" }, cli: { code: 2, stdout } });
+      expect(await run(neutral.deps)).toBe(0);
+      expect(neutral.outputs.verdict).toBe("error"); // the job is green, the verdict output is not "pass"
+      expect(neutral.logs.some((l) => l.startsWith("::warning"))).toBe(true);
+    }
   });
 
   it("practice: a setup problem (exit 3) still fails the job", async () => {

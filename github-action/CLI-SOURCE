@@ -1,0 +1,6 @@
+The CLI bundle vendored in dist/webagent.cjs. Update this file together with the bundle (cli-bundle.test.ts checks it).
+package: @lookover-ai/webagent-cli
+version: 0.3.0
+contracts: 722e5b8
+branch: development (PR #22, opaque steps/expect, tolerant reply reader, exit codes 0/1/2/3)
+build: pnpm install && pnpm build && pnpm -C sdk build && pnpm -C cli build, then WEBAGENT_CLI_BUNDLE=<contracts>/cli/dist/webagent.cjs pnpm build here
