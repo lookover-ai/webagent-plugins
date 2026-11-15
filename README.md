@@ -13,16 +13,15 @@ the proof: for tests a verdict, the failed step, console errors, failed network 
 
 ## Claude Code
 
-1. Create a webagent API key (dashboard, Keys, Create key; the **member** role is enough).
-2. Install the plugin:
+1. Install the plugin:
    ```
    /plugin marketplace add lookover-ai/webagent-plugins
    /plugin install webagent@webagent
    ```
-3. Claude Code asks for two values when the plugin is enabled: your **API key** (masked, kept in your system keychain, never in a
-   file) and the **API URL** (keep the default). Change them later with `/plugin configure webagent@webagent`.
-4. Check `/mcp`: the server `webagent` is connected.
-5. First prompt:
+   Claude Code asks for two settings: leave **API key** empty (it is optional) and keep the default **API URL**.
+2. Sign in: `/mcp`, select `plugin:webagent:webagent`, **Authenticate**. Your browser opens: "Sign in with Lookover", pick the
+   project, Allow. Back in Claude Code the server shows connected. No key to copy.
+3. First prompt:
    ```
    /webagent:run find the price of the Pro plan on example.com/pricing
    /webagent:qa test the signup I just built
@@ -42,24 +41,30 @@ the proof: for tests a verdict, the failed step, console errors, failed network 
 **Engines.** An engine is the agent that drives the browser (`general`, `research`, `forms`, `monitor`, `careful`, `qa`, or a
 fork of your team). Order: the engine the call names, then `engine:` in `.webagent/config.yaml`, then your project's default (`qa` suits testing; nothing makes it mandatory).
 
+**Sign-in, renewal, revoke.** The sign-in gives Claude Code access to **one project** with the **member** role. Claude Code renews
+the access (1 hour) by itself; the renewal lasts 30 days and is extended each time you use it. Sign in again (same steps) after
+30 days unused, or after you revoke the access in the dashboard (**Workspace, Connected apps**, Revoke). To switch projects,
+revoke, then Authenticate again and pick the other project.
+
 | Setting | Needed | Meaning |
 |---|---|---|
-| API key | yes | Your key (`wa_<region>_...`). Never commit it. |
+| API key | no | Only for CI or a machine without a browser: a key (`wa_<region>_...`, dashboard API keys, member role). Leave empty to sign in. Never commit it. Change it with `/plugin configure webagent@webagent`. |
 | API URL | no | API origin without `/mcp`. Default is the staging host below. |
 
-The Claude Code plugin reads these two settings only; a `WEBAGENT_API_KEY` shell variable is **not** used by the plugin (Claude
-Code cannot fall back to an environment variable inside the plugin's server entry). Codex and CI use the variable, see below.
-
-**Coming: "Sign in with Lookover".** Browser sign-in (OAuth), no key to copy, is planned. API keys stay for CI and for Codex.
+**Two servers in `/mcp`.** The plugin declares `webagent` (sign in) and `webagent-key` (API key). Use one: with no key,
+`webagent-key` shows as failed, ignore it; with a key, `webagent-key` connects and `webagent` waits for a sign-in you can skip.
+Never Authenticate `webagent-key`. The plugin reads only these two settings; a `WEBAGENT_API_KEY` shell variable is **not** used by
+the plugin (Claude Code cannot fall back to an environment variable inside the plugin's server entry). Codex and CI use the variable, see below.
 
 **Beta.** Production hosts are not live yet. The default API is the staging host
-`https://webagent-staging-in-api.lookover.ai` (key from the staging dashboard, `https://webagent-staging.lookover.ai`).
+`https://webagent-staging-in-api.lookover.ai` (sign in or create keys with your staging dashboard account, `https://webagent-staging.lookover.ai`).
 Set another API URL in `/plugin configure webagent@webagent` when your team gives you one.
 
 ## Codex
 
 1. Add the server to `~/.codex/config.toml` (copy [`codex/config.toml`](codex/config.toml); it sets a 120 s tool timeout because
-   a test waits up to 90 s) and `export WEBAGENT_API_KEY=...`.
+   a test waits up to 90 s) and `export WEBAGENT_API_KEY=...`. Sign in with Lookover (`codex mcp login webagent`) is coming
+   for Codex; until then Codex uses an API key.
 2. Paste [`codex/AGENTS.md`](codex/AGENTS.md) into your project's `AGENTS.md` (or `~/.codex/AGENTS.md`).
 3. Ask: `Smoke test the signup I just built.` Check with `codex mcp get webagent`.
 

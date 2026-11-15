@@ -1,7 +1,7 @@
 ---
 description: Triage a QA run that had failures. Sorts each failed case into app bug, test needs update or couldn't test, proposes the fix or a bug report, and never calls anything fixed without a new run.
 argument-hint: [run id (wfr_...), or empty for the last run]
-allowed-tools: mcp__plugin_webagent_webagent__qa_status mcp__plugin_webagent_webagent__qa_report mcp__plugin_webagent_webagent__get_report mcp__plugin_webagent_webagent__qa_list_runs mcp__plugin_webagent_webagent__qa_file_bug Read Grep Glob Bash(git status *) Bash(git diff *) Bash(git log *)
+allowed-tools: mcp__plugin_webagent_webagent__qa_status mcp__plugin_webagent_webagent-key__qa_status mcp__plugin_webagent_webagent__qa_report mcp__plugin_webagent_webagent-key__qa_report mcp__plugin_webagent_webagent__get_report mcp__plugin_webagent_webagent-key__get_report mcp__plugin_webagent_webagent__qa_list_runs mcp__plugin_webagent_webagent-key__qa_list_runs mcp__plugin_webagent_webagent__qa_file_bug mcp__plugin_webagent_webagent-key__qa_file_bug Read Grep Glob Bash(git status *) Bash(git diff *) Bash(git log *)
 ---
 
 Triage the failures of a webagent QA run. This command reads results and proposes; it does not re-run anything and it

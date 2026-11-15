@@ -75,7 +75,7 @@ steps) for every case you can write as steps; `run_task` to explore, with its an
 | Dev server page "Blocked request" / "Invalid Host header" / 403 | The dev server refuses the alias or tunnel host name | `error`; give the allowedHosts line (SKILL 7A step 5), re-run after the reload |
 | `capacity_exceeded`, `capacity_timeout` | All browsers of the plan are busy | Wait 30 s, retry once with fewer parallel cases, else COULD NOT TEST |
 | `rate_limited` / 429 | 600 requests per minute per key | Slow down; you should never hit this |
-| 401 `invalid API key`, 421 `wrong_region` | Key wrong or for another region | Tell the user (new key from the right dashboard) |
+| 401 `unauthorized` / `invalid API key`, 421 `wrong_region` | Sign-in expired or revoked, key wrong, or another region | Tell the user (sign in again: `/mcp`, `plugin:webagent:webagent`, Authenticate; or a new key from the right dashboard) |
 | `captcha` | A bot check appeared | Do not try to pass it. COULD NOT TEST; the user can test that step by hand or use a staging build without it |
 | `not_found` / `invalid_input` on `engineId` | The slug or id is not known in this region | Check the slug (see "Engine id"), call `list_engines`, else omit `engineId` and say so |
 | Fail on a tunnel URL, text missing, page is a warning page | The tunnel's interstitial, not your app | `error`: ngrok header or cloudflared, re-run |

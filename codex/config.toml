@@ -1,6 +1,9 @@
 # Add to ~/.codex/config.toml (all projects) or .codex/config.toml in a trusted project.
 # Set the key in the shell that starts Codex:  export WEBAGENT_API_KEY=wa_...   (never write the key in this file)
 #
+# Sign in with Lookover (browser, no key) is coming for Codex: then you drop bearer_token_env_var and run
+# `codex mcp login webagent` once. Until the webagent API accepts Codex's sign-in, Codex uses an API key.
+#
 # Until production is live the staging host is the only live one. Replace the url when your team gives you another.
 
 [mcp_servers.webagent]
