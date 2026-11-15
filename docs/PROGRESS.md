@@ -111,3 +111,8 @@ Done: `webagent` server without headers (OAuth), `webagent-key` on `/mcp?auth=ke
 Next: Abhisht tests the browser login (`/mcp`, plugin:webagent:webagent, Authenticate). Codex default flips to `codex mcp login` once the api accepts loopback DCR.
 Gotchas: `headersHelper` gets only CLAUDE_CODE_MCP_SERVER_NAME/URL + CLAUDE_PLUGIN_ROOT (no userConfig, no env block, 2.1.325); validator rejects `${user_config.*}` in it. Plugin servers with the same URL are suppressed as duplicates (also vs a manually configured server with that URL). Empty static `Bearer ` makes the key server `failed`, not needs-auth. `~/.claude*/mcp-needs-auth-cache.json` makes later runs skip the connect: clear the plugin entry when testing.
 Check: validate x3, check-templates.py, two `claude -p` init runs (see PR).
+
+## 2026-11-15 K17 done (Codex sign-in default)
+Done: `codex/config.toml` default block signs in (`codex mcp login webagent`, no key); key block on `/mcp?auth=key` kept commented for CI; AGENTS.md + README Codex section. Proved on staging after api A185: Codex 0.137 registers itself (loopback DCR, 201), prints the authorize URL, and that URL leads (302 → `/auth/login` → identity) to the Lookover sign-in page.
+Next: a person completes the browser login in Codex and calls a tool.
+Check: validate x2 (--strict), check-templates.py, `codex mcp get webagent` parses both the default and the uncommented key block.
