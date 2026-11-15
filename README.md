@@ -63,8 +63,9 @@ Set another API URL in `/plugin configure webagent@webagent` when your team give
 ## Codex
 
 1. Add the server to `~/.codex/config.toml` (copy [`codex/config.toml`](codex/config.toml); it sets a 120 s tool timeout because
-   a test waits up to 90 s) and `export WEBAGENT_API_KEY=...`. Sign in with Lookover (`codex mcp login webagent`) is coming
-   for Codex; until then Codex uses an API key.
+   a test waits up to 90 s), then run `codex mcp login webagent` once: a browser opens, sign in with Lookover, pick the project,
+   Allow. No key. For CI or a machine without a browser, use the API key block in that file (`/mcp?auth=key`,
+   `export WEBAGENT_API_KEY=...`) instead.
 2. Paste [`codex/AGENTS.md`](codex/AGENTS.md) into your project's `AGENTS.md` (or `~/.codex/AGENTS.md`).
 3. Ask: `Smoke test the signup I just built.` Check with `codex mcp get webagent`.
 

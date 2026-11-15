@@ -32,7 +32,8 @@ Testing my own web app. You know the code, so you decide what to test. webagent 
 - `pass` and `fail` are the app's result. `error` means the test could not run (CAPTCHA, `navigation_blocked`, capacity, timeout).
   Never call an `error` a bug in the app. Never try to get past a CAPTCHA or bot check.
 - Close what you open: `stop_session` for sessions you left open, kill tunnels you started.
-- If the webagent tools are missing or answer 401: tell me to create a key in the webagent dashboard and `export WEBAGENT_API_KEY=...` (then restart Codex). Stop.
+- If the webagent tools are missing or answer 401: tell me to run `codex mcp login webagent` (browser sign-in; or, for CI, the API key block of
+  `codex/config.toml` with `export WEBAGENT_API_KEY=...`), then restart Codex. Stop.
 
 ### Context
 Read `.webagent/product.md` and `.webagent/tests.yaml` if they exist (format: cases with `id`, `title`, `path`, `steps`, `expect` or `checks {text, url, noText}`,
