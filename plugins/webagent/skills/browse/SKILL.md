@@ -7,8 +7,8 @@ argument-hint: [the web task]
 # Browse with webagent
 
 webagent gives you a real cloud browser (isolated, recorded, watchable live). You decide **what** to do; the tools do the
-browsing. The tools are the MCP server `webagent` (Claude Code lists them as `mcp__plugin_webagent_webagent__<tool>`; below
-they are bare names). Args and result fields: [reference.md](reference.md).
+browsing. The tools are the MCP server `webagent` (Claude Code lists them as `mcp__plugin_webagent_webagent__<tool>`, or
+`mcp__plugin_webagent_webagent-key__<tool>` when the user set an API key; same tools; below they are bare names). Args and result fields: [reference.md](reference.md).
 
 **Testing the user's own web app (signup works? checkout broken? smoke test)? Stop: use the `qa-test` skill.**
 
@@ -22,8 +22,9 @@ Hard rules, always:
 - Close what you open: `stop_session` for every session you left open.
 
 ## 0. Connected?
-If the `webagent` tools are not in your tool list, or a call says 401 / unauthorized: tell the user once, then stop. They set
-the key with `/plugin configure webagent@webagent`, restart, check `/mcp`. Do not guess a key or ask for one in chat.
+If the `webagent` tools are not in your tool list, or a call says 401 / unauthorized: tell the user once, then stop. They sign
+in: `/mcp`, select `plugin:webagent:webagent`, Authenticate (browser, "Sign in with Lookover", pick a project). Without a
+browser (CI): an API key in `/plugin configure webagent@webagent`, then restart. Do not guess a key or ask for one in chat.
 
 ## 1. Pick the tool (cheapest that fits)
 | The user wants | Use |

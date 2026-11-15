@@ -1,7 +1,7 @@
 ---
 description: List the webagent engines you can use, pick one, and optionally save it as this repo's default in .webagent/config.yaml.
 argument-hint: [optional: an engine slug to set right away, e.g. research]
-allowed-tools: mcp__plugin_webagent_webagent__list_engines Read Glob Write Edit
+allowed-tools: mcp__plugin_webagent_webagent__list_engines mcp__plugin_webagent_webagent-key__list_engines Read Glob Write Edit
 ---
 
 Show the webagent engines and let the user choose one. An engine is the agent that drives the cloud browser; the choice order is

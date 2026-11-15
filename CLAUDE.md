@@ -13,8 +13,8 @@ Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hu
 ```
 .claude-plugin/marketplace.json     marketplace `webagent`, one plugin
 plugins/webagent/                   the plugin (installs copy ONLY this folder: nothing in it may reach outside it)
-  .claude-plugin/plugin.json        name, version, license MIT, userConfig (api_key sensitive, api_url default)
-  .mcp.json                         http MCP server `webagent` (${user_config.api_key}, ${user_config.api_url})
+  .claude-plugin/plugin.json        name, version, license MIT, userConfig (api_key sensitive + optional, api_url default)
+  .mcp.json                         `webagent` (OAuth "Sign in with Lookover", no headers) + `webagent-key` (`/mcp?auth=key`, key header; K16)
   skills/browse/SKILL.md            general web tasks (hub D66); reference.md beside it
   skills/qa-test/SKILL.md           the QA workflow, written for a model; long reference in reference.md
   commands/run.md, engines.md, qa.md, qa-triage.md, qa-init.md, qa-ci.md   /webagent:run, :engines, :qa, :qa-triage, :qa-init, :qa-ci
@@ -37,7 +37,8 @@ docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs
    Never add a field here: request it from the hub, then follow. The public docs describe it in words (no link to the private repo).
    `scripts/check-templates.py` checks the templates (set `WEBAGENT_CONTRACTS_DIST` to also run the contract's own reader).
 5. The plugin has NO env fallback for the key: `${user_config.x:-${ENV}}` makes Claude Code drop the server (tested, v2.1.322). Do not
-   add one. Codex keeps `WEBAGENT_API_KEY`.
+   add one. Codex keeps `WEBAGENT_API_KEY`. `headersHelper` cannot read `userConfig` (no `${user_config.*}`, no `env` block, v2.1.325),
+   and two plugin servers with the same URL are deduplicated: hence `webagent-key` on `/mcp?auth=key` (K16). Keep both URLs distinct.
 6. Bump `version` in `plugin.json` on every change users should receive (Claude Code caches by version).
 
 ## Branches (hub D80)
