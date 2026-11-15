@@ -51,7 +51,7 @@ may open; it never lifts the private-address block.
 | `navigation_blocked` | The address is private or blocked. Use a public URL. |
 | `capacity_exceeded`, `capacity_timeout` | Wait 30 s, retry once, else tell the user |
 | `rate_limited` / 429 | Slow down |
-| 401 `invalid API key`, 421 `wrong_region` | Tell the user: new key from the right dashboard |
+| 401 `unauthorized` / `invalid API key`, 421 `wrong_region` | Tell the user: sign in again (`/mcp`, `plugin:webagent:webagent`, Authenticate), or a new key from the right dashboard |
 | `captcha` | Do not try to pass it. The user can solve it in the live view |
 | `not_found` / `invalid_input` on `engineId` | Retry once without `engineId`, say so |
 

@@ -7,8 +7,8 @@ argument-hint: [what to test]
 # QA with webagent
 
 You know the code, so you decide **what** to test. webagent decides **how** (cloud browser, engine) and keeps the
-evidence. The tools are the MCP server `webagent` (Claude Code lists them as `mcp__plugin_webagent_webagent__<tool>`;
-below they are bare names). Two tools have a second name on the QA endpoint: `qa_report` = `get_report`, `qa_quick_check` = `smoke_test`; use whichever is in your tool list. Tool table, report fields, error codes, `tests.yaml` format (priorities 1 to 5, `checks`, `url` shorthand): [reference.md](reference.md).
+evidence. The tools are the MCP server `webagent` (Claude Code lists them as `mcp__plugin_webagent_webagent__<tool>`, or
+`mcp__plugin_webagent_webagent-key__<tool>` when the user set an API key; same tools; below they are bare names). Two tools have a second name on the QA endpoint: `qa_report` = `get_report`, `qa_quick_check` = `smoke_test`; use whichever is in your tool list. Tool table, report fields, error codes, `tests.yaml` format (priorities 1 to 5, `checks`, `url` shorthand): [reference.md](reference.md).
 
 Hard rules, always:
 - Never paste a secret (API key, password, token, `.env` value) into a tool call, a step, a goal or your answer. Goal and
@@ -20,8 +20,9 @@ Hard rules, always:
 
 ## 0. Is webagent connected?
 If the `webagent` tools are not in your tool list, or a call says 401 / unauthorized: tell the user once, then stop. They
-set the key in Claude Code: `/plugin configure webagent@webagent` (webagent API key, from the dashboard; member role is
-enough), then restart and check `/mcp`. Do not guess a key, do not ask them to paste it in chat.
+sign in: `/mcp`, select `plugin:webagent:webagent`, Authenticate (browser, "Sign in with Lookover", pick a project).
+Without a browser (CI): an API key in `/plugin configure webagent@webagent` (member role is enough), then restart. Do not
+guess a key, do not ask them to paste it in chat.
 
 ## 1. Pick the target URL
 Order: a URL the user gave > `.webagent/tests.yaml` `targets` (the env they named; else `local` if its dev server answers;

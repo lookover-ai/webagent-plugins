@@ -105,3 +105,14 @@ Handoff: done = branch `feat/i0c-action-cli-0-3-0` + PR #6 into development. Lef
 
 ## 2026-11-14 qa-next wave (W1-3..W2-5) (CTO fast lane)
 Done (8 vertical slices, fast lane hub/FAST-LANE.md, briefs hub/specs/qa-next-wave-briefs.md): S1 API step + http lane, S2 run these/preview check/CI flags, S3 step drawer + trace, S4 starter tests + step list editor, S5 flaky honesty + triage buttons, S6 not covered/trends/weekly email/readiness, S7 debug live, S8 explorer + story tests. Typecheck only; tests run after merge.
+
+## 2026-11-15 K16 done (Sign in with Lookover default, plugin 0.7.0)
+Done: `webagent` server without headers (OAuth), `webagent-key` on `/mcp?auth=key` with the optional key; userConfig `api_key` required:false. Proved with `claude -p --plugin-dir`: no key vs staging = `webagent` needs-auth, `webagent-key` failed (no crash, server not dropped); key set vs a local fake MCP = `webagent-key` connected, tool listed, header `Bearer <key>` received. Claude Code's CIMD authorize request (client `https://claude.ai/oauth/claude-code-client-metadata`, `http://localhost/callback`) gets 302 to `/auth/login` on staging.
+Next: Abhisht tests the browser login (`/mcp`, plugin:webagent:webagent, Authenticate). Codex default flips to `codex mcp login` once the api accepts loopback DCR.
+Gotchas: `headersHelper` gets only CLAUDE_CODE_MCP_SERVER_NAME/URL + CLAUDE_PLUGIN_ROOT (no userConfig, no env block, 2.1.325); validator rejects `${user_config.*}` in it. Plugin servers with the same URL are suppressed as duplicates (also vs a manually configured server with that URL). Empty static `Bearer ` makes the key server `failed`, not needs-auth. `~/.claude*/mcp-needs-auth-cache.json` makes later runs skip the connect: clear the plugin entry when testing.
+Check: validate x3, check-templates.py, two `claude -p` init runs (see PR).
+
+## 2026-11-15 K17 done (Codex sign-in default)
+Done: `codex/config.toml` default block signs in (`codex mcp login webagent`, no key); key block on `/mcp?auth=key` kept commented for CI; AGENTS.md + README Codex section. Proved on staging after api A185: Codex 0.137 registers itself (loopback DCR, 201), prints the authorize URL, and that URL leads (302 → `/auth/login` → identity) to the Lookover sign-in page.
+Next: a person completes the browser login in Codex and calls a tool.
+Check: validate x2 (--strict), check-templates.py, `codex mcp get webagent` parses both the default and the uncommented key block.

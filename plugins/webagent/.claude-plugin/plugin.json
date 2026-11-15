@@ -1,8 +1,8 @@
 {
   "name": "webagent",
   "displayName": "Lookover webagent",
-  "version": "0.6.2",
-  "description": "Give your coding agent a cloud browser: run web tasks (research, forms, scrape, monitor) and test your app, with webagent's MCP tools, /webagent:run, /webagent:engines, /webagent:qa, /webagent:qa-triage, /webagent:qa-init and /webagent:qa-ci.",
+  "version": "0.7.0",
+  "description": "Give your coding agent a cloud browser: run web tasks (research, forms, scrape, monitor) and test your app, with webagent's MCP tools, /webagent:run, /webagent:engines, /webagent:qa, /webagent:qa-triage, /webagent:qa-init and /webagent:qa-ci. Sign in with Lookover in the browser; no API key needed.",
   "author": {
     "name": "Lookover",
     "url": "https://webagent.lookover.ai"
@@ -22,10 +22,10 @@
   "userConfig": {
     "api_key": {
       "type": "string",
-      "title": "webagent API key",
-      "description": "Key from the webagent dashboard (Keys, Create key; the member role is enough). Looks like wa_<region>_... Stored in your system keychain, never in a file.",
+      "title": "webagent API key (optional)",
+      "description": "Optional, for CI / no browser; leave empty to sign in with Lookover (/mcp, plugin:webagent:webagent, Authenticate). A key from the dashboard (API keys, Create key; member role is enough) looks like wa_<region>_... Stored in your system keychain, never in a file.",
       "sensitive": true,
-      "required": true
+      "required": false
     },
     "api_url": {
       "type": "string",
