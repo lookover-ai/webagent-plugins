@@ -43,8 +43,8 @@ fork of your team). Order: the engine the call names, then `engine:` in `.webage
 
 **Sign-in, renewal, revoke.** The sign-in gives Claude Code access to **one project** with the **member** role. Claude Code renews
 the access (1 hour) by itself; the renewal lasts 30 days and is extended each time you use it. Sign in again (same steps) after
-30 days unused, or after you revoke the access in the dashboard (**Workspace, Connected apps**, Revoke). To switch projects,
-revoke, then Authenticate again and pick the other project.
+30 days unused, or after you disconnect it in the dashboard (**Workspace, Connected apps**, row menu, **Disconnect**). To switch projects,
+disconnect, then Authenticate again and pick the other project.
 
 | Setting | Needed | Meaning |
 |---|---|---|
