@@ -26,6 +26,14 @@ describe("mapToCliArgs", () => {
     expect(m.waitSeconds).toBe(120);
   });
 
+  it("environment and a deploy PR go to --environment and --ci-pr", () => {
+    const m = mapToCliArgs(inputs({ environment: "Production" }), false, true, md, 12);
+    expect(m.args.slice(m.args.indexOf("--environment"), m.args.indexOf("--environment") + 4)).toEqual([
+      "--environment", "Production", "--ci-pr", "12",
+    ]);
+    expect(mapToCliArgs(inputs(), false, true, md).args).not.toContain("--environment");
+  });
+
   it("maps every input to its flag", () => {
     const m = mapToCliArgs(
       inputs({
