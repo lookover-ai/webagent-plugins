@@ -144,7 +144,8 @@ function readInputs(env) {
     mode: input(env, "mode").toLowerCase() || "enforce",
     comment: input(env, "comment").toLowerCase() || "true",
     shareLinks: input(env, "share-links").toLowerCase(),
-    githubToken: input(env, "github-token")
+    githubToken: input(env, "github-token"),
+    environment: input(env, "environment")
   };
 }
 function readContext(env, event) {
@@ -188,7 +189,7 @@ function intIn(name, raw, min, max) {
   }
   return n;
 }
-function mapToCliArgs(i, sync, fileExists, reports) {
+function mapToCliArgs(i, sync, fileExists, reports, ciPr) {
   if (i.onError !== "block" && i.onError !== "neutral") {
     throw new InputError(`input "on-error" must be block or neutral, got "${i.onError}"`);
   }
@@ -208,6 +209,11 @@ function mapToCliArgs(i, sync, fileExists, reports) {
   flag("target", i.target);
   flag("tags", i.tags);
   flag("case-ids", i.caseIds);
+  if (i.environment.length > 100) {
+    throw new InputError(`input "environment" must be at most 100 characters`);
+  }
+  flag("environment", i.environment);
+  if (ciPr !== void 0) args.push("--ci-pr", String(ciPr));
   if (sync) args.push("--sync");
   if (bool("failed-only", i.failedOnly) === true) args.push("--failed-only");
   if (i.stopAfter !== "") args.push("--stop-after", String(intIn("stop-after", i.stopAfter, 1, 500)));
@@ -478,13 +484,25 @@ ${msg}
     inputs.url = (ds.environment_url || ds.target_url || "").trim();
   }
   const reportPath = `${d.tmpDir}/report.md`;
+  const gh = {
+    fetch: d.fetch,
+    apiUrl: d.env.GITHUB_API_URL || "https://api.github.com",
+    repo: ctx.repository,
+    token: inputs.githubToken
+  };
+  const sha = d.event.pull_request?.head?.sha ?? d.event.deployment?.sha ?? d.env.GITHUB_SHA ?? "";
+  let pr = d.event.pull_request?.number ?? (ctx.eventName.startsWith("pull_request") ? d.event.number : void 0);
+  let deployPr;
+  if (pr === void 0 && ctx.eventName === "deployment_status" && sha && gh.repo !== "" && gh.token !== "") {
+    deployPr = pr = await pullForCommit(gh, sha);
+  }
   let mapped;
   let shareLinks;
   let wantComment;
   try {
     const sync = resolveSync(inputs, ctx);
     const fileText = await d.readText(inputs.file);
-    mapped = mapToCliArgs(inputs, sync, fileText !== void 0, { markdown: reportPath });
+    mapped = mapToCliArgs(inputs, sync, fileText !== void 0, { markdown: reportPath }, deployPr);
     shareLinks = resolveShareLinks(inputs, ctx);
     wantComment = resolveComment(inputs);
   } catch (e) {
@@ -494,22 +512,8 @@ ${msg}
     return finish("setup", 3);
   }
   const workflowKey = inputs.workflow || workflowKeyOf(await d.readText(inputs.file)) || "tests";
-  const gh = {
-    fetch: d.fetch,
-    apiUrl: d.env.GITHUB_API_URL || "https://api.github.com",
-    repo: ctx.repository,
-    token: inputs.githubToken
-  };
-  let pr;
   let commenting = wantComment && inputs.githubToken !== "" && ctx.repository !== "";
-  const sha = d.event.pull_request?.head?.sha ?? d.event.deployment?.sha ?? d.env.GITHUB_SHA ?? "";
-  if (commenting) {
-    pr = d.event.pull_request?.number ?? (ctx.eventName.startsWith("pull_request") ? d.event.number : void 0);
-    if (pr === void 0 && ctx.eventName === "deployment_status" && sha) {
-      pr = await pullForCommit(gh, sha);
-    }
-    if (pr === void 0) commenting = false;
-  }
+  if (pr === void 0) commenting = false;
   const comment = async (body) => {
     if (!commenting || pr === void 0) return;
     const res2 = await upsertComment(gh, pr, marker(workflowKey), body);

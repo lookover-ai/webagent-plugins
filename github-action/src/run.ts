@@ -150,13 +150,27 @@ export async function run(d: Deps): Promise<number> {
   }
 
   const reportPath = `${d.tmpDir}/report.md`;
+  // The sticky comment target and the run's `ci.pr`. A `deployment_status` event names no pull request: look it up by sha.
+  const gh: GithubDeps = {
+    fetch: d.fetch,
+    apiUrl: d.env.GITHUB_API_URL || "https://api.github.com",
+    repo: ctx.repository,
+    token: inputs.githubToken,
+  };
+  const sha = d.event.pull_request?.head?.sha ?? d.event.deployment?.sha ?? d.env.GITHUB_SHA ?? "";
+  let pr: number | undefined =
+    d.event.pull_request?.number ?? (ctx.eventName.startsWith("pull_request") ? d.event.number : undefined);
+  let deployPr: number | undefined;
+  if (pr === undefined && ctx.eventName === "deployment_status" && sha && gh.repo !== "" && gh.token !== "") {
+    deployPr = pr = await pullForCommit(gh, sha);
+  }
   let mapped: ReturnType<typeof mapToCliArgs>;
   let shareLinks: boolean;
   let wantComment: boolean;
   try {
     const sync = resolveSync(inputs, ctx);
     const fileText = await d.readText(inputs.file);
-    mapped = mapToCliArgs(inputs, sync, fileText !== undefined, { markdown: reportPath });
+    mapped = mapToCliArgs(inputs, sync, fileText !== undefined, { markdown: reportPath }, deployPr);
     shareLinks = resolveShareLinks(inputs, ctx);
     wantComment = resolveComment(inputs);
   } catch (e) {
@@ -169,22 +183,8 @@ export async function run(d: Deps): Promise<number> {
     inputs.workflow || workflowKeyOf(await d.readText(inputs.file)) || "tests";
 
   // The sticky comment. Any trouble (no permission, no PR) is one notice, never a failed job.
-  const gh: GithubDeps = {
-    fetch: d.fetch,
-    apiUrl: d.env.GITHUB_API_URL || "https://api.github.com",
-    repo: ctx.repository,
-    token: inputs.githubToken,
-  };
-  let pr: number | undefined;
   let commenting = wantComment && inputs.githubToken !== "" && ctx.repository !== "";
-  const sha = d.event.pull_request?.head?.sha ?? d.event.deployment?.sha ?? d.env.GITHUB_SHA ?? "";
-  if (commenting) {
-    pr = d.event.pull_request?.number ?? (ctx.eventName.startsWith("pull_request") ? d.event.number : undefined);
-    if (pr === undefined && ctx.eventName === "deployment_status" && sha) {
-      pr = await pullForCommit(gh, sha);
-    }
-    if (pr === undefined) commenting = false; // not a PR run: the summary and outputs are enough
-  }
+  if (pr === undefined) commenting = false; // not a PR run: the summary and outputs are enough
   const comment = async (body: string) => {
     if (!commenting || pr === undefined) return;
     const res = await upsertComment(gh, pr, marker(workflowKey), body);

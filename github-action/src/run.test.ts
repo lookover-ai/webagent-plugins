@@ -326,6 +326,9 @@ describe("run", () => {
     await run(r.deps);
     expect(r.gh.some((c) => c.path === "/repos/o/r/commits/abc123/pulls")).toBe(true);
     expect(r.gh.some((c) => c.method === "POST" && c.path === "/repos/o/r/issues/12/comments")).toBe(true);
+    // the run carries the PR too (ci.pr), so the api can file the preview under it
+    const args = r.cliCalls[0]?.args ?? [];
+    expect(args[args.indexOf("--ci-pr") + 1]).toBe("12");
   });
 
   it("comment: false makes no GitHub call", async () => {
