@@ -35,6 +35,8 @@ export interface Inputs {
   /** `""` means auto: on for private repos only. */
   shareLinks: string;
   githubToken: string;
+  /** Environment name the run is recorded against (CLI `--environment`); `""`: none. */
+  environment: string;
 }
 
 type Env = Record<string, string | undefined>;
@@ -66,6 +68,7 @@ export function readInputs(env: Env): Inputs {
     comment: input(env, "comment").toLowerCase() || "true",
     shareLinks: input(env, "share-links").toLowerCase(),
     githubToken: input(env, "github-token"),
+    environment: input(env, "environment"),
   };
 }
 
@@ -160,6 +163,8 @@ export function mapToCliArgs(
   sync: boolean,
   fileExists: boolean,
   reports: { markdown: string },
+  /** Pull request found for a `deployment_status` run (the event names none); the CLI reads every other case itself. */
+  ciPr?: number,
 ): Mapped {
   if (i.onError !== "block" && i.onError !== "neutral") {
     throw new InputError(`input "on-error" must be block or neutral, got "${i.onError}"`);
@@ -180,6 +185,11 @@ export function mapToCliArgs(
   flag("target", i.target);
   flag("tags", i.tags);
   flag("case-ids", i.caseIds);
+  if (i.environment.length > 100) {
+    throw new InputError(`input "environment" must be at most 100 characters`);
+  }
+  flag("environment", i.environment);
+  if (ciPr !== undefined) args.push("--ci-pr", String(ciPr));
   if (sync) args.push("--sync");
   if (bool("failed-only", i.failedOnly) === true) args.push("--failed-only");
   if (i.stopAfter !== "") args.push("--stop-after", String(intIn("stop-after", i.stopAfter, 1, 500)));

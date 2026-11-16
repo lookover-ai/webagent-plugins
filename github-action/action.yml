@@ -25,6 +25,9 @@ inputs:
   target:
     description: A target name from the tests file (default is its defaultTarget).
     required: false
+  environment:
+    description: "Environment name the run is recorded against, for example `Production` after a deploy. Empty: none (a PR run with a `url` shows under that PR's preview)."
+    required: false
   tags:
     description: Comma-separated tags. Only cases with one of them run.
     required: false

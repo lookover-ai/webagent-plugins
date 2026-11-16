@@ -114,7 +114,8 @@ jobs:
 
 An explicit `url` always wins. `wait-for-url` applies to the deployment URL as usual.
 
-The comment goes to the PR that owns the deployed commit. If your preview is behind Vercel's login page (Deployment Protection), the
+The comment goes to the PR that owns the deployed commit, and the run carries that PR number (`ci.pr`): with a `url`, a PR and no
+`environment`, the dashboard files the run under that PR's preview. If your preview is behind Vercel's login page (Deployment Protection), the
 cloud browser sees the login page, not your app: use a staging URL, or turn protection off for previews you test.
 
 **Netlify:** deploy previews have a fixed address, so `pull_request` is enough:
@@ -131,6 +132,46 @@ on: pull_request
 
 **A static staging URL** (deployed from `main`): `url: https://staging.example.com`, as in the first example.
 
+**Test the Vercel preview of a PR** (minimal; `on: deployment_status` as above, nothing else to set):
+
+```yaml
+on: deployment_status
+jobs:
+  qa:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Preview'
+    runs-on: ubuntu-latest
+    permissions: { contents: read, pull-requests: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lookover-ai/webagent-plugins/github-action@v1
+        with:
+          api-key: ${{ secrets.WEBAGENT_API_KEY }}     # url comes from the deployment; the PR is found by the commit
+```
+
+**Deploy then test** (minimal; the run is recorded against your `Production` environment, with this commit's sha):
+
+```yaml
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./deploy.sh                                # your deploy
+  qa:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lookover-ai/webagent-plugins/github-action@v1
+        with:
+          api-key: ${{ secrets.WEBAGENT_API_KEY }}
+          url: https://www.example.com
+          environment: Production
+```
+
 **Deploy gate:** order the jobs, no special integration: `deploy-preview`, then `qa` (this action), then `promote` with
 `needs: [qa]`. A red check stops `promote`.
 
@@ -144,6 +185,7 @@ on: pull_request
 | `file` | `.webagent/tests.yaml` | The tests file. If this default is missing and `workflow` is set, the saved workflow of that key runs (needs `url`) |
 | `workflow` | `key` in the file | Workflow key; also names the PR comment |
 | `target` | `defaultTarget` of the file | A target name from the file |
+| `environment` | none | Environment name the run is recorded against, for example `Production` (CLI `--environment`, at most 100 characters) |
 | `tags` / `case-ids` | all cases | Comma-separated; run a subset. A tag no test has stops the job as a setup problem ("No tests have this tag"), never a green empty run |
 | `failed-only` | off | `true`: only the cases that did not pass in the last finished run of this PR (or workflow). Passes are listed as carried over, not re-run, not billed |
 | `stop-after` | off | Stop early once this many required cases failed (1 to 500); the rest show "Not run (stopped early)". 3 suits pull requests |
@@ -185,7 +227,7 @@ Use outputs in a later step: `if: steps.qa.outputs.verdict == 'fail'` (give the 
 |---|---|
 | 0 | pass (also: could not test with `on-error: neutral`, any result with `fail-on: never`, fork PR skip) |
 | 1 | a required case failed: your app |
-| 2 | could not test: not an app failure |
+| 2 | could not test: not an app failure (verdict `error`, "Couldn't test", never shown as a failed test; `on-error: neutral` makes the job pass) |
 | 3 | setup problem: your configuration (`fail-on: never` does not hide these) |
 
 The words are the same everywhere (CLI 0.2.0, the dashboard and this action): "Passed", "Failed" and "Couldn't test". The report text comes
@@ -206,6 +248,13 @@ The status check is the job: name it `Lookover QA`. GitHub only blocks merging o
 
 Switch to `mode: enforce` (the default, or leave the input out) when you trust the checks, then mark `Lookover QA` as required.
 `fail-on: never` is the older, blunter switch: it also passes on could not test.
+
+### CI context (automatic)
+
+Every run carries where it came from, with nothing to set: `ci.provider` `github`, `repo` (`GITHUB_REPOSITORY`), `sha` (the PR's
+head commit on a pull request, else `GITHUB_SHA`), `ref` (`GITHUB_HEAD_REF`, else `GITHUB_REF_NAME`), `pr` (from the event; on a
+`deployment_status` event the open PR of the deployed commit, looked up with `github-token`) and `buildUrl` (this Actions run). The
+bundled CLI reads them itself; a missing or unreadable event file only leaves `pr` out, it never fails the job.
 
 ### Pull request context
 
@@ -234,8 +283,8 @@ VITEST_MAX_WORKERS=4 pnpm check     # typecheck, tests, build (dist/index.cjs + 
 `webagent-contracts/cli/dist/webagent.cjs` (build contracts, `sdk` and `cli` there first; `WEBAGENT_CLI_BUNDLE` points elsewhere): re-vendor it when the
 CLI changes. `src/cli-contract.test.ts` reads the committed bundle and fails if the `WEBAGENT_CI_*` names differ from what the Action sets.
 
-**Vendored now:** `@lookover-ai/webagent-cli` **0.3.0**, built from contracts `development` commit `722e5b8` (PR #22),
-bundle 1.29 MB. Re-vendor from a release tag before moving the Action's `v1` tag. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
+**Vendored now:** `@lookover-ai/webagent-cli` **0.3.0**, built from contracts `development` commit `87b6599` (v0.54.0-rc.0),
+bundle 1.39 MB. Re-vendor from a release tag before moving the Action's `v1` tag. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
 writes the summary, outputs and the sticky comment (hidden marker `<!-- lookover-qa:<workflow key> -->`).
 `CLI-SOURCE` records which CLI version and contracts commit the vendored bundle is (a test checks it).
 
