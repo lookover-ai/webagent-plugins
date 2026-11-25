@@ -466,9 +466,9 @@ var require_anchors = __commonJS({
          */
         setAnchors: () => {
           for (const source of aliasObjects) {
-            const ref = sourceObjects.get(source);
-            if (typeof ref === "object" && ref.anchor && (identity.isScalar(ref.node) || identity.isCollection(ref.node))) {
-              ref.node.anchor = ref.anchor;
+            const ref2 = sourceObjects.get(source);
+            if (typeof ref2 === "object" && ref2.anchor && (identity.isScalar(ref2.node) || identity.isCollection(ref2.node))) {
+              ref2.node.anchor = ref2.anchor;
             } else {
               const error62 = new Error("Failed to resolve repeated object (this should not happen)");
               error62.source = source;
@@ -787,15 +787,15 @@ var require_createNode = __commonJS({
         value = value.valueOf();
       }
       const { aliasDuplicateObjects, onAnchor, onTagObj, schema, sourceObjects } = ctx;
-      let ref = void 0;
+      let ref2 = void 0;
       if (aliasDuplicateObjects && value && typeof value === "object") {
-        ref = sourceObjects.get(value);
-        if (ref) {
-          ref.anchor ?? (ref.anchor = onAnchor(value));
-          return new Alias.Alias(ref.anchor);
+        ref2 = sourceObjects.get(value);
+        if (ref2) {
+          ref2.anchor ?? (ref2.anchor = onAnchor(value));
+          return new Alias.Alias(ref2.anchor);
         } else {
-          ref = { anchor: null, node: null };
-          sourceObjects.set(value, ref);
+          ref2 = { anchor: null, node: null };
+          sourceObjects.set(value, ref2);
         }
       }
       if (tagName?.startsWith("!!"))
@@ -807,8 +807,8 @@ var require_createNode = __commonJS({
         }
         if (!value || typeof value !== "object") {
           const node3 = new Scalar.Scalar(value);
-          if (ref)
-            ref.node = node3;
+          if (ref2)
+            ref2.node = node3;
           return node3;
         }
         tagObj = value instanceof Map ? schema[identity.MAP] : Symbol.iterator in Object(value) ? schema[identity.SEQ] : schema[identity.MAP];
@@ -822,8 +822,8 @@ var require_createNode = __commonJS({
         node2.tag = tagName;
       else if (!tagObj.default)
         node2.tag = tagObj.tag;
-      if (ref)
-        ref.node = node2;
+      if (ref2)
+        ref2.node = node2;
       return node2;
     }
     exports2.createNode = createNode;
@@ -3704,22 +3704,22 @@ var require_errors = __commonJS({
   "../node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/errors.js"(exports2) {
     "use strict";
     var YAMLError = class extends Error {
-      constructor(name, pos, code, message) {
+      constructor(name, pos, code, message2) {
         super();
         this.name = name;
         this.code = code;
-        this.message = message;
+        this.message = message2;
         this.pos = pos;
       }
     };
     var YAMLParseError = class extends YAMLError {
-      constructor(pos, code, message) {
-        super("YAMLParseError", pos, code, message);
+      constructor(pos, code, message2) {
+        super("YAMLParseError", pos, code, message2);
       }
     };
     var YAMLWarning = class extends YAMLError {
-      constructor(pos, code, message) {
-        super("YAMLWarning", pos, code, message);
+      constructor(pos, code, message2) {
+        super("YAMLWarning", pos, code, message2);
       }
     };
     var prettifyError2 = (src, lc) => (error62) => {
@@ -4399,8 +4399,8 @@ var require_compose_collection = __commonJS({
         const { anchor: anchor2, newlineAfterProp: nl } = props;
         const lastProp = anchor2 && tagToken ? anchor2.offset > tagToken.offset ? anchor2 : tagToken : anchor2 ?? tagToken;
         if (lastProp && (!nl || nl.offset < lastProp.offset)) {
-          const message = "Missing newline after block sequence props";
-          onError(lastProp, "MISSING_CHAR", message);
+          const message2 = "Missing newline after block sequence props";
+          onError(lastProp, "MISSING_CHAR", message2);
         }
       }
       const expType = token.type === "block-map" ? "map" : token.type === "block-seq" ? "seq" : token.start.source === "{" ? "map" : "seq";
@@ -4472,15 +4472,15 @@ var require_resolve_block_scalar = __commonJS({
             trimIndent = indent.length;
         } else {
           if (indent.length < trimIndent) {
-            const message = "Block scalars with more-indented leading empty lines must use an explicit indentation indicator";
-            onError(offset + indent.length, "MISSING_CHAR", message);
+            const message2 = "Block scalars with more-indented leading empty lines must use an explicit indentation indicator";
+            onError(offset + indent.length, "MISSING_CHAR", message2);
           }
           if (header.indent === 0)
             trimIndent = indent.length;
           contentStart = i;
           if (trimIndent === 0 && !ctx.atRoot) {
-            const message = "Block scalar values in collections must be indented";
-            onError(offset, "BAD_INDENT", message);
+            const message2 = "Block scalar values in collections must be indented";
+            onError(offset, "BAD_INDENT", message2);
           }
           break;
         }
@@ -4503,8 +4503,8 @@ var require_resolve_block_scalar = __commonJS({
           content = content.slice(0, -1);
         if (content && indent.length < trimIndent) {
           const src = header.indent ? "explicit indentation indicator" : "first line";
-          const message = `Block scalar lines must not be less indented than their ${src}`;
-          onError(offset - content.length - (crlf ? 2 : 1), "BAD_INDENT", message);
+          const message2 = `Block scalar lines must not be less indented than their ${src}`;
+          onError(offset - content.length - (crlf ? 2 : 1), "BAD_INDENT", message2);
           indent = "";
         }
         if (type === Scalar.Scalar.BLOCK_LITERAL) {
@@ -4582,8 +4582,8 @@ var require_resolve_block_scalar = __commonJS({
             break;
           case "comment":
             if (strict && !hasSpace) {
-              const message = "Comments must be separated from other tokens by white space characters";
-              onError(token, "MISSING_CHAR", message);
+              const message2 = "Comments must be separated from other tokens by white space characters";
+              onError(token, "MISSING_CHAR", message2);
             }
             length += token.source.length;
             comment = token.source.substring(1);
@@ -4594,8 +4594,8 @@ var require_resolve_block_scalar = __commonJS({
             break;
           /* istanbul ignore next should not happen */
           default: {
-            const message = `Unexpected token in block scalar header: ${token.type}`;
-            onError(token, "UNEXPECTED_TOKEN", message);
+            const message2 = `Unexpected token in block scalar header: ${token.type}`;
+            onError(token, "UNEXPECTED_TOKEN", message2);
             const ts = token.source;
             if (ts && typeof ts === "string")
               length += ts.length;
@@ -4988,13 +4988,13 @@ var require_compose_node = __commonJS({
             if (anchor2)
               node2.anchor = anchor2.source.substring(1);
           } catch (error62) {
-            const message = error62 instanceof Error ? error62.message : String(error62);
-            onError(token, "RESOURCE_EXHAUSTION", message);
+            const message2 = error62 instanceof Error ? error62.message : String(error62);
+            onError(token, "RESOURCE_EXHAUSTION", message2);
           }
           break;
         default: {
-          const message = token.type === "error" ? token.message : `Unsupported token (type: ${token.type})`;
-          onError(token, "UNEXPECTED_TOKEN", message);
+          const message2 = token.type === "error" ? token.message : `Unsupported token (type: ${token.type})`;
+          onError(token, "UNEXPECTED_TOKEN", message2);
           isSrcToken = false;
         }
       }
@@ -5150,12 +5150,12 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code, message, warning) => {
+        this.onError = (source, code, message2, warning) => {
           const pos = getErrorPos(source);
           if (warning)
-            this.warnings.push(new errors.YAMLWarning(pos, code, message));
+            this.warnings.push(new errors.YAMLWarning(pos, code, message2));
           else
-            this.errors.push(new errors.YAMLParseError(pos, code, message));
+            this.errors.push(new errors.YAMLParseError(pos, code, message2));
         };
         this.directives = new directives.Directives({ version: options.version || "1.2" });
         this.options = options;
@@ -5225,10 +5225,10 @@ ${cb}` : comment;
           console.dir(token, { depth: null });
         switch (token.type) {
           case "directive":
-            this.directives.add(token.source, (offset, message, warning) => {
+            this.directives.add(token.source, (offset, message2, warning) => {
               const pos = getErrorPos(token);
               pos[0] += offset;
-              this.onError(pos, "BAD_DIRECTIVE", message, warning);
+              this.onError(pos, "BAD_DIRECTIVE", message2, warning);
             });
             this.prelude.push(token.source);
             this.atDirectives = true;
@@ -5317,12 +5317,12 @@ var require_cst_scalar = __commonJS({
     var stringifyString = require_stringifyString();
     function resolveAsScalar(token, strict = true, onError) {
       if (token) {
-        const _onError = (pos, code, message) => {
+        const _onError = (pos, code, message2) => {
           const offset = typeof pos === "number" ? pos : Array.isArray(pos) ? pos[0] : pos.offset;
           if (onError)
-            onError(offset, code, message);
+            onError(offset, code, message2);
           else
-            throw new errors.YAMLParseError([offset, offset + 1], code, message);
+            throw new errors.YAMLParseError([offset, offset + 1], code, message2);
         };
         switch (token.type) {
           case "scalar":
@@ -6482,8 +6482,8 @@ var require_parser = __commonJS({
         }
         const type = cst.tokenType(source);
         if (!type) {
-          const message = `Not a YAML token: ${source}`;
-          yield* this.pop({ type: "error", offset: this.offset, message, source });
+          const message2 = `Not a YAML token: ${source}`;
+          yield* this.pop({ type: "error", offset: this.offset, message: message2, source });
           this.offset += source.length;
         } else if (type === "scalar") {
           this.atNewLine = false;
@@ -6573,8 +6573,8 @@ var require_parser = __commonJS({
       *pop(error62) {
         const token = error62 ?? this.stack.pop();
         if (!token) {
-          const message = "Tried to pop an empty stack";
-          yield { type: "error", offset: this.offset, source: "", message };
+          const message2 = "Tried to pop an empty stack";
+          yield { type: "error", offset: this.offset, source: "", message: message2 };
         } else if (this.stack.length === 0) {
           yield token;
         } else {
@@ -7260,7 +7260,7 @@ var require_public_api = __commonJS({
       }
       return doc;
     }
-    function parse4(src, reviver, options) {
+    function parse5(src, reviver, options) {
       let _reviver = void 0;
       if (typeof reviver === "function") {
         _reviver = reviver;
@@ -7301,7 +7301,7 @@ var require_public_api = __commonJS({
         return value.toString(options);
       return new Document.Document(value, _replacer, options).toString(options);
     }
-    exports2.parse = parse4;
+    exports2.parse = parse5;
     exports2.parseAllDocuments = parseAllDocuments;
     exports2.parseDocument = parseDocument;
     exports2.stringify = stringify;
@@ -7362,8 +7362,8 @@ var require_dist = __commonJS({
 
 // src/main.ts
 var import_node_crypto = require("crypto");
-var import_promises = require("fs/promises");
-var import_node_path2 = require("path");
+var import_promises2 = require("fs/promises");
+var import_node_path3 = require("path");
 
 // ../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -8533,8 +8533,8 @@ function prefixIssues(path, issues) {
     return iss;
   });
 }
-function unwrapMessage(message) {
-  return typeof message === "string" ? message : message?.message;
+function unwrapMessage(message2) {
+  return typeof message2 === "string" ? message2 : message2?.message;
 }
 function sizeCaps(defChecks) {
   const caps = [];
@@ -8564,7 +8564,7 @@ function finalizeIssue(iss, ctx, config2) {
       iss.schema = iss.inst;
   }
   const schemaError = iss.schema !== iss.inst ? iss.schema?._zod.def?.error : void 0;
-  const message = iss.message ? iss.message : unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(schemaError?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config2.customError?.(iss)) ?? unwrapMessage(config2.localeError?.(iss)) ?? "Invalid input";
+  const message2 = iss.message ? iss.message : unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(schemaError?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config2.customError?.(iss)) ?? unwrapMessage(config2.localeError?.(iss)) ?? "Invalid input";
   const full = {};
   for (const k of Object.keys(iss)) {
     if (k === "inst" || k === "schema" || k === "continue" || k === "input" || k === "__proto__")
@@ -8572,7 +8572,7 @@ function finalizeIssue(iss, ctx, config2) {
     full[k] = iss[k];
   }
   full.path ?? (full.path = []);
-  full.message = message;
+  full.message = message2;
   if (ctx?.reportInput) {
     full.input = iss.input;
   }
@@ -9223,18 +9223,18 @@ var validateAsync = async (schema, value, _ctx) => {
   return result.issues.length === 0;
 };
 var _encode = (_Err) => {
-  const parse4 = _parse(_Err);
+  const parse5 = _parse(_Err);
   const fn = (schema, value, _ctx, _params) => {
     const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
-    return parse4(schema, value, ctx, finalizeParams(fn, _params));
+    return parse5(schema, value, ctx, finalizeParams(fn, _params));
   };
   return fn;
 };
 var encode = /* @__PURE__ */ _encode($ZodRealError);
 var _decode = (_Err) => {
-  const parse4 = _parse(_Err);
+  const parse5 = _parse(_Err);
   const fn = (schema, value, _ctx, _params) => {
-    return parse4(schema, value, _ctx, finalizeParams(fn, _params));
+    return parse5(schema, value, _ctx, finalizeParams(fn, _params));
   };
   return fn;
 };
@@ -10729,7 +10729,7 @@ function capSize(inst, size) {
   if (!caps.length)
     return;
   const cap = Math.min(...caps.map((c) => c[0]));
-  const parse4 = inst._zod.parse;
+  const parse5 = inst._zod.parse;
   inst._zod.parse = (payload, ctx) => {
     const n = size(payload.value);
     if (n > cap && !ctx?.skipChecks && ctx?.direction !== "backward") {
@@ -10743,7 +10743,7 @@ function capSize(inst, size) {
         }
       }
     }
-    return parse4(payload, ctx);
+    return parse5(payload, ctx);
   };
 }
 var arraySize = (input2) => Array.isArray(input2) ? input2.length : -1;
@@ -10927,7 +10927,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
     }
     return propValues;
   });
-  const isObject3 = isObject;
+  const isObject4 = isObject;
   const catchall = def.catchall;
   let value;
   const memo2 = globalConfig.memoizer;
@@ -10935,7 +10935,7 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
   inst._zod.parse = (payload, ctx) => {
     value ?? (value = _normalized.value);
     const input2 = payload.value;
-    if (!isObject3(input2)) {
+    if (!isObject4(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -11071,7 +11071,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     return doc.compile();
   };
   let fastpass;
-  const isObject3 = isObject;
+  const isObject4 = isObject;
   const jit = !globalConfig.jitless;
   const allowsEval2 = allowsEval;
   const fastEnabled = jit && allowsEval2.value;
@@ -11080,7 +11080,7 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
   inst._zod.parse = (payload, ctx) => {
     value ?? (value = _normalized.value);
     const input2 = payload.value;
-    if (!isObject3(input2)) {
+    if (!isObject4(input2)) {
       payload.issues.push({
         expected: "object",
         code: "invalid_type",
@@ -12442,26 +12442,26 @@ function isRecursive(inst, stack, resolve2) {
   let result = NONE;
   const check2 = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve2);
-      if (answer > result)
-        result = answer;
+      const answer2 = isRecursive(child, stack, resolve2);
+      if (answer2 > result)
+        result = answer2;
     }
   };
   const shape = (sh, spread) => {
-    let answer = NONE;
+    let answer2 = NONE;
     for (const key of Reflect.ownKeys(sh)) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
       const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve2) : NONE;
-      if (child > answer)
-        answer = child;
+      if (child > answer2)
+        answer2 = child;
     }
-    return answer;
+    return answer2;
   };
-  const merge2 = (answer) => {
-    if (answer > result)
-      result = answer;
+  const merge2 = (answer2) => {
+    if (answer2 > result)
+      result = answer2;
   };
   const def = inst._zod.def;
   const kind = def.type;
@@ -12564,10 +12564,10 @@ function isRecursive(inst, stack, resolve2) {
   stack.delete(inst);
   return settle(inst, result);
 }
-function settle(inst, answer) {
-  if (answer !== ASSUMED)
-    recursive.set(inst, answer === PROVEN);
-  return answer;
+function settle(inst, answer2) {
+  if (answer2 !== ASSUMED)
+    recursive.set(inst, answer2 === PROVEN);
+  return answer2;
 }
 function isRecursiveSchema(inst) {
   return isRecursive(inst, /* @__PURE__ */ new Set(), true) !== NONE;
@@ -20311,8 +20311,8 @@ var globalRegistry = globalThis.__zod_globalRegistry;
 var INVALID = /* @__PURE__ */ Symbol.for("zod.compile.invalid");
 var FALLBACK_FLAG = /* @__PURE__ */ Symbol.for("zod.compile.fallback");
 var ZodCompileAsyncError = class extends Error {
-  constructor(message = "z.compile does not support async refinements, transforms, or checks") {
-    super(message);
+  constructor(message2 = "z.compile does not support async refinements, transforms, or checks") {
+    super(message2);
     this.name = "ZodCompileAsyncError";
   }
 };
@@ -23012,12 +23012,12 @@ function initializeContext(params) {
     external: params?.external ?? void 0
   };
 }
-function handleUnrepresentable(schema, ctx, json2, params, message) {
-  const result = typeof ctx.unrepresentable === "function" ? ctx.unrepresentable({ zodSchema: schema, path: params.path, message }) : ctx.unrepresentable;
+function handleUnrepresentable(schema, ctx, json2, params, message2) {
+  const result = typeof ctx.unrepresentable === "function" ? ctx.unrepresentable({ zodSchema: schema, path: params.path, message: message2 }) : ctx.unrepresentable;
   if (result === "any")
     return false;
   if (result === void 0 || result === "throw")
-    throw new Error(message);
+    throw new Error(message2);
   Object.assign(json2, result);
   return true;
 }
@@ -23122,7 +23122,7 @@ function extractDefs(ctx, schema) {
       return;
     }
     const seen = entry[1];
-    const { ref, defId } = makeURI(entry);
+    const { ref: ref2, defId } = makeURI(entry);
     seen.def = { ...seen.schema };
     if (defId)
       seen.defId = defId;
@@ -23130,7 +23130,7 @@ function extractDefs(ctx, schema) {
     for (const key in schema2) {
       delete schema2[key];
     }
-    schema2.$ref = ref;
+    schema2.$ref = ref2;
   };
   if (ctx.cycles === "throw") {
     for (const entry of ctx.seen.entries()) {
@@ -23291,11 +23291,11 @@ function finalize(ctx, schema) {
       return;
     const schema2 = seen.def ?? seen.schema;
     const _cached = { ...schema2 };
-    const ref = seen.ref;
+    const ref2 = seen.ref;
     seen.ref = null;
-    if (ref) {
-      flattenRef(ref);
-      const refSeen = ctx.seen.get(ref);
+    if (ref2) {
+      flattenRef(ref2);
+      const refSeen = ctx.seen.get(ref2);
       const refSchema2 = refSeen.schema;
       if (refSchema2.$ref && (ctx.target === "draft-07" || ctx.target === "draft-04" || ctx.target === "openapi-3.0")) {
         schema2.allOf = schema2.allOf ?? [];
@@ -23304,7 +23304,7 @@ function finalize(ctx, schema) {
         assignProps(schema2, refSchema2);
       }
       assignProps(schema2, _cached);
-      const isParentRef = zodSchema._zod.parent === ref;
+      const isParentRef = zodSchema._zod.parent === ref2;
       if (isParentRef) {
         for (const key in schema2) {
           if (key === "$ref" || key === "allOf")
@@ -23325,7 +23325,7 @@ function finalize(ctx, schema) {
       }
     }
     const parent = zodSchema._zod.parent;
-    if (parent && parent !== ref) {
+    if (parent && parent !== ref2) {
       flattenRef(parent);
       const parentSeen = ctx.seen.get(parent);
       if (parentSeen?.schema.$ref) {
@@ -26223,11 +26223,11 @@ function applyMinItems(items, minItems) {
 function decodeJSONPointerSegment(segment) {
   return segment.replace(/~1/g, "/").replace(/~0/g, "~");
 }
-function resolveRef(ref, ctx) {
-  if (!ref.startsWith("#")) {
+function resolveRef(ref2, ctx) {
+  if (!ref2.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path = ref.slice(1).split("/").filter(Boolean);
+  const path = ref2.slice(1).split("/").filter(Boolean);
   if (path.length === 0) {
     return ctx.rootSchema;
   }
@@ -26235,11 +26235,11 @@ function resolveRef(ref, ctx) {
   if (path[0] === defsKey) {
     const key = path[1] === void 0 ? void 0 : decodeJSONPointerSegment(path[1]);
     if (!key || !ctx.defs[key]) {
-      throw new Error(`Reference not found: ${ref}`);
+      throw new Error(`Reference not found: ${ref2}`);
     }
     return ctx.defs[key];
   }
-  throw new Error(`Reference not found: ${ref}`);
+  throw new Error(`Reference not found: ${ref2}`);
 }
 function checkObjectGuards(objectSchema, guards) {
   const guard = z.transform((value) => value).check((payload) => {
@@ -27082,7 +27082,7 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// ../dist/chunk-6RIE7UCM.js
+// ../dist/chunk-6B6I3VJG.js
 var webagentEnvSchema = external_exports.enum(["local", "staging", "production"]);
 var regionCodeSchema = external_exports.enum(["us", "in"]);
 var hosts = {
@@ -27150,7 +27150,19 @@ var idPrefixes = {
   qaSharedStep: "qss",
   /** Plans as data (D87 S1): a plan row and one org plan change. */
   plan: "pln",
-  planChange: "plc"
+  planChange: "plc",
+  /** Session interactions (0.55.0, S5 §4): one thing the agent asked a person (a tool call). */
+  interaction: "itr",
+  /** QA apps (0.56.0, hub D92): an app inside a testing project; owns environments, tests, runs and the rest of QA. */
+  app: "app",
+  /** App Knowledge (0.57.0, hub D93): one markdown doc about an app, and one line of its "What changed" log. */
+  knowledgeDoc: "akd",
+  knowledgeChange: "akc",
+  /** Run reports (0.58.0, hub D94 S7): one version of a run's Report Markdown, and one public share link of it. */
+  runReport: "rrp",
+  reportShare: "rsh",
+  /** Slack agent requests (0.67.0, hub D100): one `@webagent` ask in a Slack thread (refined plan + status). */
+  slackAgentRequest: "sar"
 };
 var REGION_ALT = regionCodeSchema.options.join("|");
 function idSchema(kind) {
@@ -27159,6 +27171,8 @@ function idSchema(kind) {
     `expected a ${kind} id`
   );
 }
+var appIdSchema = idSchema("app");
+var knowledgeDocIdSchema = idSchema("knowledgeDoc");
 var identityUserIdSchema = external_exports.string().min(1).max(200);
 var apiKeySecretSchema = external_exports.string().regex(new RegExp(`^wa_(${REGION_ALT})_[A-Za-z0-9_-]{43}$`), "malformed API key");
 var engineSchema = external_exports.enum(["chromium", "firefox", "webkit"]);
@@ -27725,6 +27739,32 @@ var actionSchema = external_exports.discriminatedUnion("type", [
   reloadAction
 ]);
 var actionTypes = actionSchema.options.map((o) => o.shape.type.value);
+var reportBoxSchema = external_exports.object({
+  x: external_exports.number().nonnegative(),
+  y: external_exports.number().nonnegative(),
+  w: external_exports.number().nonnegative(),
+  h: external_exports.number().nonnegative(),
+  /** Short tag drawn with the box, e.g. "button.btn-add · 2.9:1". */
+  label: external_exports.string().max(120).optional()
+});
+var REPORT_MAX_BOXES = 5;
+var reportBoxListSchema = external_exports.array(reportBoxSchema).max(REPORT_MAX_BOXES);
+var reportShotSchema = external_exports.object({
+  viewport: external_exports.object({ w: external_exports.number().int().positive(), h: external_exports.number().int().positive() }),
+  scroll: external_exports.object({ x: external_exports.number(), y: external_exports.number() }).optional(),
+  dpr: external_exports.number().positive().optional()
+});
+var reportEvidenceSchema = external_exports.object({
+  /** Asset id of a screenshot of this run, or its url. */
+  screenshot: external_exports.string().min(1).max(2e3),
+  shot: reportShotSchema.optional(),
+  boxes: reportBoxListSchema.optional(),
+  /** The element the finding is about; shown when there is no box. */
+  selector: external_exports.string().max(500).optional(),
+  /** Moment in the run recording, "mm:ss" or "h:mm:ss". */
+  video_at: external_exports.string().regex(/^(\d+:)?\d{1,2}:\d{2}$/).optional(),
+  caption: external_exports.string().max(500).optional()
+});
 var TEMPLATE = /\{\{[^}]+\}\}/;
 var templated = (schema) => external_exports.union([schema, external_exports.string().regex(TEMPLATE, "a value or a {{ template }}")]);
 var permissionSchema = external_exports.enum(["network_capture", "active_scan", "file_access"]);
@@ -27970,6 +28010,11 @@ var skillSchema = external_exports.object({
   scope: external_exports.array(external_exports.string().min(1)).optional(),
   /** Session options the skill needs (viewport, locale…). Callers can override. */
   session: sessionOptionsSchema.partial().optional(),
+  /**
+   * S4 (0.54.0): plain-language steps may stop and ask a person (sign-in question, take control, hand back).
+   * Off by default; on for `qa-explore`.
+   */
+  handoff: external_exports.boolean().optional(),
   steps: external_exports.array(stepSchema).min(1),
   /** Assertions evaluated after the last step. */
   assertions: external_exports.array(assertionSchema).default([]),
@@ -28005,7 +28050,45 @@ var findingSchema = external_exports.object({
   /** One-line remediation. */
   fix: external_exports.string().max(500).optional(),
   /** WCAG SC, CWE, OWASP ids. */
-  refs: external_exports.array(external_exports.string().max(200)).max(20).optional()
+  refs: external_exports.array(external_exports.string().max(200)).max(20).optional(),
+  /**
+   * Report evidence (0.58.0-rc.1, S7 fix batch 1): the runner's fields for the run report, lifted from
+   * `evidence.*` to the top level. All optional; the api still reads `evidence.*` of older runs.
+   */
+  /** `findingIdOf(rule, selector, page)`: equal ids across runs = the same problem. */
+  findingId: external_exports.string().max(64).optional(),
+  /** The element the finding is about (also in `evidence.selector`). */
+  selector: external_exports.string().max(500).optional(),
+  /** Readable rule title, e.g. "WCAG 2.2 SC 1.1.1 Non-text content". */
+  ruleName: external_exports.string().max(300).optional(),
+  /** What should have been (e.g. "contrast >= 4.5:1"). */
+  expected: external_exports.string().max(500).optional(),
+  /** What the page did instead (e.g. "2.9:1"). */
+  actual: external_exports.string().max(500).optional(),
+  /** How the screenshot was taken: viewport, scroll, dpr; places `boxes` on it. */
+  shot: reportShotSchema.optional(),
+  /** Where the element(s) were on the screenshot, CSS px, max 5. Absent: plain screenshot, never a guessed box. */
+  boxes: reportBoxListSchema.optional(),
+  /** The screenshot as a stored artifact (key under the session's prefix; the api signs it). */
+  screenshot: external_exports.object({ key: external_exports.string().min(1).max(500), bytes: external_exports.number().int().nonnegative() }).optional(),
+  /** Console errors within 2 s of the failure, max 5. */
+  console: external_exports.array(
+    external_exports.object({
+      at: external_exports.number(),
+      text: external_exports.string().max(500),
+      url: external_exports.string().max(2e3).optional()
+    })
+  ).max(5).optional(),
+  /** Failed or slow requests within 2 s of the failure, max 5 (no headers, no bodies). */
+  network: external_exports.array(
+    external_exports.object({
+      method: external_exports.string().max(16),
+      url: external_exports.string().max(2e3),
+      status: external_exports.number().int().optional(),
+      ms: external_exports.number().nonnegative().optional(),
+      error: external_exports.string().max(200).optional()
+    })
+  ).max(5).optional()
 });
 var matrixEntrySchema = external_exports.object({ engine: engineSchema }).strict();
 var matrixSchema = external_exports.array(matrixEntrySchema).min(1).max(ENGINES.length).refine(
@@ -28351,6 +28434,23 @@ var localAppInfoSchema = external_exports.object({
   allowNav: external_exports.array(localAppNavHostSchema).max(10).optional()
 });
 var evidenceClassSchema = external_exports.enum(["standard", "local_app"]);
+var localAppConnectInputSchema = external_exports.object({
+  ports: localAppPortsSchema,
+  /** Device name shown in the dashboard. Absent: the api picks one. */
+  name: external_exports.string().trim().min(1).max(100).optional()
+});
+var localAppConnectStatusSchema = external_exports.enum(["connected", "waiting_for_device"]);
+var localAppConnectResultSchema = external_exports.object({
+  status: localAppConnectStatusSchema,
+  ports: localAppPortsSchema,
+  /** Set when `connected`. */
+  deviceId: idSchema("proxyDevice").optional(),
+  alias: localAppAliasSchema.optional(),
+  /** Set when `waiting_for_device`. */
+  code: external_exports.string().optional(),
+  command: external_exports.string().max(500).optional(),
+  expiresAt: external_exports.iso.datetime().optional()
+});
 var scrapeFormatSchema = external_exports.enum(["html", "cleaned_html", "markdown", "readability"]);
 var waitUntil = external_exports.enum(["domcontentloaded", "load", "networkidle"]).default("load");
 var timeoutMs = external_exports.number().int().min(1e3).max(12e4).default(3e4);
@@ -28582,6 +28682,383 @@ var attachFilesRequestSchema = external_exports.object({
   /** Snapshot generation the ref came from (stale refs are refused). */
   generation: external_exports.number().int().optional()
 });
+var originSchema = external_exports.string().max(300).regex(/^https?:\/\/[^/?#\s]+$/);
+var byoLeaseSchema = external_exports.object({
+  /** `https://host[:port]` origins the session may load as a top-level page (1..50). */
+  allowOrigins: external_exports.array(originSchema).min(1).max(50),
+  /** Acting actions per rolling minute; absent: `BYO_ACTIONS_PER_MINUTE`. */
+  actionsPerMinute: external_exports.number().int().min(1).max(120).optional()
+});
+var byoRefusalReasonSchema = external_exports.enum([
+  "other_site",
+  "payment_site",
+  "deny_listed_click",
+  "unchecked_click",
+  "captcha",
+  "rate_cap",
+  "secret_field"
+]);
+var byoPageFlagSchema = external_exports.enum(["captcha", "password_field", "payment_site"]);
+var byoObserveResponseSchema = external_exports.object({
+  url: external_exports.string().max(4e3),
+  title: external_exports.string().max(500),
+  /** The compact outline (roles, names, refs), page text untrusted. Secrets the session holds are masked. */
+  outline: external_exports.string().max(6e4),
+  /** Refs are valid for this generation only. */
+  generation: external_exports.number().int(),
+  truncated: external_exports.boolean(),
+  flags: external_exports.array(byoPageFlagSchema)
+});
+var byoActResponseSchema = external_exports.object({
+  ok: external_exports.boolean(),
+  url: external_exports.string().max(4e3),
+  title: external_exports.string().max(500).optional(),
+  navigated: external_exports.boolean().optional(),
+  /** What changed on the page (agent-facing text, untrusted). */
+  diff: external_exports.string().max(3e4).optional(),
+  /** The plain-word step recorded for this action (absent: not a test step, e.g. scroll, or it failed). */
+  step: external_exports.string().max(500).optional(),
+  /** A failed action: the engine's error (`ok: false`); a refused one is an HTTP error instead. */
+  error: external_exports.object({ code: external_exports.string(), message: external_exports.string().max(1e3) }).optional(),
+  flags: external_exports.array(byoPageFlagSchema)
+});
+var BYO_MAX_STEPS = 30;
+var byoStepsResponseSchema = external_exports.object({
+  /** Origin of the first page the session opened (the test's site). */
+  startUrl: external_exports.string().max(4e3).optional(),
+  url: external_exports.string().max(4e3),
+  steps: external_exports.array(external_exports.string().max(500)).max(BYO_MAX_STEPS),
+  /** More actions than `BYO_MAX_STEPS` were recorded: the oldest extras were dropped. */
+  truncated: external_exports.boolean()
+});
+var byoNoteStepRequestSchema = external_exports.object({ kind: external_exports.literal("sign_in") });
+var COMPLIANCE_PACK_IDS = [
+  "wcag22-aa",
+  "gdpr-consent",
+  "us-privacy",
+  "owasp-web",
+  "pci-payment",
+  "hipaa-web",
+  "soc2-evidence",
+  "dpdp-india"
+];
+var compliancePackIdSchema = external_exports.enum(COMPLIANCE_PACK_IDS);
+var compliancePacksSchema = external_exports.array(compliancePackIdSchema).max(COMPLIANCE_PACK_IDS.length).refine((ids) => new Set(ids).size === ids.length, { message: "duplicate compliance pack" });
+var complianceHowCheckedSchema = external_exports.enum(["auto", "agent"]);
+var complianceRuleIdSchema = external_exports.string().max(100).regex(
+  new RegExp(`^(${COMPLIANCE_PACK_IDS.join("|")})/[a-z0-9][a-z0-9.-]*$`),
+  "expected a compliance rule id like wcag22-aa/1.4.3-contrast"
+);
+var complianceRuleSchema = external_exports.object({
+  id: complianceRuleIdSchema,
+  packId: compliancePackIdSchema,
+  title: external_exports.string().min(1).max(200),
+  howChecked: complianceHowCheckedSchema
+});
+var complianceOutcomeSchema = external_exports.enum(["passed", "failed", "needs_review", "not_tested"]);
+var complianceEvidenceKindSchema = external_exports.enum([
+  "screenshot",
+  "selector",
+  "request",
+  "cookie",
+  "header",
+  "script",
+  "text"
+]);
+var complianceEvidenceSchema = external_exports.object({
+  kind: complianceEvidenceKindSchema,
+  text: external_exports.string().max(500),
+  selector: external_exports.string().max(500).optional(),
+  url: external_exports.string().max(2e3).optional(),
+  screenshotRef: external_exports.string().max(500).optional()
+});
+var complianceResultSchema = external_exports.object({
+  ruleId: complianceRuleIdSchema,
+  outcome: complianceOutcomeSchema,
+  evidence: external_exports.array(complianceEvidenceSchema).max(10),
+  pagePath: external_exports.string().max(500).optional()
+});
+var complianceRuleReportSchema = external_exports.object({
+  ruleId: complianceRuleIdSchema,
+  title: external_exports.string().min(1).max(200),
+  howChecked: complianceHowCheckedSchema,
+  /** Roll-up of `results`, see `complianceRollupOutcome`. No results: `not_tested`. */
+  outcome: complianceOutcomeSchema,
+  results: external_exports.array(complianceResultSchema).max(200)
+});
+var compliancePackReportSchema = external_exports.object({
+  packId: compliancePackIdSchema,
+  passed: external_exports.number().int().nonnegative(),
+  total: external_exports.number().int().nonnegative(),
+  notTested: external_exports.number().int().nonnegative(),
+  rules: external_exports.array(complianceRuleReportSchema).max(50)
+});
+var complianceReportSchema = external_exports.array(compliancePackReportSchema).max(COMPLIANCE_PACK_IDS.length);
+var complianceScoreSchema = external_exports.object({
+  packId: compliancePackIdSchema,
+  passed: external_exports.number().int().nonnegative(),
+  total: external_exports.number().int().nonnegative(),
+  notTested: external_exports.number().int().nonnegative(),
+  /** Rules whose roll-up is `failed`. */
+  failed: external_exports.number().int().nonnegative()
+});
+var qaComplianceScoresResponseSchema = external_exports.object({
+  packs: compliancePacksSchema,
+  answered: external_exports.boolean(),
+  latest: external_exports.object({
+    runId: idSchema("workflowRun"),
+    at: external_exports.number().int().nonnegative(),
+    scores: external_exports.array(complianceScoreSchema).max(COMPLIANCE_PACK_IDS.length)
+  }).optional()
+});
+function rules(packId, seeds) {
+  return seeds.map(([name, title, howChecked]) => ({
+    id: `${packId}/${name}`,
+    packId,
+    title,
+    howChecked
+  }));
+}
+var COMPLIANCE_PACKS = [
+  {
+    id: "wcag22-aa",
+    name: "Accessibility (WCAG 2.2 AA)",
+    region: "EU \xB7 US \xB7 UK \xB7 Canada",
+    whoNeedsIt: "Anyone selling in the EU (European Accessibility Act, from June 2025), the US (ADA, Section 508), the UK or Canada (AODA).",
+    whatWeCheck: [
+      "axe-core rules on every page we visit: contrast, labels, alt text, landmarks, ARIA.",
+      "A keyboard-only pass of the main flows: focus visible, no traps, skip link.",
+      "Page title and language, target size, form error messages."
+    ],
+    cantCheck: "Screen-reader experience quality, caption accuracy, cognitive load.",
+    rules: rules("wcag22-aa", [
+      ["1.1.1-alt-text", "Images have a text alternative", "auto"],
+      [
+        "1.3.1-info-and-relationships",
+        "Headings, lists and landmarks give the page its structure",
+        "auto"
+      ],
+      ["1.4.3-contrast", "Text has enough contrast", "auto"],
+      ["2.1.1-keyboard", "Main flows work with the keyboard only", "agent"],
+      ["2.1.2-no-keyboard-trap", "Focus is never trapped", "agent"],
+      ["2.4.1-bypass-blocks", "A skip link or landmarks let people skip repeated content", "auto"],
+      ["2.4.2-page-titled", "Every page has a title", "auto"],
+      ["2.4.7-focus-visible", "The focused element is visible", "agent"],
+      ["2.5.8-target-size", "Buttons and links are big enough to hit", "auto"],
+      ["3.1.1-language-of-page", "The page language is set", "auto"],
+      ["3.3.1-error-identification", "Form errors say what is wrong", "agent"],
+      ["3.3.2-labels-or-instructions", "Form fields have labels", "auto"],
+      ["4.1.2-name-role-value", "Controls have a name and role (ARIA)", "auto"]
+    ])
+  },
+  {
+    id: "gdpr-consent",
+    name: "GDPR + cookie consent (EU/UK)",
+    region: "EU \xB7 UK",
+    whoNeedsIt: "Any site with EU or UK visitors.",
+    whatWeCheck: [
+      "A fresh visit: no non-essential cookies or third-party requests before consent.",
+      "A consent banner is there, Reject is as easy as Accept (same layer), and the choice holds after a reload.",
+      "Privacy and cookie policy links are present, and consent can be withdrawn."
+    ],
+    cantCheck: "Lawful basis, data processing agreements, data retention.",
+    rules: rules("gdpr-consent", [
+      ["no-nonessential-cookies-before-consent", "No non-essential cookies before consent", "auto"],
+      [
+        "no-third-party-requests-before-consent",
+        "No third-party tracking requests before consent",
+        "auto"
+      ],
+      ["consent-banner-present", "A consent banner is shown on a fresh visit", "auto"],
+      ["reject-as-easy-as-accept", "Reject is as easy as Accept", "agent"],
+      ["choice-respected-after-reload", "The consent choice is respected after a reload", "agent"],
+      ["privacy-policy-link", "A privacy policy link is present", "auto"],
+      ["cookie-policy-link", "A cookie policy link is present", "auto"],
+      ["consent-withdrawable", "Consent can be withdrawn", "agent"]
+    ])
+  },
+  {
+    id: "us-privacy",
+    name: "US privacy (CCPA/CPRA + state laws)",
+    region: "US",
+    whoNeedsIt: "Sites with visitors from California or other US states with privacy laws.",
+    whatWeCheck: [
+      'A "Do Not Sell or Share" link, and the Global Privacy Control signal honoured (we send Sec-GPC: 1 and check trackers drop).',
+      "A privacy policy link on every page.",
+      "A notice at collection on forms."
+    ],
+    cantCheck: "Back-office request handling (data subject requests).",
+    rules: rules("us-privacy", [
+      ["do-not-sell-link-present", 'A "Do Not Sell or Share" link is present', "auto"],
+      ["opt-out-link-works", "The opt-out link leads to a working choice", "agent"],
+      [
+        "gpc-honoured-trackers-dropped",
+        "Trackers stop when the Global Privacy Control signal is sent",
+        "auto"
+      ],
+      ["gpc-choice-persists", "The opt-out from the GPC signal holds across pages", "agent"],
+      ["privacy-policy-link-every-page", "A privacy policy link is on every page", "auto"],
+      [
+        "notice-at-collection-on-forms",
+        "Forms that collect data show a notice at collection",
+        "auto"
+      ]
+    ])
+  },
+  {
+    id: "owasp-web",
+    name: "Web security basics (OWASP Top 10, passive)",
+    region: "Global",
+    whoNeedsIt: "Everyone.",
+    whatWeCheck: [
+      "HTTPS only with HSTS, the security headers (CSP, X-Content-Type-Options, frame-ancestors, Referrer-Policy) and cookie flags (Secure, HttpOnly, SameSite).",
+      "Mixed content, secrets or keys in scripts and responses, stack traces, open redirects, sensitive data in URLs.",
+      "Autocomplete on password fields."
+    ],
+    cantCheck: "Anything that needs an attack (injection, auth bypass). Passive only, we never exploit.",
+    rules: rules("owasp-web", [
+      ["https-only", "The site is served over HTTPS only", "auto"],
+      ["hsts", "Strict-Transport-Security is set", "auto"],
+      ["csp", "A Content-Security-Policy is set", "auto"],
+      ["x-content-type-options", "X-Content-Type-Options is nosniff", "auto"],
+      ["frame-ancestors", "Framing is limited (frame-ancestors or X-Frame-Options)", "auto"],
+      ["referrer-policy", "A Referrer-Policy is set", "auto"],
+      ["cookie-secure-flag", "Session cookies have the Secure flag", "auto"],
+      ["cookie-httponly-flag", "Session cookies have the HttpOnly flag", "auto"],
+      ["cookie-samesite", "Session cookies have a SameSite value", "auto"],
+      ["no-mixed-content", "No mixed content on HTTPS pages", "auto"],
+      ["no-secrets-in-client", "No keys or secrets in scripts or API responses", "auto"],
+      ["no-verbose-errors", "No stack traces or verbose errors shown", "auto"],
+      ["no-open-redirect", "Visible redirect parameters do not redirect off-site", "auto"],
+      ["no-sensitive-data-in-urls", "No sensitive data in URLs", "auto"],
+      ["password-autocomplete", "Password fields have a suitable autocomplete value", "auto"]
+    ])
+  },
+  {
+    id: "pci-payment",
+    name: "Payment pages (PCI DSS 4.0)",
+    region: "Global",
+    whoNeedsIt: "Sites that take card payments.",
+    whatWeCheck: [
+      "On payment pages: the script inventory (6.4.3) and what changed since the last run (11.6.1).",
+      "Card fields in the provider's iframe or on HTTPS.",
+      "No card data in URLs, local storage or the console, and a CSP present."
+    ],
+    cantCheck: "Back-end storage, network segmentation.",
+    rules: rules("pci-payment", [
+      ["script-inventory", "Every script on the payment page is listed (6.4.3)", "auto"],
+      [
+        "script-changes-since-last-run",
+        "Scripts that changed since the last run are flagged (11.6.1)",
+        "auto"
+      ],
+      [
+        "card-fields-in-provider-iframe",
+        "Card fields are in the payment provider's iframe",
+        "auto"
+      ],
+      ["payment-page-https", "Payment pages load over HTTPS", "auto"],
+      ["no-card-data-in-urls", "No card data in URLs", "auto"],
+      ["no-card-data-in-storage", "No card data in local or session storage", "auto"],
+      ["no-card-data-in-console", "No card data in the console", "auto"],
+      ["csp-on-payment-page", "A Content-Security-Policy is set on payment pages", "auto"]
+    ])
+  },
+  {
+    id: "hipaa-web",
+    name: "Health data on the web (HIPAA)",
+    region: "US",
+    whoNeedsIt: "US health apps.",
+    whatWeCheck: [
+      "No third-party trackers on logged-in pages, and no health terms in URLs or page titles sent to trackers.",
+      "A session timeout on idle, HTTPS, and no health data in error pages."
+    ],
+    cantCheck: "Business associate agreements, internal access control.",
+    rules: rules("hipaa-web", [
+      ["no-third-party-trackers-logged-in", "No third-party trackers on logged-in pages", "auto"],
+      [
+        "no-health-terms-sent-to-trackers",
+        "No health terms in URLs or page titles sent to trackers",
+        "auto"
+      ],
+      ["session-timeout-on-idle", "The session times out when idle", "agent"],
+      ["https-only", "The app is served over HTTPS only", "auto"],
+      ["no-phi-in-error-pages", "Error pages show no health data", "auto"]
+    ])
+  },
+  {
+    id: "soc2-evidence",
+    name: "SOC 2 / ISO 27001 evidence",
+    region: "Global",
+    whoNeedsIt: "B2B SaaS going through an audit.",
+    whatWeCheck: [
+      "Collects evidence for your auditor. It does not certify you.",
+      "MFA offered, lockout after failed logins, session timeout, password rules, logout ends the session.",
+      "User and role management screens and an audit log screen exist."
+    ],
+    cantCheck: "The certification itself (it is a process audit).",
+    rules: rules("soc2-evidence", [
+      ["mfa-offered", "Multi-factor sign-in is offered", "agent"],
+      [
+        "lockout-after-failed-logins",
+        "Sign-in locks after repeated failures (test user only)",
+        "agent"
+      ],
+      ["session-timeout", "The session times out", "agent"],
+      ["password-rules", "Password rules are enforced", "agent"],
+      ["logout-ends-session", "Logging out ends the session", "agent"],
+      ["user-role-management-screen", "A user and role management screen exists", "agent"],
+      ["audit-log-screen", "An audit log screen exists", "agent"]
+    ])
+  },
+  {
+    id: "dpdp-india",
+    name: "India DPDP Act 2023",
+    region: "India",
+    whoNeedsIt: "Any site or app that collects personal data from people in India (Digital Personal Data Protection Act 2023).",
+    whatWeCheck: [
+      "A privacy notice is shown or linked before personal data is asked for, and the purpose is stated near the form.",
+      "Consent boxes are not pre-ticked, and no trackers or marketing cookies load before consent.",
+      "Consent can be withdrawn as easily as it was given, and a grievance contact is published.",
+      "There is a way to ask for access, correction or erasure of data, and children's data needs parental consent."
+    ],
+    cantCheck: "Breach reporting to the Data Protection Board, data retention, cross-border transfers, Significant Data Fiduciary duties.",
+    rules: rules("dpdp-india", [
+      [
+        "notice-before-collection",
+        "Privacy notice is shown or linked before personal data is asked for",
+        "auto"
+      ],
+      ["consent-not-preticked", "Consent boxes are not pre-ticked", "auto"],
+      ["purpose-stated", "The purpose of collecting the data is stated near the form", "agent"],
+      [
+        "no-trackers-before-consent",
+        "No trackers or marketing cookies load before consent",
+        "auto"
+      ],
+      ["withdraw-consent", "Consent can be withdrawn as easily as it was given", "agent"],
+      ["grievance-contact", "A grievance officer or data contact is published", "auto"],
+      [
+        "data-rights-request",
+        "There is a way to ask for access, correction or erasure of data",
+        "auto"
+      ],
+      ["children-consent", "Children's data needs verifiable parental consent", "agent"]
+    ])
+  }
+];
+var QA_COMPLIANCE_RESULTS_POST_MAX = 1e3;
+var qaComplianceResultsPostSchema = external_exports.object({
+  runId: idSchema("workflowRun"),
+  appId: appIdSchema,
+  results: external_exports.array(complianceResultSchema).max(QA_COMPLIANCE_RESULTS_POST_MAX)
+});
+var qaComplianceJobInputSchema = external_exports.object({
+  packs: external_exports.array(compliancePackIdSchema).max(COMPLIANCE_PACK_IDS.length),
+  runId: idSchema("workflowRun"),
+  appId: appIdSchema,
+  previousScripts: external_exports.record(external_exports.string().max(500), external_exports.array(external_exports.string().max(500)).max(200)).optional()
+});
 var qaDebugSkillSchema = external_exports.object({
   name: external_exports.string().regex(/^[a-z][a-z0-9-]*$/),
   version: external_exports.string().min(1),
@@ -28695,7 +29172,17 @@ var leaseLlmSchema = external_exports.object({
     fallback: external_exports.string().min(1),
     /** Pixel vision for canvas pages. */
     vision: external_exports.string().min(1)
-  })
+  }),
+  /**
+   * System One choice model for this session (hub D96). Absent: the runner's own default (Jev when
+   * its key is set). `off` or an engine whose key the runner lacks: steps go straight to the LLM.
+   */
+  decisionEngine: external_exports.enum(["jev", "gemini-decision-1", "off"]).optional(),
+  /**
+   * Google AI Studio key from the platform settings (hub D99), for Gemini Decision 1 (a direct call from
+   * the runner). Absent: the runner's `GEMINI_API_KEY` env, else no Gemini engine.
+   */
+  geminiApiKey: external_exports.string().min(1).optional()
 });
 var leaseEngineSkillSchema = external_exports.object({
   name: external_exports.string().regex(/^[a-z][a-z0-9-]*$/),
@@ -28772,7 +29259,17 @@ var skillJobSchema = external_exports.object({
    * Keep the clip of one passing run in N (0.45.0), by a stable hash of the session id; 1 keeps every
    * passing clip. Only meaningful with `record: "failure"`. Absent: no pass is sampled.
    */
-  passSampleOneIn: external_exports.number().int().min(1).optional()
+  passSampleOneIn: external_exports.number().int().min(1).optional(),
+  /**
+   * The skill hands the browser to a person at walls (0.55.0, S5; the manifest's `handoff: true`): the
+   * runner holds the session for the hand-off. Absent: read from the package as before.
+   */
+  handoff: external_exports.boolean().optional(),
+  /**
+   * Compliance checks of this job (0.57.0, D93): the packs and where the results go. Typed twin of the JSON-string
+   * skill input `compliance` (`inputs.compliance`), which keeps working; when both are present this field wins.
+   */
+  compliance: qaComplianceJobInputSchema.optional()
 });
 var localAppRouteSchema = external_exports.object({
   /** `localAppAlias(deviceId)`: the only host routed to the relay. */
@@ -28860,6 +29357,21 @@ var placeRequestFieldsSchema = external_exports.object({
    */
   /** Explorer (qa-next W2-3): run this job session read-only, locked to `appOrigin`. Same carry rule as `qaRun`. */
   qaExplore: qaExploreLeaseSchema.optional(),
+  /** Bring your own brain (S5 BYO): a session the customer's model drives over MCP, guarded by the runner. Same carry rule as `qaRun`. */
+  byo: byoLeaseSchema.optional(),
+  /**
+   * The QA App this session belongs to (0.57.0, D93): the runner posts App Knowledge observations for it
+   * (`internalRoutes.homeApi.qaKnowledgeObservations`). Absent: nothing is posted. Same carry rule as `qaRun`.
+   */
+  appId: appIdSchema.optional(),
+  /** The App's "Learn from sessions" switch at session start (0.57.0, D93). Absent or false: the runner collects and posts nothing. */
+  knowledgeLearn: external_exports.boolean().optional(),
+  /**
+   * What the App knows, as "Product context" for this session's tasks (0.57.0, D93 spec 3.3): at most 6000 chars,
+   * already framed as untrusted by the api. The runner adds it to `TaskOptions.context` of every task (after the
+   * task's own `context`, within the 6000 limit). Set only when the App's "Use in AI" is on and `appId` is present.
+   */
+  knowledgeContext: external_exports.string().max(6e3).optional(),
   persistProfile: external_exports.boolean().optional(),
   /** Present when the session loads uploaded extensions (at most 10; the API dedupes). */
   extensions: external_exports.array(extensionLoadSchema).max(10).optional(),
@@ -28944,6 +29456,12 @@ var createSessionRequestSchema = sessionOptionsSchema.omit({ id: true }).extend(
   browser: engineSchema.optional(),
   /** Run on this engine (`GET /v1/engines`). Omitted: the project's default engine. */
   engineId: idSchema("engine").optional(),
+  /**
+   * The QA App this session is for (0.57.0, D93): a Studio session. The api then lets the runner post App Knowledge
+   * observations for it (when the App's "Learn from sessions" is on) and hands the session the App's knowledge
+   * (lease `knowledgeContext`, when "Use in AI" is on). An app of another project is `not_found`. Absent: neither.
+   */
+  appId: appIdSchema.optional(),
   /** A published version of `engineId`. Omitted: its newest. Needs `engineId`. */
   engineVersion: engineVersionNumberSchema.optional(),
   /**
@@ -29161,6 +29679,308 @@ var sessionTokenResponseSchema = createSessionResponseSchema.pick({
   token: true,
   tokenExpiresAt: true
 });
+var QA_STEPS_WRITTEN_MAX = 30;
+var QA_STEPS_EXPANDED_MAX = 60;
+var QA_HOOK_STEPS_MAX = 10;
+var QA_STEP_TEXT_MAX = 500;
+var QA_EXPECT_ITEMS_MAX = 20;
+var QA_AI_CHECKS_MAX = 3;
+var QA_ASSERTIONS_MAX = 100;
+var qaVariableNameSchema = external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/, "letters, digits and _; not a digit first");
+var qaVariablesSchema = external_exports.record(qaVariableNameSchema, external_exports.string().max(1e3)).refine((v) => Object.keys(v).length <= 50, { message: "at most 50 variables" });
+var qaGeneratedValuesSchema = external_exports.object({
+  "unique.email": external_exports.string().max(254).optional(),
+  "unique.name": external_exports.string().max(200).optional(),
+  "unique.id": external_exports.string().max(100).optional(),
+  "run.id": external_exports.string().max(100).optional(),
+  today: external_exports.string().max(40).optional()
+}).strict();
+var qaAiCheckSchema = external_exports.object({ ai: external_exports.string().trim().min(1).max(300) }).strict();
+var qaExpectItemSchema = external_exports.union([external_exports.string().trim().min(1).max(300), qaAiCheckSchema]);
+var qaExpectSchema = external_exports.union([
+  external_exports.string().max(1e3),
+  external_exports.array(qaExpectItemSchema).min(1).max(QA_EXPECT_ITEMS_MAX).refine((items) => items.filter((i) => typeof i !== "string").length <= QA_AI_CHECKS_MAX, {
+    message: `at most ${QA_AI_CHECKS_MAX} AI checks per test`
+  })
+]);
+var qaApiExpectSchema = external_exports.union([
+  external_exports.string().max(1e3),
+  external_exports.array(external_exports.string().trim().min(1).max(300)).min(1).max(QA_EXPECT_ITEMS_MAX)
+]);
+var qaRequiredExpectSchema = qaExpectSchema.refine(
+  (e) => typeof e === "string" ? e.trim().length > 0 : true,
+  { message: "expect is empty" }
+);
+var qaHttpMethodSchema = external_exports.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]);
+var FORBIDDEN_HEADER = /^(host|connection|content-length|transfer-encoding|upgrade|te|trailer|keep-alive|proxy-.*)$/i;
+var qaApiHeadersSchema = external_exports.record(
+  external_exports.string().regex(/^[A-Za-z0-9-]{1,64}$/, "header name: letters, digits and -"),
+  external_exports.string().max(1e3)
+).refine((h) => Object.keys(h).length <= 20, { message: "at most 20 headers" }).refine((h) => Object.keys(h).every((k) => !FORBIDDEN_HEADER.test(k)), {
+  message: "Host, Proxy-*, Connection and framing headers cannot be set"
+});
+var QA_API_BODY_MAX = 16384;
+var qaApiBodySchema = external_exports.union([external_exports.string(), external_exports.record(external_exports.string(), external_exports.unknown()), external_exports.array(external_exports.unknown())]).refine((b) => (typeof b === "string" ? b : JSON.stringify(b)).length <= QA_API_BODY_MAX, {
+  message: `body is at most ${QA_API_BODY_MAX} chars`
+});
+var qaApiStepSchema = external_exports.object({
+  kind: external_exports.literal("api"),
+  method: qaHttpMethodSchema,
+  url: external_exports.string().min(1).max(2e3).refine((u) => u.startsWith("/") || /^https?:\/\//i.test(u), {
+    message: "a path starting with / or an http(s) URL"
+  }),
+  headers: qaApiHeadersSchema.optional(),
+  body: qaApiBodySchema.optional(),
+  /** Send the browser's cookies for that origin (reuse the test's login). Absent: false. */
+  withCookies: external_exports.boolean().optional(),
+  /** e.g. `status 200, body has "Acme"`. Compiled into assertions with `at` pointing here. */
+  expect: qaApiExpectSchema.optional()
+}).refine((s) => s.body === void 0 || s.method !== "GET" && s.method !== "HEAD", {
+  message: "GET and HEAD calls have no body",
+  path: ["body"]
+});
+var qaSharedStepNameSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
+var qaUseStepSchema = external_exports.object({
+  kind: external_exports.literal("use"),
+  name: qaSharedStepNameSchema,
+  version: external_exports.number().int().min(1).optional()
+});
+var qaTypedStepSchema = external_exports.discriminatedUnion("kind", [qaApiStepSchema, qaUseStepSchema]);
+var qaStepSchema = external_exports.union([external_exports.string().min(1).max(QA_STEP_TEXT_MAX), qaTypedStepSchema]);
+var qaStepListSchema = external_exports.array(qaStepSchema).max(QA_STEPS_WRITTEN_MAX);
+var qaHookStepListSchema = external_exports.array(qaStepSchema).max(QA_HOOK_STEPS_MAX);
+var qaAssertionTargetSchema = external_exports.object({
+  /** ARIA role, e.g. `row`, `button`. Absent: any role with that exact name. */
+  role: external_exports.string().min(1).max(40).optional(),
+  name: external_exports.string().min(1).max(200)
+});
+var qaAssertionAtSchema = external_exports.object({
+  phase: external_exports.enum(["before", "steps", "after"]),
+  index: external_exports.number().int().min(0)
+});
+var assertionBase = {
+  /** The phrase as the author wrote it, shown on the report. */
+  source: external_exports.string().max(300),
+  at: qaAssertionAtSchema.optional()
+};
+var qaAssertionSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({ kind: external_exports.literal("text_visible"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("text_absent"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("url_contains"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({ kind: external_exports.literal("title_is"), text: external_exports.string().min(1).max(300), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("count"),
+    target: qaAssertionTargetSchema,
+    n: external_exports.number().int().min(0).max(1e3),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("state"),
+    target: qaAssertionTargetSchema,
+    state: external_exports.enum(["visible", "enabled", "disabled"]),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("field_value"),
+    label: external_exports.string().min(1).max(200),
+    value: external_exports.string().max(300),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("no_console_errors"), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("request_status"),
+    path: external_exports.string().min(1).max(500),
+    status: external_exports.number().int().min(100).max(599),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("download"), name: external_exports.string().min(1).max(200), ...assertionBase }),
+  external_exports.object({
+    kind: external_exports.literal("status_is"),
+    status: external_exports.number().int().min(100).max(599),
+    ...assertionBase
+  }),
+  external_exports.object({
+    kind: external_exports.literal("body_contains"),
+    text: external_exports.string().min(1).max(300),
+    ...assertionBase
+  }),
+  external_exports.object({ kind: external_exports.literal("ai"), prompt: external_exports.string().min(1).max(300), ...assertionBase })
+]);
+var qaCompiledExpectSchema = external_exports.object({
+  compilerVersion: external_exports.number().int().min(1),
+  assertions: external_exports.array(qaAssertionSchema).max(QA_ASSERTIONS_MAX)
+});
+var qaAssertionOutcomeSchema = external_exports.enum(["pass", "fail", "ambiguous", "error"]);
+var qaAssertionResultSchema = external_exports.object({
+  /** Position in `compiled.assertions`. */
+  index: external_exports.number().int().min(0).max(QA_ASSERTIONS_MAX - 1),
+  kind: external_exports.enum(
+    qaAssertionSchema.options.map((o) => o.shape.kind.value)
+  ),
+  /** The phrase as written (the assertion's `source`). */
+  source: external_exports.string().max(300),
+  outcome: qaAssertionOutcomeSchema,
+  /** What it saw, plain words: "2 matches for row \"Project\"", "status 404", "no such text". Not on a pass. */
+  saw: external_exports.string().max(500).optional(),
+  /**
+   * Set only for `kind: "ai"`: label the result **AI-judged**, show `reasoning`, put `costMicros` on the
+   * report. Never cached.
+   */
+  // WATCH(qa-next): "a person can mark it wrong" (spec §5.2) has no shape yet; it lands with triage (B1-B3).
+  aiJudged: external_exports.object({
+    reasoning: external_exports.string().max(500),
+    costMicros: external_exports.number().int().nonnegative(),
+    model: external_exports.string().max(80).optional()
+  }).optional()
+});
+var qaAssertionResultListSchema = external_exports.array(qaAssertionResultSchema).max(QA_ASSERTIONS_MAX);
+var qaHookOutcomeSchema = external_exports.object({
+  before: external_exports.enum(["pass", "failed"]).optional(),
+  after: external_exports.enum(["pass", "failed", "timed_out", "skipped"]).optional(),
+  failedSteps: external_exports.array(
+    external_exports.object({
+      phase: external_exports.enum(["before", "after"]),
+      index: external_exports.number().int().min(0).max(QA_HOOK_STEPS_MAX - 1),
+      saw: external_exports.string().max(500).optional()
+    })
+  ).max(2).optional()
+});
+var qaLaneSchema = external_exports.enum(["browser", "http"]);
+var SECRET_PROVIDERS = ["1password", "bitwarden"];
+var secretProviderKindSchema = external_exports.enum(SECRET_PROVIDERS);
+var credentialSourceRequestSchema = external_exports.object({
+  providerId: idSchema("secretProvider"),
+  /** 1Password `op://Vault/Item[/field]`; Bitwarden a Secrets Manager secret key or id. */
+  reference: external_exports.string().min(1).max(300)
+});
+var credentialSourceSchema = credentialSourceRequestSchema.extend({
+  provider: secretProviderKindSchema
+});
+var CREDENTIAL_SECRETS_MAX = 20;
+var credentialSecretsSchema = external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3)).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
+  message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
+});
+var credentialInfoSchema = external_exports.object({
+  id: external_exports.string(),
+  /**
+   * Exact origin the credential is used on, e.g. `https://staging.example.com`. For an
+   * `anyOrigin` credential the api returns `"*"`.
+   */
+  origin: external_exports.string(),
+  /** Usable on any site (0.42.0). Absent = false. */
+  anyOrigin: external_exports.boolean().optional(),
+  /** Groups credentials (per environment, per test suite); sessions pick a namespace. */
+  namespace: external_exports.string(),
+  label: external_exports.string(),
+  username: external_exports.string(),
+  hasTotp: external_exports.boolean(),
+  /** Names of the credential's secrets (0.48.2), never the values. Absent: none. */
+  secretNames: external_exports.array(qaVariableNameSchema).max(CREDENTIAL_SECRETS_MAX).optional(),
+  source: credentialSourceSchema.optional(),
+  lastResolvedAt: external_exports.number().optional(),
+  resolveError: external_exports.string().optional(),
+  createdAt: external_exports.number(),
+  updatedAt: external_exports.number()
+});
+var listCredentialsQuerySchema = external_exports.object({ namespace: external_exports.string().max(64).optional() });
+var credentialListSchema = external_exports.object({ credentials: external_exports.array(credentialInfoSchema) });
+var createCredentialRequestSchema = external_exports.object({
+  /** Required unless `anyOrigin` is true (then it must be left out). */
+  origin: external_exports.string().max(300).optional(),
+  /** Use this login on any site (0.42.0, default false), e.g. the seeded "Test login". */
+  anyOrigin: external_exports.boolean().optional(),
+  username: external_exports.string().max(500).optional(),
+  password: external_exports.string().min(1).max(5e3).optional(),
+  source: credentialSourceRequestSchema.optional(),
+  namespace: external_exports.string().min(1).max(64).optional(),
+  label: external_exports.string().max(200).optional(),
+  totpSecret: external_exports.string().max(200).optional(),
+  /** Named secrets (0.48.2), see `credentialSecretsSchema`. */
+  secrets: credentialSecretsSchema.optional()
+}).superRefine((v, ctx) => {
+  if (v.anyOrigin && v.origin !== void 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["origin"],
+      message: "origin must be left out when anyOrigin is true"
+    });
+  }
+  if (!v.anyOrigin && v.origin === void 0) {
+    ctx.addIssue({ code: "custom", path: ["origin"], message: "origin is required" });
+  }
+});
+var patchCredentialRequestSchema = external_exports.object({
+  username: external_exports.string().min(1).max(500).optional(),
+  password: external_exports.string().min(1).max(5e3).optional(),
+  source: credentialSourceRequestSchema.optional(),
+  label: external_exports.string().max(200).optional(),
+  totpSecret: external_exports.string().max(200).nullable().optional(),
+  secrets: external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3).nullable()).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
+    message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
+  }).optional()
+});
+var secretProviderInfoSchema = external_exports.object({
+  id: external_exports.string(),
+  provider: secretProviderKindSchema,
+  label: external_exports.string(),
+  scope: external_exports.string(),
+  settings: external_exports.record(external_exports.string(), external_exports.string()),
+  status: external_exports.enum(["ok", "error", "untested"]),
+  lastCheckedAt: external_exports.number().optional(),
+  error: external_exports.string().optional(),
+  createdAt: external_exports.number(),
+  updatedAt: external_exports.number()
+});
+var secretProviderListSchema = external_exports.object({ providers: external_exports.array(secretProviderInfoSchema) });
+var createSecretProviderRequestSchema = external_exports.object({
+  provider: secretProviderKindSchema,
+  token: external_exports.string().min(1).max(5e3),
+  label: external_exports.string().max(200).optional(),
+  scope: external_exports.string().max(500).optional(),
+  settings: external_exports.record(external_exports.string().max(40), external_exports.string().max(500)).optional()
+});
+var sessionLoginOptionSchema = external_exports.object({
+  credentialId: idSchema("credential"),
+  label: external_exports.string().max(200),
+  username: external_exports.string().max(500),
+  hasTotp: external_exports.boolean(),
+  /** The App environment's ★ default login (preselected in the panel). */
+  isDefault: external_exports.boolean()
+});
+var sessionLoginPromptSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({ kind: external_exports.literal("sign_in"), origin: external_exports.string().max(300), at: external_exports.number() }),
+  external_exports.object({
+    kind: external_exports.literal("save"),
+    origin: external_exports.string().max(300),
+    at: external_exports.number(),
+    username: external_exports.string().max(500).optional()
+  })
+]);
+var sessionLoginsStateSchema = external_exports.object({
+  prompt: sessionLoginPromptSchema.optional(),
+  logins: external_exports.array(sessionLoginOptionSchema).max(50),
+  environmentId: idSchema("qaEnvironment").optional()
+});
+var sessionLoginFillRequestSchema = external_exports.object({
+  credentialId: idSchema("credential"),
+  submit: external_exports.boolean().default(false)
+});
+var sessionLoginFillResponseSchema = external_exports.object({ filled: external_exports.boolean() });
+var sessionLoginSaveRequestSchema = external_exports.object({
+  label: external_exports.string().trim().min(1).max(200).optional()
+});
+var sessionLoginSaveResponseSchema = external_exports.object({ credentialId: idSchema("credential") });
+var environmentSignedInStateSchema = external_exports.object({
+  staySignedIn: external_exports.boolean(),
+  savedAt: external_exports.number().optional()
+});
+var environmentLoginsSchema = external_exports.object({
+  environmentId: idSchema("qaEnvironment"),
+  origin: external_exports.string(),
+  defaultCredentialId: idSchema("credential").optional(),
+  logins: external_exports.array(credentialInfoSchema),
+  signedIn: environmentSignedInStateSchema
+});
 var runtimeConfigSchema = external_exports.object({
   version: external_exports.number().int().nonnegative(),
   sessionMemoryMb: external_exports.number().int().min(256).max(2048).optional(),
@@ -29214,7 +30034,7 @@ var runnerInfoSchema = external_exports.object({
   /** Open sessions on the QA profile (0.47.0), for the orchestrator's per-node `maxQaConcurrent` cap. */
   qaSessions: external_exports.number().int().nonnegative().optional()
 });
-var originSchema = external_exports.string().url().refine((o) => {
+var originSchema2 = external_exports.string().url().refine((o) => {
   try {
     return new URL(o).origin === o;
   } catch {
@@ -29223,7 +30043,12 @@ var originSchema = external_exports.string().url().refine((o) => {
 }, "must be an exact origin");
 var credentialLookupRequestSchema = external_exports.object({
   sessionId: idSchema("session"),
-  origin: originSchema
+  origin: originSchema2,
+  /**
+   * S5 LOGINS: the exact login a person picked (Fill) or `sign_in` named. Must be one the api offers for
+   * `origin` (`credentialOptions`), else 404. Absent: the ★ default for the origin, else the first offered.
+   */
+  credentialId: idSchema("credential").optional()
 });
 var credentialLookupResponseSchema = external_exports.object({
   username: external_exports.string(),
@@ -29233,10 +30058,27 @@ var credentialLookupResponseSchema = external_exports.object({
 });
 var credentialSecretRequestSchema = external_exports.object({
   sessionId: idSchema("session"),
-  origin: originSchema,
+  origin: originSchema2,
   name: external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/)
 });
 var credentialSecretResponseSchema = external_exports.object({ value: external_exports.string().min(1).max(2e3) });
+var credentialOptionsRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  origin: originSchema2
+});
+var credentialOptionsResponseSchema = external_exports.object({
+  logins: external_exports.array(sessionLoginOptionSchema).max(50),
+  /** The App environment whose base URL has this origin; absent: none. */
+  environmentId: idSchema("qaEnvironment").optional()
+});
+var credentialSaveRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  origin: originSchema2,
+  username: external_exports.string().max(500),
+  password: external_exports.string().min(1).max(5e3),
+  label: external_exports.string().trim().min(1).max(200).optional()
+});
+var credentialSaveResponseSchema = external_exports.object({ credentialId: idSchema("credential") });
 var presignRequestSchema = external_exports.object({
   sessionId: idSchema("session"),
   name: external_exports.string().min(1).max(200),
@@ -29329,7 +30171,12 @@ var orgSchema = external_exports.object({
   createdAt: unixMs
 });
 var membershipSchema = external_exports.object({ org: orgSchema, role: memberRoleSchema });
-var listOrgsResponseSchema = external_exports.object({ memberships: external_exports.array(membershipSchema) });
+var listOrgsResponseSchema = external_exports.object({
+  memberships: external_exports.array(membershipSchema),
+  currentOrgId: idSchema("tenant").nullable().optional()
+});
+var createOrgRequestSchema = external_exports.object({ name: external_exports.string().trim().min(1).max(200) });
+var switchOrgResponseSchema = external_exports.object({ currentOrgId: idSchema("tenant") });
 var listRegionsResponseSchema = external_exports.object({ regions: external_exports.array(regionCodeSchema) });
 var capacityRequestStatusSchema = external_exports.enum(["pending", "approved", "declined", "cancelled"]);
 var capacityRequestTimelineSchema = external_exports.enum(["now", "this_month", "later"]);
@@ -29863,7 +30710,7 @@ var taskQuestionSchema = external_exports.object({
   id: external_exports.string().min(1).max(40),
   kind: external_exports.enum(["choice", "approve", "plan", "handoff", "login"]),
   text: external_exports.string().min(1).max(500),
-  options: external_exports.array(taskQuestionOptionSchema).min(1).max(4),
+  options: external_exports.array(taskQuestionOptionSchema).min(1).max(6),
   allowText: external_exports.boolean().default(true),
   /** Set on `login` questions only. */
   login: taskQuestionLoginSchema.optional()
@@ -29971,683 +30818,6 @@ var taskSchema = external_exports.object({
   finishedAt: external_exports.iso.datetime().optional()
 });
 var listTasksResponseSchema = external_exports.object({ tasks: external_exports.array(taskSchema) });
-var taskScreenshotRefSchema = external_exports.object({
-  kind: taskScreenshotKindSchema,
-  stepIndex: external_exports.number().int().min(0).optional(),
-  key: external_exports.string().max(512),
-  bytes: external_exports.number().int().min(0)
-});
-var artifactKindSchema = external_exports.enum([
-  "screenshot",
-  "recording",
-  "report",
-  "har",
-  "log",
-  "trace",
-  "mhtml",
-  "download"
-]);
-var envelope = {
-  /** Minted with the HOME region (`newId("event", homeRegion)`): events live in the home stream and ledger. */
-  id: idSchema("event"),
-  at: external_exports.iso.datetime(),
-  tenantId: idSchema("tenant"),
-  homeRegion: regionCodeSchema,
-  executionRegion: regionCodeSchema,
-  runnerId: idSchema("runner"),
-  sessionId: idSchema("session"),
-  runId: idSchema("skillRun").optional()
-};
-var eventSchema = external_exports.discriminatedUnion("type", [
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("session.started"),
-    data: external_exports.object({
-      engine: engineSchema,
-      pool: poolSchema,
-      warm: external_exports.boolean(),
-      launchMs: external_exports.number()
-    })
-  }),
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("session.ended"),
-    data: external_exports.object({
-      reason: sessionEndReasonSchema,
-      durationMs: external_exports.number().int(),
-      /** Top-level URL of the active tab at the end (0.19.0); lets `GET /v1/sessions?q=` find interactive sessions. */
-      lastUrl: external_exports.string().max(2048).optional(),
-      /** The session's memory cap in MB (0.22.1, hub spec compute-billing): its reserved size, billed as GB-minutes. */
-      memoryLimitMb: external_exports.number().int().positive().optional(),
-      /** Highest measured memory of the session's browser, MB (0.22.1). Recorded, not billed. */
-      peakMemoryMb: external_exports.number().int().nonnegative().optional(),
-      /** CPU time the session's browser used, ms (0.22.1). Recorded, not billed. */
-      cpuMs: external_exports.number().int().nonnegative().optional(),
-      /** Network bytes the session's browser received (encoded), D87: billed as `data_out_gb`. */
-      egressBytes: external_exports.number().int().nonnegative().optional()
-    })
-  }),
-  /**
-   * The session was paused (0.19.0): actions and tasks answer `session_paused` until it resumes.
-   * `pausedBy` is the same string as `sessionControlState.pausedBy` (e.g. `user`, `captcha`). The API
-   * shows the session as `paused` until `session.resumed` or `session.ended`.
-   */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("session.paused"),
-    data: external_exports.object({ pausedBy: external_exports.string().max(200) })
-  }),
-  /** The session resumed after `session.paused` (0.19.0); the API shows it as `live` again. */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("session.resumed"),
-    data: external_exports.object({})
-  }),
-  /** One per browser action. Mirrors the old LedgerRow minus price (the API prices, hub DECISIONS D9). */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("usage.action"),
-    data: external_exports.object({
-      kind: external_exports.string(),
-      detail: external_exports.string().optional(),
-      ok: external_exports.boolean(),
-      ms: external_exports.number(),
-      cdpCalls: external_exports.number().int(),
-      units: external_exports.number(),
-      provider: external_exports.string().optional(),
-      engine: engineSchema.optional(),
-      /** D87: `normal` = deterministic action, `smart` = resolved by an AI step, `llm` = main work is an LLM call. Absent = normal. */
-      actionKind: external_exports.enum(["normal", "smart", "llm"]).optional(),
-      /** D87: one id per action; `usage.llm` rows of the same action carry it. */
-      actionId: external_exports.string().max(64).optional()
-    })
-  }),
-  /** One per model call by the decision router. */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("usage.llm"),
-    data: external_exports.object({
-      provider: external_exports.string(),
-      model: external_exports.string(),
-      inputTokens: external_exports.number().int(),
-      outputTokens: external_exports.number().int(),
-      cachedInputTokens: external_exports.number().int().default(0),
-      ms: external_exports.number(),
-      /** Cost of the call in micro-USD, as the LLM gateway reported it (hub D30). Absent without a gateway. */
-      costMicros: external_exports.number().int().nonnegative().optional(),
-      /** D87: the action this call served (matches `usage.action.data.actionId`). */
-      actionId: external_exports.string().max(64).optional()
-    })
-  }),
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("run.started"),
-    data: external_exports.object({ skill: external_exports.string(), version: external_exports.string() })
-  }),
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("run.step"),
-    data: external_exports.object({
-      index: external_exports.number().int(),
-      name: external_exports.string(),
-      ok: external_exports.boolean(),
-      ms: external_exports.number(),
-      /** The step was skipped (its `if:` rendered falsy); `ok` is true then. Absent on older runtimes. */
-      skipped: external_exports.boolean().optional()
-    })
-  }),
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("run.finished"),
-    data: external_exports.object({
-      /** `denied`: the skill needed a permission that was not granted. */
-      status: external_exports.enum(["passed", "failed", "error", "cancelled", "denied"]),
-      ms: external_exports.number(),
-      /** Object key of the full JSON result. */
-      resultKey: external_exports.string(),
-      reportKey: external_exports.string().optional(),
-      /** One-line summary and counters (steps, failedSteps, assertions, findings…) for run lists. */
-      summary: external_exports.string().optional(),
-      counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).optional(),
-      /** A case with the run's shared login landed on a sign-in page (0.47.0, qa-next C4): the api retries it once with a fresh login. */
-      signInWall: external_exports.boolean().optional()
-    })
-  }),
-  /**
-   * A goal task (`POST /v1/sessions/:id/tasks`) began (C23). `taskId` is minted by the runner with the
-   * HOME region (`newId("task", homeRegion)`). `engineRef` only when the lease has an engine block.
-   * `maxSteps`/`maxCostUsd` are the limits applied (smaller of request and engine).
-   */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("task.started"),
-    data: external_exports.object({
-      taskId: idSchema("task"),
-      goal: external_exports.string().min(1).max(2e3),
-      engineRef: engineRefSchema.optional(),
-      /** Who sent it (0.20.0): from the session token's `usr` claim; absent without one. */
-      startedBy: sessionStartedBySchema.optional(),
-      /** Missing = `auto` (0.21.0). */
-      mode: taskModeSchema.optional(),
-      maxSteps: external_exports.number().int().positive(),
-      maxCostUsd: external_exports.number().positive().optional()
-    })
-  }),
-  /**
-   * A goal task asked a person a question (0.42.4): approve, plan, choice, handoff or a sign-in wall
-   * (`login`, hub D76). The api forwards it to notification sinks (Slack Approve/Deny). Never carries a
-   * secret; answers still go through `POST /v1/sessions/:id/tasks/answer`.
-   */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("task.question"),
-    data: external_exports.object({
-      taskId: idSchema("task"),
-      question: taskQuestionSchema
-    })
-  }),
-  /** The task ended. Same fields as the `POST …/tasks` reply minus page `text`; at most 500 steps. */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("task.finished"),
-    data: external_exports.object({
-      taskId: idSchema("task"),
-      ok: external_exports.boolean(),
-      stoppedBy: taskStoppedBySchema,
-      limit: taskLimitSchema.optional(),
-      reason: external_exports.string().max(1e3).optional(),
-      /** Final answer, cut to 8000 chars by the runner. */
-      answer: external_exports.string().max(8e3).optional(),
-      steps: external_exports.array(taskStepSchema).max(500),
-      costMicros: external_exports.number().int().nonnegative(),
-      ms: external_exports.number().nonnegative(),
-      /** Navigations refused by the engine's `allowHosts` during the task. */
-      refusedNavigations: external_exports.number().int().nonnegative().optional(),
-      /** Mode the task ran in (0.21.0). */
-      mode: taskModeSchema.optional(),
-      /** Questions asked during the task and their answers (0.21.0), at most 20. */
-      exchanges: external_exports.array(taskExchangeSchema).max(20).optional(),
-      /** Object-store keys of the screenshots the runner kept, at most 2 (0.41.3); the api signs links from them. */
-      screenshots: external_exports.array(taskScreenshotRefSchema).max(2).optional()
-    })
-  }),
-  /**
-   * A page check found something during a goal task (0.37.0, qa-engine-v2 R-QA1). The api merges
-   * these into the task's `RunReport.findings` (at most 30 per run). `url` is the page the check
-   * ran on (a finding's own `url` may be more specific).
-   */
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("task.finding"),
-    data: external_exports.object({
-      taskId: idSchema("task"),
-      sessionId: idSchema("session"),
-      finding: findingSchema,
-      url: external_exports.string().max(2e3).optional()
-    })
-  }),
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("quick.finished"),
-    data: external_exports.object({
-      op: external_exports.enum(["scrape", "screenshot", "pdf", "crawl"]),
-      status: external_exports.enum(["ok", "error"]),
-      ms: external_exports.number(),
-      /** Object key of the result (`sinks.artifacts.prefix` + `sessionArtifactNames.quickResult`), when ok. */
-      resultKey: external_exports.string().optional(),
-      contentType: external_exports.string().optional(),
-      bytes: external_exports.number().int().nonnegative().optional(),
-      error: errorInfoSchema.optional()
-    })
-  }),
-  external_exports.object({
-    ...envelope,
-    type: external_exports.literal("artifact.stored"),
-    data: external_exports.object({
-      kind: artifactKindSchema,
-      key: external_exports.string(),
-      bytes: external_exports.number().int(),
-      contentType: external_exports.string()
-    })
-  })
-]);
-var eventBatchSchema = external_exports.object({ events: external_exports.array(eventSchema).min(1).max(500) });
-var eventBatchResponseSchema = external_exports.object({ accepted: external_exports.number().int().nonnegative() });
-var actionCacheEntrySchema = external_exports.object({
-  key: external_exports.string().min(1).max(2e3),
-  op: external_exports.string(),
-  /** Element identity (role|name|tag|type|frame), re-resolved to a ref on hit. */
-  elementKey: external_exports.string().optional(),
-  text: external_exports.string().optional(),
-  value: external_exports.string().optional(),
-  keyName: external_exports.string().optional(),
-  url: external_exports.string().optional(),
-  direction: external_exports.string().optional(),
-  waitText: external_exports.string().optional(),
-  waitMs: external_exports.number().int().nonnegative().optional(),
-  clicks: external_exports.number().int().positive().optional(),
-  hits: external_exports.number().int().nonnegative(),
-  misses: external_exports.number().int().nonnegative(),
-  lastAt: external_exports.number().int().nonnegative(),
-  provider: external_exports.string()
-});
-var actionCacheLookupRequestSchema = external_exports.object({
-  sessionId: idSchema("session"),
-  keys: external_exports.array(external_exports.string().min(1)).min(1).max(50)
-});
-var actionCacheLookupResponseSchema = external_exports.object({
-  entries: external_exports.array(actionCacheEntrySchema)
-});
-var actionCacheCommitRequestSchema = external_exports.object({
-  sessionId: idSchema("session"),
-  entries: external_exports.array(actionCacheEntrySchema).min(1).max(50)
-});
-var inboxSchema = external_exports.object({
-  id: idSchema("inbox"),
-  address: external_exports.string(),
-  createdAt: external_exports.number(),
-  expiresAt: external_exports.number()
-});
-var inboxMessageSchema = external_exports.object({
-  /**
-   * An `inboxMessage` id (`msg_…`). Its time part has 1 s precision, so do not sort by id: the
-   * list answer is already oldest first, and `after` is resolved by position in that list.
-   */
-  id: idSchema("inboxMessage"),
-  from: external_exports.string(),
-  to: external_exports.array(external_exports.string()),
-  subject: external_exports.string(),
-  /** The plain-text part, or the HTML part converted to text. */
-  text: external_exports.string(),
-  /** http(s) links in the mail, in order. Never fetched by the API. */
-  links: external_exports.array(external_exports.string()),
-  /** The first 4–8 digit code near a word like "code" or "verification". */
-  code: external_exports.string().optional(),
-  receivedAt: external_exports.number()
-});
-var listInboxesResponseSchema = external_exports.object({ inboxes: external_exports.array(inboxSchema) });
-var listInboxMessagesResponseSchema = external_exports.object({ messages: external_exports.array(inboxMessageSchema) });
-var listInboxMessagesQuerySchema = external_exports.object({
-  /** Long-poll: `30`, `30s`, `500ms`, `1m`; capped at a minute. */
-  wait: external_exports.string().max(10).optional(),
-  /** Only messages that arrived after this message id. */
-  after: external_exports.string().max(40).optional()
-});
-var inboundMailResponseSchema = external_exports.object({ delivered: external_exports.number().int().nonnegative() });
-var inboxCreateRequestSchema = external_exports.object({
-  /** The job session. */
-  sessionId: idSchema("session")
-});
-var inboxWaitRequestSchema = external_exports.object({
-  sessionId: idSchema("session"),
-  /** An inbox this session created. */
-  inboxId: idSchema("inbox"),
-  /** Only mail with `receivedAt >= since` (epoch ms): the step's start, so earlier mail never answers. */
-  since: external_exports.number().int().nonnegative(),
-  from: external_exports.string().max(320).optional(),
-  subject: external_exports.string().max(300).optional(),
-  /**
-   * Only mail sent to this exact address (0.48.3, qa-next W1-2), compared case-insensitively against the
-   * address AS SENT, plus-tag included (`qa+r7k2@in.example`), so parallel sign-ups on one run inbox never read
-   * each other's codes. The runner sets it to the case's frozen `{{unique.email}}` when the case uses one.
-   */
-  // WATCH(qa-next): the api must keep the as-sent recipient when it strips the plus-tag to route to the inbox.
-  to: external_exports.string().max(320).optional(),
-  /** Long-poll up to this long, 1 s to 60 s (the api may cap it; the runner asks again). */
-  timeoutMs: external_exports.number().int().min(1e3).max(6e4)
-});
-var inboxWaitMessageSchema = inboxMessageSchema.extend({ html: external_exports.string().optional() });
-var inboxWaitResponseSchema = external_exports.object({
-  /** The first mail that matches, or null when none arrived within `timeoutMs`. */
-  message: inboxWaitMessageSchema.nullable()
-});
-var leaseSchema = placeRequestFieldsSchema.omit({ requestId: true }).extend({
-  sessionId: idSchema("session"),
-  pool: poolSchema,
-  issuedAt: external_exports.iso.datetime(),
-  /** Hard stop: the runner ends the session at this time whatever the limits say. */
-  expiresAt: external_exports.iso.datetime()
-}).superRefine(checkKindPayload);
-var QA_STEPS_WRITTEN_MAX = 30;
-var QA_STEPS_EXPANDED_MAX = 60;
-var QA_HOOK_STEPS_MAX = 10;
-var QA_STEP_TEXT_MAX = 500;
-var QA_EXPECT_ITEMS_MAX = 20;
-var QA_AI_CHECKS_MAX = 3;
-var QA_ASSERTIONS_MAX = 100;
-var qaVariableNameSchema = external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/, "letters, digits and _; not a digit first");
-var qaVariablesSchema = external_exports.record(qaVariableNameSchema, external_exports.string().max(1e3)).refine((v) => Object.keys(v).length <= 50, { message: "at most 50 variables" });
-var qaGeneratedValuesSchema = external_exports.object({
-  "unique.email": external_exports.string().max(254).optional(),
-  "unique.name": external_exports.string().max(200).optional(),
-  "unique.id": external_exports.string().max(100).optional(),
-  "run.id": external_exports.string().max(100).optional(),
-  today: external_exports.string().max(40).optional()
-}).strict();
-var qaAiCheckSchema = external_exports.object({ ai: external_exports.string().trim().min(1).max(300) }).strict();
-var qaExpectItemSchema = external_exports.union([external_exports.string().trim().min(1).max(300), qaAiCheckSchema]);
-var qaExpectSchema = external_exports.union([
-  external_exports.string().max(1e3),
-  external_exports.array(qaExpectItemSchema).min(1).max(QA_EXPECT_ITEMS_MAX).refine((items) => items.filter((i) => typeof i !== "string").length <= QA_AI_CHECKS_MAX, {
-    message: `at most ${QA_AI_CHECKS_MAX} AI checks per test`
-  })
-]);
-var qaApiExpectSchema = external_exports.union([
-  external_exports.string().max(1e3),
-  external_exports.array(external_exports.string().trim().min(1).max(300)).min(1).max(QA_EXPECT_ITEMS_MAX)
-]);
-var qaRequiredExpectSchema = qaExpectSchema.refine(
-  (e) => typeof e === "string" ? e.trim().length > 0 : true,
-  { message: "expect is empty" }
-);
-var qaHttpMethodSchema = external_exports.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]);
-var FORBIDDEN_HEADER = /^(host|connection|content-length|transfer-encoding|upgrade|te|trailer|keep-alive|proxy-.*)$/i;
-var qaApiHeadersSchema = external_exports.record(
-  external_exports.string().regex(/^[A-Za-z0-9-]{1,64}$/, "header name: letters, digits and -"),
-  external_exports.string().max(1e3)
-).refine((h) => Object.keys(h).length <= 20, { message: "at most 20 headers" }).refine((h) => Object.keys(h).every((k) => !FORBIDDEN_HEADER.test(k)), {
-  message: "Host, Proxy-*, Connection and framing headers cannot be set"
-});
-var QA_API_BODY_MAX = 16384;
-var qaApiBodySchema = external_exports.union([external_exports.string(), external_exports.record(external_exports.string(), external_exports.unknown()), external_exports.array(external_exports.unknown())]).refine((b) => (typeof b === "string" ? b : JSON.stringify(b)).length <= QA_API_BODY_MAX, {
-  message: `body is at most ${QA_API_BODY_MAX} chars`
-});
-var qaApiStepSchema = external_exports.object({
-  kind: external_exports.literal("api"),
-  method: qaHttpMethodSchema,
-  url: external_exports.string().min(1).max(2e3).refine((u) => u.startsWith("/") || /^https?:\/\//i.test(u), {
-    message: "a path starting with / or an http(s) URL"
-  }),
-  headers: qaApiHeadersSchema.optional(),
-  body: qaApiBodySchema.optional(),
-  /** Send the browser's cookies for that origin (reuse the test's login). Absent: false. */
-  withCookies: external_exports.boolean().optional(),
-  /** e.g. `status 200, body has "Acme"`. Compiled into assertions with `at` pointing here. */
-  expect: qaApiExpectSchema.optional()
-}).refine((s) => s.body === void 0 || s.method !== "GET" && s.method !== "HEAD", {
-  message: "GET and HEAD calls have no body",
-  path: ["body"]
-});
-var qaSharedStepNameSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/, "lowercase letters, digits, - and _ (1..64)");
-var qaUseStepSchema = external_exports.object({
-  kind: external_exports.literal("use"),
-  name: qaSharedStepNameSchema,
-  version: external_exports.number().int().min(1).optional()
-});
-var qaTypedStepSchema = external_exports.discriminatedUnion("kind", [qaApiStepSchema, qaUseStepSchema]);
-var qaStepSchema = external_exports.union([external_exports.string().min(1).max(QA_STEP_TEXT_MAX), qaTypedStepSchema]);
-var qaStepListSchema = external_exports.array(qaStepSchema).max(QA_STEPS_WRITTEN_MAX);
-var qaHookStepListSchema = external_exports.array(qaStepSchema).max(QA_HOOK_STEPS_MAX);
-var qaAssertionTargetSchema = external_exports.object({
-  /** ARIA role, e.g. `row`, `button`. Absent: any role with that exact name. */
-  role: external_exports.string().min(1).max(40).optional(),
-  name: external_exports.string().min(1).max(200)
-});
-var qaAssertionAtSchema = external_exports.object({
-  phase: external_exports.enum(["before", "steps", "after"]),
-  index: external_exports.number().int().min(0)
-});
-var assertionBase = {
-  /** The phrase as the author wrote it, shown on the report. */
-  source: external_exports.string().max(300),
-  at: qaAssertionAtSchema.optional()
-};
-var qaAssertionSchema = external_exports.discriminatedUnion("kind", [
-  external_exports.object({ kind: external_exports.literal("text_visible"), text: external_exports.string().min(1).max(300), ...assertionBase }),
-  external_exports.object({ kind: external_exports.literal("text_absent"), text: external_exports.string().min(1).max(300), ...assertionBase }),
-  external_exports.object({ kind: external_exports.literal("url_contains"), text: external_exports.string().min(1).max(300), ...assertionBase }),
-  external_exports.object({ kind: external_exports.literal("title_is"), text: external_exports.string().min(1).max(300), ...assertionBase }),
-  external_exports.object({
-    kind: external_exports.literal("count"),
-    target: qaAssertionTargetSchema,
-    n: external_exports.number().int().min(0).max(1e3),
-    ...assertionBase
-  }),
-  external_exports.object({
-    kind: external_exports.literal("state"),
-    target: qaAssertionTargetSchema,
-    state: external_exports.enum(["visible", "enabled", "disabled"]),
-    ...assertionBase
-  }),
-  external_exports.object({
-    kind: external_exports.literal("field_value"),
-    label: external_exports.string().min(1).max(200),
-    value: external_exports.string().max(300),
-    ...assertionBase
-  }),
-  external_exports.object({ kind: external_exports.literal("no_console_errors"), ...assertionBase }),
-  external_exports.object({
-    kind: external_exports.literal("request_status"),
-    path: external_exports.string().min(1).max(500),
-    status: external_exports.number().int().min(100).max(599),
-    ...assertionBase
-  }),
-  external_exports.object({ kind: external_exports.literal("download"), name: external_exports.string().min(1).max(200), ...assertionBase }),
-  external_exports.object({
-    kind: external_exports.literal("status_is"),
-    status: external_exports.number().int().min(100).max(599),
-    ...assertionBase
-  }),
-  external_exports.object({
-    kind: external_exports.literal("body_contains"),
-    text: external_exports.string().min(1).max(300),
-    ...assertionBase
-  }),
-  external_exports.object({ kind: external_exports.literal("ai"), prompt: external_exports.string().min(1).max(300), ...assertionBase })
-]);
-var qaCompiledExpectSchema = external_exports.object({
-  compilerVersion: external_exports.number().int().min(1),
-  assertions: external_exports.array(qaAssertionSchema).max(QA_ASSERTIONS_MAX)
-});
-var qaAssertionOutcomeSchema = external_exports.enum(["pass", "fail", "ambiguous", "error"]);
-var qaAssertionResultSchema = external_exports.object({
-  /** Position in `compiled.assertions`. */
-  index: external_exports.number().int().min(0).max(QA_ASSERTIONS_MAX - 1),
-  kind: external_exports.enum(
-    qaAssertionSchema.options.map((o) => o.shape.kind.value)
-  ),
-  /** The phrase as written (the assertion's `source`). */
-  source: external_exports.string().max(300),
-  outcome: qaAssertionOutcomeSchema,
-  /** What it saw, plain words: "2 matches for row \"Project\"", "status 404", "no such text". Not on a pass. */
-  saw: external_exports.string().max(500).optional(),
-  /**
-   * Set only for `kind: "ai"`: label the result **AI-judged**, show `reasoning`, put `costMicros` on the
-   * report. Never cached.
-   */
-  // WATCH(qa-next): "a person can mark it wrong" (spec §5.2) has no shape yet; it lands with triage (B1-B3).
-  aiJudged: external_exports.object({
-    reasoning: external_exports.string().max(500),
-    costMicros: external_exports.number().int().nonnegative(),
-    model: external_exports.string().max(80).optional()
-  }).optional()
-});
-var qaAssertionResultListSchema = external_exports.array(qaAssertionResultSchema).max(QA_ASSERTIONS_MAX);
-var qaHookOutcomeSchema = external_exports.object({
-  before: external_exports.enum(["pass", "failed"]).optional(),
-  after: external_exports.enum(["pass", "failed", "timed_out", "skipped"]).optional(),
-  failedSteps: external_exports.array(
-    external_exports.object({
-      phase: external_exports.enum(["before", "after"]),
-      index: external_exports.number().int().min(0).max(QA_HOOK_STEPS_MAX - 1),
-      saw: external_exports.string().max(500).optional()
-    })
-  ).max(2).optional()
-});
-var qaLaneSchema = external_exports.enum(["browser", "http"]);
-var qaApiPhaseSchema = external_exports.enum(["before", "steps", "after"]);
-var qaApiCallSchema = external_exports.object({
-  phase: qaApiPhaseSchema,
-  index: external_exports.number().int().min(0).max(59),
-  step: qaApiStepSchema
-});
-var qaApiCallsSchema = external_exports.array(qaApiCallSchema).max(60);
-var qaApiCallHostsSchema = external_exports.array(external_exports.string().max(300)).min(1).max(6);
-var unixMs4 = external_exports.number().int().nonnegative();
-var PROXY_DEVICE_STATUSES = ["online", "offline", "paused", "disabled"];
-var proxyDeviceStatusSchema = external_exports.enum(PROXY_DEVICE_STATUSES);
-var PROXY_DEVICE_AUDIT_ACTIONS = [
-  "proxy_device.paired",
-  "proxy_device.updated",
-  "proxy_device.revoked",
-  "proxy_device.paused",
-  "proxy_device.resumed"
-];
-var proxyDeviceAuditActionSchema = external_exports.enum(PROXY_DEVICE_AUDIT_ACTIONS);
-var proxyDeviceNameSchema = external_exports.string().trim().min(1).max(100);
-var proxyDevicePurposeSchema = external_exports.enum(["proxy", "local_app"]);
-var proxyDeviceLimitsSchema = external_exports.object({
-  /** Concurrent streams (open connections) through the device. */
-  maxStreams: external_exports.number().int().min(1).max(64).default(8),
-  /** Bandwidth cap in kilobits per second. Absent: no cap. */
-  maxKbps: external_exports.number().int().min(1).optional(),
-  /** Monthly traffic cap in megabytes. Absent: no cap. */
-  monthlyMb: external_exports.number().int().min(1).optional()
-});
-var proxyDevicePairingCodeSchema = external_exports.string().regex(/^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/, "expected a code like ABCD-EFGH");
-var proxyDeviceTokenSchema = external_exports.string().regex(/^wad_[A-Za-z0-9_-]{32,128}$/, "malformed device token");
-var createProxyDevicePairingRequestSchema = external_exports.object({
-  name: proxyDeviceNameSchema,
-  /**
-   * Only the person who paired it may route sessions through it. Default true (security review 2026-11-13: a
-   * home IP is personal); false shares the device with the whole tenant.
-   */
-  restrictToUser: external_exports.boolean().default(true),
-  limits: proxyDeviceLimitsSchema.optional(),
-  /** 0.43.0. Absent: `proxy` (today's behaviour). */
-  purpose: proxyDevicePurposeSchema.default("proxy")
-});
-var proxyDevicePairingSchema = external_exports.object({
-  code: proxyDevicePairingCodeSchema,
-  /** Epoch ms, 10 minutes after creation. */
-  expiresAt: unixMs4,
-  /** What to run on the device, e.g. `npx @lookover-ai/webagent-device pair ABCD-EFGH`. */
-  command: external_exports.string().min(1).max(500)
-});
-var claimProxyDeviceRequestSchema = external_exports.object({
-  code: proxyDevicePairingCodeSchema,
-  /** e.g. `linux-x64`, `darwin-arm64`, `win32-x64`. */
-  platform: external_exports.string().min(1).max(64),
-  clientVersion: external_exports.string().min(1).max(64)
-});
-var claimProxyDeviceResponseSchema = external_exports.object({
-  deviceId: idSchema("proxyDevice"),
-  /** Returned once; the device stores it (file mode 0600). */
-  deviceToken: proxyDeviceTokenSchema,
-  /** `wss://relay.<region>/v1/connect`. */
-  relayUrl: external_exports.string().url().max(500),
-  /** What the pairing was made for (0.43.0), so the client starts in the right mode. Absent: `proxy`. */
-  purpose: proxyDevicePurposeSchema.default("proxy")
-});
-var proxyDeviceInfoSchema = external_exports.object({
-  id: idSchema("proxyDevice"),
-  name: proxyDeviceNameSchema,
-  status: proxyDeviceStatusSchema,
-  /** Identity user id (opaque, not `usr_`; 0.46.1). */
-  ownerUserId: identityUserIdSchema,
-  restrictToUser: external_exports.boolean(),
-  /** 0.43.0. Old payloads read as `proxy`. */
-  purpose: proxyDevicePurposeSchema.default("proxy"),
-  platform: external_exports.string().max(64).optional(),
-  clientVersion: external_exports.string().max(64).optional(),
-  lastSeenAt: unixMs4.optional(),
-  connectedAt: unixMs4.optional(),
-  /** The address the device's traffic leaves from, as last measured. */
-  exitIp: external_exports.string().max(45).optional(),
-  activeStreams: external_exports.number().int().nonnegative(),
-  limits: proxyDeviceLimitsSchema,
-  createdAt: unixMs4
-});
-var listProxyDevicesResponseSchema = external_exports.object({
-  devices: external_exports.array(proxyDeviceInfoSchema),
-  relay: external_exports.object({ deployed: external_exports.boolean() })
-});
-var updateProxyDeviceRequestSchema = external_exports.object({
-  name: proxyDeviceNameSchema.optional(),
-  enabled: external_exports.boolean().optional(),
-  restrictToUser: external_exports.boolean().optional(),
-  limits: proxyDeviceLimitsSchema.optional()
-}).refine((v) => Object.values(v).some((x) => x !== void 0), {
-  message: "send at least one field to update"
-});
-var deleteProxyDeviceResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
-var relayDeviceAuthRequestSchema = external_exports.object({ token: proxyDeviceTokenSchema });
-var relayDeviceAuthResponseSchema = external_exports.object({
-  deviceId: idSchema("proxyDevice"),
-  tenantId: idSchema("tenant"),
-  /** Identity user id (opaque, not `usr_`; 0.46.1). */
-  ownerUserId: identityUserIdSchema,
-  restrictToUser: external_exports.boolean(),
-  /** What the device was paired for (0.43.0); the relay serves aliases only for `local_app` and exits only for `proxy`. Absent: `proxy`. */
-  purpose: proxyDevicePurposeSchema.default("proxy"),
-  /** False: revoked or turned off; the relay refuses every OPEN. */
-  enabled: external_exports.boolean(),
-  limits: proxyDeviceLimitsSchema,
-  /** Traffic so far this month, MB (for `limits.monthlyMb`). */
-  usedMb: external_exports.number().nonnegative().optional()
-});
-var relayPresenceRequestSchema = external_exports.object({
-  deviceId: idSchema("proxyDevice"),
-  connected: external_exports.boolean(),
-  /** The device client is paused (it answers every OPEN with `paused`). */
-  paused: external_exports.boolean(),
-  activeStreams: external_exports.number().int().nonnegative(),
-  exitIp: external_exports.string().max(45).optional(),
-  platform: external_exports.string().max(64).optional(),
-  clientVersion: external_exports.string().max(64).optional(),
-  /** Bytes moved since the previous presence, both directions. */
-  bytesDelta: external_exports.number().int().nonnegative().optional()
-});
-var relayPresenceResponseSchema = external_exports.object({ ok: external_exports.boolean() });
-var relayKickResponseSchema = external_exports.object({ kicked: external_exports.boolean() });
-var proxyStreamClaimsSchema = external_exports.object({
-  /** Session id. */
-  sub: idSchema("session"),
-  ten: idSchema("tenant"),
-  /** The dashboard user who started the session; absent for API-key sessions. */
-  usr: identityUserIdSchema.optional(),
-  /** The proxy device this session exits through. */
-  dev: idSchema("proxyDevice"),
-  exp: external_exports.number().int(),
-  /** Token kind (0.42.4); the relay refuses any other value. Optional until every signer sends it. */
-  typ: external_exports.literal("proxy-stream").optional(),
-  /**
-   * Local-app sessions (0.43.0): the alias hosts this session may OPEN (1..4, each a well-formed
-   * `localAppAlias`). Absent: an ordinary device-exit session. With `aliases`, the relay allows
-   * nothing else: any other host, or a port not in `ports`, is `blocked_destination`; and it must
-   * be a device paired with `purpose: "local_app"`. Present with `ports` or not at all.
-   */
-  aliases: external_exports.array(localAppAliasSchema).min(1).max(4).optional(),
-  /** Ports allowed for `aliases` (0.43.0): 1..8 entries of 1024..65535. */
-  ports: localAppPortsSchema.optional()
-}).refine((v) => v.aliases === void 0 === (v.ports === void 0), {
-  message: "aliases and ports go together",
-  path: ["aliases"]
-});
-var relaySessionEndRequestSchema = external_exports.object({
-  /** `exp` of the session's stream JWT (unix seconds): how long the relay keeps the denylist entry. */
-  exp: external_exports.number().int(),
-  /** Close the session's open streams now. Default true. */
-  closeStreams: external_exports.boolean().default(true)
-});
-var relaySessionEndResponseSchema = external_exports.object({
-  /** True once the session id is on the denylist (also true when it already was). */
-  denied: external_exports.boolean(),
-  closedStreams: external_exports.number().int().nonnegative()
-});
-var skillPackageLimits = {
-  fileBytes: 5 * 1024 * 1024,
-  totalBytes: 20 * 1024 * 1024,
-  files: 200
-};
-var skillPackageLockSchema = external_exports.object({
-  format: external_exports.literal(1),
-  name: external_exports.string(),
-  version: external_exports.string(),
-  /** `path -> sha256 hex`, sorted by path. */
-  files: external_exports.record(external_exports.string(), external_exports.string().regex(/^[0-9a-f]{64}$/))
-});
-var skillPackageDigestSchema = external_exports.string().regex(/^sha256-[0-9a-f]{64}$/);
 var liveViewerSchema = external_exports.object({
   id: external_exports.string().min(1).max(128),
   name: external_exports.string().max(200).optional()
@@ -30785,6 +30955,943 @@ var liveServerMessageSchema = external_exports.discriminatedUnion("type", [
     iceServers: external_exports.array(iceServerSchema).optional()
   })
 ]);
+var INTERACTION_TOOLS = [
+  "ask_choice",
+  "ask_text",
+  "ask_secret",
+  "handoff",
+  "offer_record",
+  "offer_save_tests",
+  "offer_run_step",
+  "offer_file_bug",
+  "offer_fix_test",
+  "offer_explore",
+  "confirm_action"
+];
+var interactionToolSchema = external_exports.enum(INTERACTION_TOOLS);
+var interactionStatusSchema = external_exports.enum(["open", "answered", "dismissed", "expired"]);
+var interactionPolicySchema = external_exports.object({
+  answeredBy: external_exports.enum(["controller", "member"]),
+  timeoutMs: external_exports.number().int().positive(),
+  onTimeout: external_exports.enum(["default", "end"]),
+  pausesClock: external_exports.boolean()
+});
+var promptText = external_exports.string().min(1).max(500);
+var interactionOptionSchema = taskQuestionOptionSchema;
+var optionList = (max) => external_exports.array(interactionOptionSchema).min(1).max(max).refine((o) => o.filter((x) => x.recommended).length <= 1, {
+  message: "at most one option may be recommended"
+});
+var interactionPickOutputSchema = external_exports.object({
+  optionId: external_exports.string().min(1).max(40).optional(),
+  optionIds: external_exports.array(external_exports.string().min(1).max(40)).min(1).max(8).optional(),
+  text: external_exports.string().min(1).max(2e3).optional()
+}).refine(
+  (o) => [o.optionId !== void 0, o.optionIds !== void 0, o.text !== void 0].filter(Boolean).length === 1,
+  { message: "send exactly one of optionId, optionIds or text" }
+);
+var offerOutput = {
+  accepted: external_exports.boolean(),
+  dontAskAgain: external_exports.boolean().optional()
+};
+var askChoiceInputSchema = external_exports.object({
+  text: promptText,
+  options: optionList(8),
+  multi: external_exports.boolean().optional(),
+  allowText: external_exports.boolean().default(true)
+});
+var askChoiceOutputSchema = interactionPickOutputSchema;
+var askTextInputSchema = external_exports.object({
+  text: promptText,
+  placeholder: external_exports.string().max(120).optional(),
+  multiline: external_exports.boolean().optional()
+});
+var askTextOutputSchema = external_exports.object({ text: external_exports.string().min(1).max(2e3) });
+var askSecretInputSchema = external_exports.object({
+  text: promptText,
+  field: external_exports.enum(["password", "otp", "token", "other"]),
+  /** The page's origin the secret is for; never a path or query. */
+  origin: external_exports.string().url().max(2048).optional(),
+  /** Offer "Keep it in the vault". */
+  offerSave: external_exports.boolean().optional()
+});
+var askSecretOutputSchema = external_exports.object({
+  provided: external_exports.boolean(),
+  credentialId: idSchema("credential").optional()
+});
+var handoffInputSchema = external_exports.object({
+  text: promptText,
+  reason: external_exports.enum(["sign_in", "otp", "two_factor", "stuck", "other"]),
+  options: optionList(4),
+  allowText: external_exports.boolean().default(true),
+  login: taskQuestionLoginSchema.optional()
+});
+var handoffOutputSchema = interactionPickOutputSchema;
+var offerRecordInputSchema = external_exports.object({
+  text: promptText,
+  url: external_exports.string().url().max(2048).optional(),
+  /** Actions already captured since the visit started. */
+  actions: external_exports.number().int().nonnegative().optional(),
+  /** S5 MOMENTS: preview of the captured steps in plain words (1-based `index`; never a typed secret). */
+  steps: external_exports.array(external_exports.object({ index: external_exports.number().int().min(1), text: external_exports.string().min(1).max(500) })).max(30).optional()
+});
+var savedTestRef = external_exports.object({
+  workflowId: idSchema("workflow"),
+  caseId: external_exports.string().min(1).max(200),
+  title: external_exports.string().min(1).max(200).optional()
+});
+var offerRecordOutputSchema = external_exports.object({
+  ...offerOutput,
+  name: external_exports.string().min(1).max(200).optional(),
+  /** Set by the api once the accept saved the steps as a proposed test (S5 MOMENTS); the person never sends it. */
+  saved: savedTestRef.optional()
+});
+var offerSaveTestsInputSchema = external_exports.object({
+  text: promptText,
+  flows: external_exports.array(
+    external_exports.object({
+      title: external_exports.string().min(1).max(200),
+      steps: external_exports.array(external_exports.string().min(1).max(500)).max(50).optional(),
+      /** What the test must show at the end (0.57.0, D93 SAVE follow-up): real checks instead of `Expect:` step lines. */
+      expect: qaExpectSchema.optional()
+    })
+  ).min(1).max(20),
+  /**
+   * The person asked for tests (0.57.0, D93): the card skips the dismissed / "don't ask again" rules that guard
+   * an offer the agent made on its own.
+   */
+  requested: external_exports.boolean().optional()
+});
+var offerSaveTestsOutputSchema = external_exports.object({
+  ...offerOutput,
+  /** Which flows to save (indexes into `flows`); absent = all. */
+  flowIndexes: external_exports.array(external_exports.number().int().nonnegative()).max(20).optional(),
+  /** Set by the api: the proposed tests the accept saved (S5 MOMENTS). */
+  saved: external_exports.array(savedTestRef).max(20).optional()
+});
+var offerRunStepInputSchema = external_exports.object({
+  text: promptText,
+  step: external_exports.string().min(1).max(2e3),
+  testId: external_exports.string().min(1).max(200).optional()
+});
+var runStepResultSchema = external_exports.object({
+  status: external_exports.enum(["passed", "failed", "error"]),
+  /** Plain words: why it failed (the agent's reason), or what it saw. */
+  message: external_exports.string().max(1e3).optional(),
+  durationMs: external_exports.number().int().nonnegative().optional(),
+  taskId: idSchema("task").optional(),
+  /** Set when the step failed twice and the companion diagnosed it (M4). */
+  diagnosis: external_exports.enum(["bug", "app_changed", "flaky", "unknown"]).optional()
+});
+var offerRunStepOutputSchema = external_exports.object({
+  ...offerOutput,
+  /** Set by the api once the accepted step ran (S5 MOMENTS); the person never sends it. */
+  result: runStepResultSchema.optional()
+});
+var offerFileBugInputSchema = external_exports.object({
+  text: promptText,
+  title: external_exports.string().min(1).max(200),
+  url: external_exports.string().url().max(2048).optional(),
+  signal: external_exports.enum(["http_5xx", "console_error", "failed_request", "broken_layout", "other"]),
+  /** S5 MOMENTS (all optional): what the card shows as evidence. `url` above is the page the person was on. */
+  /** HTTP status of the failing response (`http_5xx`). */
+  status: external_exports.number().int().min(100).max(599).optional(),
+  /** The failing request or the error line, cut (credential parameters masked by the runner). */
+  detail: external_exports.string().max(500).optional(),
+  /** Console errors (uncaught + `console.error`) seen on the page so far. */
+  consoleErrors: external_exports.number().int().nonnegative().optional(),
+  /** Requests the page needed that failed (5xx, network error) so far. */
+  failedRequests: external_exports.number().int().nonnegative().optional(),
+  /** Dashboard link to the session's video at the moment, once stored. */
+  videoClipUrl: external_exports.string().url().max(2048).optional(),
+  /** The test whose step failed (moment M4). */
+  testId: external_exports.string().min(1).max(200).optional(),
+  /** `low` = a weaker signal (a `console.error` line, a failed image): offered only at Assist level Chatty. Absent = high. */
+  confidence: external_exports.enum(["high", "low"]).optional()
+});
+var offerFileBugOutputSchema = external_exports.object({
+  ...offerOutput,
+  title: external_exports.string().min(1).max(200).optional(),
+  /** Set by the api: the bug draft the accept stored (`GET /v1/sessions/:id/companion/bugs`). */
+  draftId: external_exports.string().min(1).max(64).optional()
+});
+var offerFixTestInputSchema = external_exports.object({
+  text: promptText,
+  testId: external_exports.string().min(1).max(200),
+  stepIndex: external_exports.number().int().nonnegative().optional(),
+  diagnosis: external_exports.enum(["bug", "app_changed", "flaky", "unknown"])
+});
+var offerFixTestOutputSchema = external_exports.object({
+  ...offerOutput,
+  choice: external_exports.enum(["update_step", "file_bug"]).optional()
+});
+var offerExploreInputSchema = external_exports.object({
+  text: promptText,
+  url: external_exports.string().url().max(2048).optional()
+});
+var offerExploreOutputSchema = external_exports.object(offerOutput);
+var confirmActionInputSchema = external_exports.object({
+  text: external_exports.string().min(1).max(2e3),
+  style: external_exports.enum(["approve", "plan"]).default("approve"),
+  options: optionList(4),
+  allowText: external_exports.boolean().default(true)
+});
+var confirmActionOutputSchema = interactionPickOutputSchema;
+function defineInteractionTool(def) {
+  return def;
+}
+var MIN = 6e4;
+var ASK_TIMEOUT_MS = 10 * MIN;
+var HANDOFF_TIMEOUT_MS = 30 * MIN;
+var OFFER_TIMEOUT_MS = 30 * MIN;
+var askPolicy = {
+  answeredBy: "member",
+  timeoutMs: ASK_TIMEOUT_MS,
+  onTimeout: "end",
+  pausesClock: true
+};
+var offerPolicy = {
+  answeredBy: "controller",
+  timeoutMs: OFFER_TIMEOUT_MS,
+  onTimeout: "default",
+  pausesClock: false
+};
+var INTERACTION_REGISTRY = {
+  ask_choice: defineInteractionTool({
+    input: askChoiceInputSchema,
+    output: askChoiceOutputSchema,
+    policy: askPolicy
+  }),
+  ask_text: defineInteractionTool({
+    input: askTextInputSchema,
+    output: askTextOutputSchema,
+    policy: askPolicy
+  }),
+  ask_secret: defineInteractionTool({
+    input: askSecretInputSchema,
+    output: askSecretOutputSchema,
+    policy: { ...askPolicy, answeredBy: "controller" }
+  }),
+  handoff: defineInteractionTool({
+    input: handoffInputSchema,
+    output: handoffOutputSchema,
+    policy: {
+      answeredBy: "controller",
+      timeoutMs: HANDOFF_TIMEOUT_MS,
+      onTimeout: "end",
+      pausesClock: true
+    }
+  }),
+  offer_record: defineInteractionTool({
+    input: offerRecordInputSchema,
+    output: offerRecordOutputSchema,
+    policy: offerPolicy
+  }),
+  offer_save_tests: defineInteractionTool({
+    input: offerSaveTestsInputSchema,
+    output: offerSaveTestsOutputSchema,
+    policy: offerPolicy
+  }),
+  offer_run_step: defineInteractionTool({
+    input: offerRunStepInputSchema,
+    output: offerRunStepOutputSchema,
+    policy: offerPolicy
+  }),
+  offer_file_bug: defineInteractionTool({
+    input: offerFileBugInputSchema,
+    output: offerFileBugOutputSchema,
+    policy: offerPolicy
+  }),
+  offer_fix_test: defineInteractionTool({
+    input: offerFixTestInputSchema,
+    output: offerFixTestOutputSchema,
+    policy: offerPolicy
+  }),
+  offer_explore: defineInteractionTool({
+    input: offerExploreInputSchema,
+    output: offerExploreOutputSchema,
+    policy: offerPolicy
+  }),
+  // Approvals answer as task questions do today (any member, also from Slack); a timeout ends the task.
+  confirm_action: defineInteractionTool({
+    input: confirmActionInputSchema,
+    output: confirmActionOutputSchema,
+    policy: askPolicy
+  })
+};
+var call = (tool, input2) => external_exports.object({ tool: external_exports.literal(tool), input: input2 });
+var interactionCallSchema = external_exports.discriminatedUnion("tool", [
+  call("ask_choice", askChoiceInputSchema),
+  call("ask_text", askTextInputSchema),
+  call("ask_secret", askSecretInputSchema),
+  call("handoff", handoffInputSchema),
+  call("offer_record", offerRecordInputSchema),
+  call("offer_save_tests", offerSaveTestsInputSchema),
+  call("offer_run_step", offerRunStepInputSchema),
+  call("offer_file_bug", offerFileBugInputSchema),
+  call("offer_fix_test", offerFixTestInputSchema),
+  call("offer_explore", offerExploreInputSchema),
+  call("confirm_action", confirmActionInputSchema)
+]);
+var answer = (tool, output2) => external_exports.object({ tool: external_exports.literal(tool), output: output2 });
+var interactionAnswerSchema = external_exports.discriminatedUnion("tool", [
+  answer("ask_choice", askChoiceOutputSchema),
+  answer("ask_text", askTextOutputSchema),
+  answer("ask_secret", askSecretOutputSchema),
+  answer("handoff", handoffOutputSchema),
+  answer("offer_record", offerRecordOutputSchema),
+  answer("offer_save_tests", offerSaveTestsOutputSchema),
+  answer("offer_run_step", offerRunStepOutputSchema),
+  answer("offer_file_bug", offerFileBugOutputSchema),
+  answer("offer_fix_test", offerFixTestOutputSchema),
+  answer("offer_explore", offerExploreOutputSchema),
+  answer("confirm_action", confirmActionOutputSchema)
+]);
+var envelope = {
+  id: idSchema("interaction"),
+  sessionId: idSchema("session"),
+  status: interactionStatusSchema,
+  createdAt: external_exports.iso.datetime(),
+  /** When an open interaction stops waiting (`createdAt` + the tool's `timeoutMs`). */
+  expiresAt: external_exports.iso.datetime().optional(),
+  answeredAt: external_exports.iso.datetime().optional(),
+  /** Who answered or dismissed it (same shape as a session's `startedBy`). */
+  answeredBy: sessionStartedBySchema.optional(),
+  /** Set when a goal task asked it: the old `tasks/answer` path relays the answer by task + question. */
+  taskId: idSchema("task").optional(),
+  questionId: external_exports.string().min(1).max(40).optional()
+};
+var row = (tool, input2, output2) => external_exports.object({ ...envelope, tool: external_exports.literal(tool), input: input2, output: output2.optional() });
+var sessionInteractionSchema = external_exports.discriminatedUnion("tool", [
+  row("ask_choice", askChoiceInputSchema, askChoiceOutputSchema),
+  row("ask_text", askTextInputSchema, askTextOutputSchema),
+  row("ask_secret", askSecretInputSchema, askSecretOutputSchema),
+  row("handoff", handoffInputSchema, handoffOutputSchema),
+  row("offer_record", offerRecordInputSchema, offerRecordOutputSchema),
+  row("offer_save_tests", offerSaveTestsInputSchema, offerSaveTestsOutputSchema),
+  row("offer_run_step", offerRunStepInputSchema, offerRunStepOutputSchema),
+  row("offer_file_bug", offerFileBugInputSchema, offerFileBugOutputSchema),
+  row("offer_fix_test", offerFixTestInputSchema, offerFixTestOutputSchema),
+  row("offer_explore", offerExploreInputSchema, offerExploreOutputSchema),
+  row("confirm_action", confirmActionInputSchema, confirmActionOutputSchema)
+]);
+var listSessionInteractionsQuerySchema = external_exports.object({
+  status: external_exports.enum(["open", "all"]).default("open")
+});
+var listSessionInteractionsResponseSchema = external_exports.object({
+  interactions: external_exports.array(sessionInteractionSchema).max(100)
+});
+var answerSessionInteractionRequestSchema = external_exports.object({
+  output: external_exports.unknown().optional(),
+  dismiss: external_exports.literal(true).optional(),
+  /** With `dismiss`: "Don't ask again for this" (offers). */
+  dontAskAgain: external_exports.boolean().optional()
+}).refine((b) => b.output === void 0 !== (b.dismiss === void 0), {
+  message: "send exactly one of output or dismiss"
+});
+var taskScreenshotRefSchema = external_exports.object({
+  kind: taskScreenshotKindSchema,
+  stepIndex: external_exports.number().int().min(0).optional(),
+  key: external_exports.string().max(512),
+  bytes: external_exports.number().int().min(0)
+});
+var artifactKindSchema = external_exports.enum([
+  "screenshot",
+  "recording",
+  "report",
+  "har",
+  "log",
+  "trace",
+  "mhtml",
+  "download"
+]);
+var envelope2 = {
+  /** Minted with the HOME region (`newId("event", homeRegion)`): events live in the home stream and ledger. */
+  id: idSchema("event"),
+  at: external_exports.iso.datetime(),
+  tenantId: idSchema("tenant"),
+  homeRegion: regionCodeSchema,
+  executionRegion: regionCodeSchema,
+  runnerId: idSchema("runner"),
+  sessionId: idSchema("session"),
+  runId: idSchema("skillRun").optional()
+};
+var eventSchema = external_exports.discriminatedUnion("type", [
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("session.started"),
+    data: external_exports.object({
+      engine: engineSchema,
+      pool: poolSchema,
+      warm: external_exports.boolean(),
+      launchMs: external_exports.number()
+    })
+  }),
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("session.ended"),
+    data: external_exports.object({
+      reason: sessionEndReasonSchema,
+      durationMs: external_exports.number().int(),
+      /** Top-level URL of the active tab at the end (0.19.0); lets `GET /v1/sessions?q=` find interactive sessions. */
+      lastUrl: external_exports.string().max(2048).optional(),
+      /** The session's memory cap in MB (0.22.1, hub spec compute-billing): its reserved size, billed as GB-minutes. */
+      memoryLimitMb: external_exports.number().int().positive().optional(),
+      /** Highest measured memory of the session's browser, MB (0.22.1). Recorded, not billed. */
+      peakMemoryMb: external_exports.number().int().nonnegative().optional(),
+      /** CPU time the session's browser used, ms (0.22.1). Recorded, not billed. */
+      cpuMs: external_exports.number().int().nonnegative().optional(),
+      /** Network bytes the session's browser received (encoded), D87: billed as `data_out_gb`. */
+      egressBytes: external_exports.number().int().nonnegative().optional()
+    })
+  }),
+  /**
+   * The session was paused (0.19.0): actions and tasks answer `session_paused` until it resumes.
+   * `pausedBy` is the same string as `sessionControlState.pausedBy` (e.g. `user`, `captcha`). The API
+   * shows the session as `paused` until `session.resumed` or `session.ended`.
+   */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("session.paused"),
+    data: external_exports.object({
+      pausedBy: external_exports.string().max(200),
+      /** The signed-in person who took over (0.55.0, S5), from the session token's `usr` only. */
+      pausedByUser: liveViewerSchema.optional()
+    })
+  }),
+  /** The session resumed after `session.paused` (0.19.0); the API shows it as `live` again. */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("session.resumed"),
+    data: external_exports.object({})
+  }),
+  /** One per browser action. Mirrors the old LedgerRow minus price (the API prices, hub DECISIONS D9). */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("usage.action"),
+    data: external_exports.object({
+      kind: external_exports.string(),
+      detail: external_exports.string().optional(),
+      ok: external_exports.boolean(),
+      ms: external_exports.number(),
+      cdpCalls: external_exports.number().int(),
+      units: external_exports.number(),
+      provider: external_exports.string().optional(),
+      engine: engineSchema.optional(),
+      /** D87: `normal` = deterministic action, `smart` = resolved by an AI step, `llm` = main work is an LLM call. Absent = normal. */
+      actionKind: external_exports.enum(["normal", "smart", "llm"]).optional(),
+      /** D87: one id per action; `usage.llm` rows of the same action carry it. */
+      actionId: external_exports.string().max(64).optional()
+    })
+  }),
+  /** One per model call by the decision router. */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("usage.llm"),
+    data: external_exports.object({
+      provider: external_exports.string(),
+      model: external_exports.string(),
+      inputTokens: external_exports.number().int(),
+      outputTokens: external_exports.number().int(),
+      cachedInputTokens: external_exports.number().int().default(0),
+      ms: external_exports.number(),
+      /** Cost of the call in micro-USD, as the LLM gateway reported it (hub D30). Absent without a gateway. */
+      costMicros: external_exports.number().int().nonnegative().optional(),
+      /** D87: the action this call served (matches `usage.action.data.actionId`). */
+      actionId: external_exports.string().max(64).optional()
+    })
+  }),
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("run.started"),
+    data: external_exports.object({ skill: external_exports.string(), version: external_exports.string() })
+  }),
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("run.step"),
+    data: external_exports.object({
+      index: external_exports.number().int(),
+      name: external_exports.string(),
+      ok: external_exports.boolean(),
+      ms: external_exports.number(),
+      /** The step was skipped (its `if:` rendered falsy); `ok` is true then. Absent on older runtimes. */
+      skipped: external_exports.boolean().optional()
+    })
+  }),
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("run.finished"),
+    data: external_exports.object({
+      /** `denied`: the skill needed a permission that was not granted. */
+      status: external_exports.enum(["passed", "failed", "error", "cancelled", "denied"]),
+      ms: external_exports.number(),
+      /** Object key of the full JSON result. */
+      resultKey: external_exports.string(),
+      reportKey: external_exports.string().optional(),
+      /** One-line summary and counters (steps, failedSteps, assertions, findings…) for run lists. */
+      summary: external_exports.string().optional(),
+      counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).optional(),
+      /** A case with the run's shared login landed on a sign-in page (0.47.0, qa-next C4): the api retries it once with a fresh login. */
+      signInWall: external_exports.boolean().optional()
+    })
+  }),
+  /**
+   * A goal task (`POST /v1/sessions/:id/tasks`) began (C23). `taskId` is minted by the runner with the
+   * HOME region (`newId("task", homeRegion)`). `engineRef` only when the lease has an engine block.
+   * `maxSteps`/`maxCostUsd` are the limits applied (smaller of request and engine).
+   */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("task.started"),
+    data: external_exports.object({
+      taskId: idSchema("task"),
+      goal: external_exports.string().min(1).max(2e3),
+      engineRef: engineRefSchema.optional(),
+      /** Who sent it (0.20.0): from the session token's `usr` claim; absent without one. */
+      startedBy: sessionStartedBySchema.optional(),
+      /** Missing = `auto` (0.21.0). */
+      mode: taskModeSchema.optional(),
+      maxSteps: external_exports.number().int().positive(),
+      maxCostUsd: external_exports.number().positive().optional()
+    })
+  }),
+  /**
+   * A goal task asked a person a question (0.42.4): approve, plan, choice, handoff or a sign-in wall
+   * (`login`, hub D76). The api forwards it to notification sinks (Slack Approve/Deny). Never carries a
+   * secret; answers still go through `POST /v1/sessions/:id/tasks/answer`.
+   */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("task.question"),
+    data: external_exports.object({
+      taskId: idSchema("task"),
+      question: taskQuestionSchema
+    })
+  }),
+  /**
+   * The agent called an interaction tool (0.55.0, S5 §4): the api keeps it as an open session
+   * interaction (`GET /v1/sessions/:id/interactions`). `interactionId` is minted by the runner with the
+   * home region. A task question also goes out as `task.question` (Slack, old readers); `taskId` +
+   * `questionId` tie the two together. Never carries a secret.
+   */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("interaction.opened"),
+    data: external_exports.object({
+      interactionId: idSchema("interaction"),
+      call: interactionCallSchema,
+      taskId: idSchema("task").optional(),
+      questionId: external_exports.string().min(1).max(40).optional()
+    })
+  }),
+  /**
+   * An interaction stopped waiting on the runner side (0.55.0): answered there (live view, Slack,
+   * an old client's `tasks/answer`) or expired (the task ended without an answer). An answer given
+   * through the api route is already closed; the api ignores this for a closed interaction.
+   */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("interaction.closed"),
+    data: external_exports.object({
+      interactionId: idSchema("interaction"),
+      status: external_exports.enum(["answered", "dismissed", "expired"]),
+      answer: interactionAnswerSchema.optional(),
+      answeredBy: sessionStartedBySchema.optional()
+    })
+  }),
+  /** The task ended. Same fields as the `POST …/tasks` reply minus page `text`; at most 500 steps. */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("task.finished"),
+    data: external_exports.object({
+      taskId: idSchema("task"),
+      ok: external_exports.boolean(),
+      stoppedBy: taskStoppedBySchema,
+      limit: taskLimitSchema.optional(),
+      reason: external_exports.string().max(1e3).optional(),
+      /** Final answer, cut to 8000 chars by the runner. */
+      answer: external_exports.string().max(8e3).optional(),
+      steps: external_exports.array(taskStepSchema).max(500),
+      costMicros: external_exports.number().int().nonnegative(),
+      ms: external_exports.number().nonnegative(),
+      /** Navigations refused by the engine's `allowHosts` during the task. */
+      refusedNavigations: external_exports.number().int().nonnegative().optional(),
+      /** Mode the task ran in (0.21.0). */
+      mode: taskModeSchema.optional(),
+      /** Questions asked during the task and their answers (0.21.0), at most 20. */
+      exchanges: external_exports.array(taskExchangeSchema).max(20).optional(),
+      /** Object-store keys of the screenshots the runner kept, at most 2 (0.41.3); the api signs links from them. */
+      screenshots: external_exports.array(taskScreenshotRefSchema).max(2).optional()
+    })
+  }),
+  /**
+   * A page check found something during a goal task (0.37.0, qa-engine-v2 R-QA1). The api merges
+   * these into the task's `RunReport.findings` (at most 30 per run). `url` is the page the check
+   * ran on (a finding's own `url` may be more specific).
+   */
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("task.finding"),
+    data: external_exports.object({
+      taskId: idSchema("task"),
+      sessionId: idSchema("session"),
+      finding: findingSchema,
+      url: external_exports.string().max(2e3).optional()
+    })
+  }),
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("quick.finished"),
+    data: external_exports.object({
+      op: external_exports.enum(["scrape", "screenshot", "pdf", "crawl"]),
+      status: external_exports.enum(["ok", "error"]),
+      ms: external_exports.number(),
+      /** Object key of the result (`sinks.artifacts.prefix` + `sessionArtifactNames.quickResult`), when ok. */
+      resultKey: external_exports.string().optional(),
+      contentType: external_exports.string().optional(),
+      bytes: external_exports.number().int().nonnegative().optional(),
+      error: errorInfoSchema.optional()
+    })
+  }),
+  external_exports.object({
+    ...envelope2,
+    type: external_exports.literal("artifact.stored"),
+    data: external_exports.object({
+      kind: artifactKindSchema,
+      key: external_exports.string(),
+      bytes: external_exports.number().int(),
+      contentType: external_exports.string()
+    })
+  })
+]);
+var eventBatchSchema = external_exports.object({ events: external_exports.array(eventSchema).min(1).max(500) });
+var eventBatchResponseSchema = external_exports.object({ accepted: external_exports.number().int().nonnegative() });
+var actionCacheEntrySchema = external_exports.object({
+  key: external_exports.string().min(1).max(2e3),
+  op: external_exports.string(),
+  /** Element identity (role|name|tag|type|frame), re-resolved to a ref on hit. */
+  elementKey: external_exports.string().optional(),
+  text: external_exports.string().optional(),
+  value: external_exports.string().optional(),
+  keyName: external_exports.string().optional(),
+  url: external_exports.string().optional(),
+  direction: external_exports.string().optional(),
+  waitText: external_exports.string().optional(),
+  waitMs: external_exports.number().int().nonnegative().optional(),
+  clicks: external_exports.number().int().positive().optional(),
+  hits: external_exports.number().int().nonnegative(),
+  misses: external_exports.number().int().nonnegative(),
+  lastAt: external_exports.number().int().nonnegative(),
+  provider: external_exports.string()
+});
+var actionCacheLookupRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  keys: external_exports.array(external_exports.string().min(1)).min(1).max(50)
+});
+var actionCacheLookupResponseSchema = external_exports.object({
+  entries: external_exports.array(actionCacheEntrySchema)
+});
+var actionCacheCommitRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  entries: external_exports.array(actionCacheEntrySchema).min(1).max(50)
+});
+var inboxSchema = external_exports.object({
+  id: idSchema("inbox"),
+  address: external_exports.string(),
+  createdAt: external_exports.number(),
+  expiresAt: external_exports.number()
+});
+var inboxMessageSchema = external_exports.object({
+  /**
+   * An `inboxMessage` id (`msg_…`). Its time part has 1 s precision, so do not sort by id: the
+   * list answer is already oldest first, and `after` is resolved by position in that list.
+   */
+  id: idSchema("inboxMessage"),
+  from: external_exports.string(),
+  to: external_exports.array(external_exports.string()),
+  subject: external_exports.string(),
+  /** The plain-text part, or the HTML part converted to text. */
+  text: external_exports.string(),
+  /** http(s) links in the mail, in order. Never fetched by the API. */
+  links: external_exports.array(external_exports.string()),
+  /** The first 4–8 digit code near a word like "code" or "verification". */
+  code: external_exports.string().optional(),
+  receivedAt: external_exports.number()
+});
+var listInboxesResponseSchema = external_exports.object({ inboxes: external_exports.array(inboxSchema) });
+var listInboxMessagesResponseSchema = external_exports.object({ messages: external_exports.array(inboxMessageSchema) });
+var listInboxMessagesQuerySchema = external_exports.object({
+  /** Long-poll: `30`, `30s`, `500ms`, `1m`; capped at a minute. */
+  wait: external_exports.string().max(10).optional(),
+  /** Only messages that arrived after this message id. */
+  after: external_exports.string().max(40).optional()
+});
+var inboundMailResponseSchema = external_exports.object({ delivered: external_exports.number().int().nonnegative() });
+var inboxCreateRequestSchema = external_exports.object({
+  /** The job session. */
+  sessionId: idSchema("session")
+});
+var inboxWaitRequestSchema = external_exports.object({
+  sessionId: idSchema("session"),
+  /** An inbox this session created. */
+  inboxId: idSchema("inbox"),
+  /** Only mail with `receivedAt >= since` (epoch ms): the step's start, so earlier mail never answers. */
+  since: external_exports.number().int().nonnegative(),
+  from: external_exports.string().max(320).optional(),
+  subject: external_exports.string().max(300).optional(),
+  /**
+   * Only mail sent to this exact address (0.48.3, qa-next W1-2), compared case-insensitively against the
+   * address AS SENT, plus-tag included (`qa+r7k2@in.example`), so parallel sign-ups on one run inbox never read
+   * each other's codes. The runner sets it to the case's frozen `{{unique.email}}` when the case uses one.
+   */
+  // WATCH(qa-next): the api must keep the as-sent recipient when it strips the plus-tag to route to the inbox.
+  to: external_exports.string().max(320).optional(),
+  /** Long-poll up to this long, 1 s to 60 s (the api may cap it; the runner asks again). */
+  timeoutMs: external_exports.number().int().min(1e3).max(6e4)
+});
+var inboxWaitMessageSchema = inboxMessageSchema.extend({ html: external_exports.string().optional() });
+var inboxWaitResponseSchema = external_exports.object({
+  /** The first mail that matches, or null when none arrived within `timeoutMs`. */
+  message: inboxWaitMessageSchema.nullable()
+});
+var leaseSchema = placeRequestFieldsSchema.omit({ requestId: true }).extend({
+  sessionId: idSchema("session"),
+  pool: poolSchema,
+  issuedAt: external_exports.iso.datetime(),
+  /** Hard stop: the runner ends the session at this time whatever the limits say. */
+  expiresAt: external_exports.iso.datetime()
+}).superRefine(checkKindPayload);
+var qaApiPhaseSchema = external_exports.enum(["before", "steps", "after"]);
+var qaApiCallSchema = external_exports.object({
+  phase: qaApiPhaseSchema,
+  index: external_exports.number().int().min(0).max(59),
+  step: qaApiStepSchema
+});
+var qaApiCallsSchema = external_exports.array(qaApiCallSchema).max(60);
+var qaApiCallHostsSchema = external_exports.array(external_exports.string().max(300)).min(1).max(6);
+var QA_OBSERVED_PAGES_MAX = 50;
+var QA_OBSERVED_APIS_MAX = 200;
+var pathTemplate = external_exports.string().min(1).max(300);
+var qaObservedFormSchema = external_exports.object({
+  name: external_exports.string().max(100).optional(),
+  fields: external_exports.array(external_exports.object({ name: external_exports.string().min(1).max(100), type: external_exports.string().min(1).max(40) })).max(50)
+});
+var qaObservedPageSchema = external_exports.object({
+  pathTemplate,
+  title: external_exports.string().max(200),
+  headings: external_exports.array(external_exports.string().max(200)).max(20),
+  purpose: external_exports.string().max(300).optional(),
+  forms: external_exports.array(qaObservedFormSchema).max(10),
+  actions: external_exports.array(external_exports.string().min(1).max(100)).max(30)
+});
+var qaObservedApiSchema = external_exports.object({
+  method: external_exports.string().min(1).max(10),
+  pathTemplate,
+  status: external_exports.number().int().min(100).max(599),
+  resourceType: external_exports.string().min(1).max(40)
+});
+var qaObservedFlowSchema = external_exports.object({
+  goal: external_exports.string().min(1).max(300),
+  steps: external_exports.array(external_exports.string().min(1).max(200)).max(50)
+});
+var qaObservedIssueSchema = external_exports.object({
+  kind: external_exports.enum(["console_error", "http_error", "broken_link"]),
+  pathTemplate,
+  detail: external_exports.string().max(200)
+});
+var qaKnowledgeObservationsSchema = external_exports.object({
+  appId: appIdSchema,
+  tenantId: idSchema("tenant").optional(),
+  sessionId: idSchema("session").optional(),
+  runId: external_exports.union([idSchema("workflowRun"), idSchema("skillRun")]).optional(),
+  source: external_exports.enum(["explore", "session", "run"]).optional(),
+  role: external_exports.string().max(100).optional(),
+  pages: external_exports.array(qaObservedPageSchema).max(QA_OBSERVED_PAGES_MAX),
+  apis: external_exports.array(qaObservedApiSchema).max(QA_OBSERVED_APIS_MAX),
+  flows: external_exports.array(qaObservedFlowSchema).max(20),
+  issues: external_exports.array(qaObservedIssueSchema).max(100)
+}).refine((v) => v.sessionId !== void 0 || v.runId !== void 0, {
+  message: "send sessionId or runId"
+});
+var qaKnowledgeObservationsResponseSchema = external_exports.object({
+  accepted: external_exports.boolean(),
+  reason: external_exports.literal("learning_off").optional()
+});
+var unixMs4 = external_exports.number().int().nonnegative();
+var PROXY_DEVICE_STATUSES = ["online", "offline", "paused", "disabled"];
+var proxyDeviceStatusSchema = external_exports.enum(PROXY_DEVICE_STATUSES);
+var PROXY_DEVICE_AUDIT_ACTIONS = [
+  "proxy_device.paired",
+  "proxy_device.updated",
+  "proxy_device.revoked",
+  "proxy_device.paused",
+  "proxy_device.resumed"
+];
+var proxyDeviceAuditActionSchema = external_exports.enum(PROXY_DEVICE_AUDIT_ACTIONS);
+var proxyDeviceNameSchema = external_exports.string().trim().min(1).max(100);
+var proxyDevicePurposeSchema = external_exports.enum(["proxy", "local_app"]);
+var proxyDeviceLimitsSchema = external_exports.object({
+  /** Concurrent streams (open connections) through the device. */
+  maxStreams: external_exports.number().int().min(1).max(64).default(8),
+  /** Bandwidth cap in kilobits per second. Absent: no cap. */
+  maxKbps: external_exports.number().int().min(1).optional(),
+  /** Monthly traffic cap in megabytes. Absent: no cap. */
+  monthlyMb: external_exports.number().int().min(1).optional()
+});
+var proxyDevicePairingCodeSchema = external_exports.string().regex(/^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/, "expected a code like ABCD-EFGH");
+var proxyDeviceTokenSchema = external_exports.string().regex(/^wad_[A-Za-z0-9_-]{32,128}$/, "malformed device token");
+var createProxyDevicePairingRequestSchema = external_exports.object({
+  name: proxyDeviceNameSchema,
+  /**
+   * Only the person who paired it may route sessions through it. Default true (security review 2026-11-13: a
+   * home IP is personal); false shares the device with the whole tenant.
+   */
+  restrictToUser: external_exports.boolean().default(true),
+  limits: proxyDeviceLimitsSchema.optional(),
+  /** 0.43.0. Absent: `proxy` (today's behaviour). */
+  purpose: proxyDevicePurposeSchema.default("proxy")
+});
+var proxyDevicePairingSchema = external_exports.object({
+  code: proxyDevicePairingCodeSchema,
+  /** Epoch ms, 10 minutes after creation. */
+  expiresAt: unixMs4,
+  /**
+   * What to run on the device. `proxy`: `npx @lookover-ai/webagent-device pair ABCD-EFGH`; `local_app` (0.66.0):
+   * `npx @lookover-ai/webagent-device connect <ports…> --code ABCD-EFGH` (plus `--api` off production).
+   */
+  command: external_exports.string().min(1).max(500)
+});
+var claimProxyDeviceRequestSchema = external_exports.object({
+  code: proxyDevicePairingCodeSchema,
+  /** e.g. `linux-x64`, `darwin-arm64`, `win32-x64`. */
+  platform: external_exports.string().min(1).max(64),
+  clientVersion: external_exports.string().min(1).max(64)
+});
+var claimProxyDeviceResponseSchema = external_exports.object({
+  deviceId: idSchema("proxyDevice"),
+  /** Returned once; the device stores it (file mode 0600). */
+  deviceToken: proxyDeviceTokenSchema,
+  /** `wss://relay.<region>/v1/connect`. */
+  relayUrl: external_exports.string().url().max(500),
+  /** What the pairing was made for (0.43.0), so the client starts in the right mode. Absent: `proxy`. */
+  purpose: proxyDevicePurposeSchema.default("proxy")
+});
+var proxyDeviceInfoSchema = external_exports.object({
+  id: idSchema("proxyDevice"),
+  name: proxyDeviceNameSchema,
+  status: proxyDeviceStatusSchema,
+  /** Identity user id (opaque, not `usr_`; 0.46.1). */
+  ownerUserId: identityUserIdSchema,
+  restrictToUser: external_exports.boolean(),
+  /** 0.43.0. Old payloads read as `proxy`. */
+  purpose: proxyDevicePurposeSchema.default("proxy"),
+  platform: external_exports.string().max(64).optional(),
+  clientVersion: external_exports.string().max(64).optional(),
+  lastSeenAt: unixMs4.optional(),
+  connectedAt: unixMs4.optional(),
+  /** The address the device's traffic leaves from, as last measured. */
+  exitIp: external_exports.string().max(45).optional(),
+  activeStreams: external_exports.number().int().nonnegative(),
+  limits: proxyDeviceLimitsSchema,
+  createdAt: unixMs4
+});
+var listProxyDevicesResponseSchema = external_exports.object({
+  devices: external_exports.array(proxyDeviceInfoSchema),
+  relay: external_exports.object({ deployed: external_exports.boolean() })
+});
+var updateProxyDeviceRequestSchema = external_exports.object({
+  name: proxyDeviceNameSchema.optional(),
+  enabled: external_exports.boolean().optional(),
+  restrictToUser: external_exports.boolean().optional(),
+  limits: proxyDeviceLimitsSchema.optional()
+}).refine((v) => Object.values(v).some((x) => x !== void 0), {
+  message: "send at least one field to update"
+});
+var deleteProxyDeviceResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
+var relayDeviceAuthRequestSchema = external_exports.object({ token: proxyDeviceTokenSchema });
+var relayDeviceAuthResponseSchema = external_exports.object({
+  deviceId: idSchema("proxyDevice"),
+  tenantId: idSchema("tenant"),
+  /** Identity user id (opaque, not `usr_`; 0.46.1). */
+  ownerUserId: identityUserIdSchema,
+  restrictToUser: external_exports.boolean(),
+  /** What the device was paired for (0.43.0); the relay serves aliases only for `local_app` and exits only for `proxy`. Absent: `proxy`. */
+  purpose: proxyDevicePurposeSchema.default("proxy"),
+  /** False: revoked or turned off; the relay refuses every OPEN. */
+  enabled: external_exports.boolean(),
+  limits: proxyDeviceLimitsSchema,
+  /** Traffic so far this month, MB (for `limits.monthlyMb`). */
+  usedMb: external_exports.number().nonnegative().optional()
+});
+var relayPresenceRequestSchema = external_exports.object({
+  deviceId: idSchema("proxyDevice"),
+  connected: external_exports.boolean(),
+  /** The device client is paused (it answers every OPEN with `paused`). */
+  paused: external_exports.boolean(),
+  activeStreams: external_exports.number().int().nonnegative(),
+  exitIp: external_exports.string().max(45).optional(),
+  platform: external_exports.string().max(64).optional(),
+  clientVersion: external_exports.string().max(64).optional(),
+  /** Bytes moved since the previous presence, both directions. */
+  bytesDelta: external_exports.number().int().nonnegative().optional()
+});
+var relayPresenceResponseSchema = external_exports.object({ ok: external_exports.boolean() });
+var relayKickResponseSchema = external_exports.object({ kicked: external_exports.boolean() });
+var proxyStreamClaimsSchema = external_exports.object({
+  /** Session id. */
+  sub: idSchema("session"),
+  ten: idSchema("tenant"),
+  /** The dashboard user who started the session; absent for API-key sessions. */
+  usr: identityUserIdSchema.optional(),
+  /** The proxy device this session exits through. */
+  dev: idSchema("proxyDevice"),
+  exp: external_exports.number().int(),
+  /** Token kind (0.42.4); the relay refuses any other value. Optional until every signer sends it. */
+  typ: external_exports.literal("proxy-stream").optional(),
+  /**
+   * Local-app sessions (0.43.0): the alias hosts this session may OPEN (1..4, each a well-formed
+   * `localAppAlias`). Absent: an ordinary device-exit session. With `aliases`, the relay allows
+   * nothing else: any other host, or a port not in `ports`, is `blocked_destination`; and it must
+   * be a device paired with `purpose: "local_app"`. Present with `ports` or not at all.
+   */
+  aliases: external_exports.array(localAppAliasSchema).min(1).max(4).optional(),
+  /** Ports allowed for `aliases` (0.43.0): 1..8 entries of 1024..65535. */
+  ports: localAppPortsSchema.optional()
+}).refine((v) => v.aliases === void 0 === (v.ports === void 0), {
+  message: "aliases and ports go together",
+  path: ["aliases"]
+});
+var relaySessionEndRequestSchema = external_exports.object({
+  /** `exp` of the session's stream JWT (unix seconds): how long the relay keeps the denylist entry. */
+  exp: external_exports.number().int(),
+  /** Close the session's open streams now. Default true. */
+  closeStreams: external_exports.boolean().default(true)
+});
+var relaySessionEndResponseSchema = external_exports.object({
+  /** True once the session id is on the denylist (also true when it already was). */
+  denied: external_exports.boolean(),
+  closedStreams: external_exports.number().int().nonnegative()
+});
+var MOMENTS_MAX_STEPS = 30;
+var momentRecordingSchema = external_exports.object({
+  /** The page the visit started on (credential parameters masked). */
+  startUrl: external_exports.string().max(4e3).optional(),
+  steps: external_exports.array(external_exports.string().min(1).max(500)).max(MOMENTS_MAX_STEPS),
+  /** More actions than `MOMENTS_MAX_STEPS`: the oldest were dropped. */
+  truncated: external_exports.boolean()
+});
+var skillPackageLimits = {
+  fileBytes: 5 * 1024 * 1024,
+  totalBytes: 20 * 1024 * 1024,
+  files: 200
+};
+var skillPackageLockSchema = external_exports.object({
+  format: external_exports.literal(1),
+  name: external_exports.string(),
+  version: external_exports.string(),
+  /** `path -> sha256 hex`, sorted by path. */
+  files: external_exports.record(external_exports.string(), external_exports.string().regex(/^[0-9a-f]{64}$/))
+});
+var skillPackageDigestSchema = external_exports.string().regex(/^sha256-[0-9a-f]{64}$/);
 var SESSION_TOKEN_TTL_S = 15 * 60;
 var sessionScopeSchema = external_exports.enum([
   "http",
@@ -30893,8 +32000,15 @@ var auditListSchema = external_exports.object({
   events: external_exports.array(auditEventSchema),
   next: external_exports.number().int().optional()
 });
+var signInEmail = external_exports.string().trim().toLowerCase().max(254).pipe(external_exports.email());
+var authCodeSendRequestSchema = external_exports.object({ email: signInEmail });
+var authCodeSendResponseSchema = external_exports.object({ ok: external_exports.literal(true) });
+var authCodeVerifyRequestSchema = external_exports.object({
+  email: signInEmail,
+  code: external_exports.string().trim().regex(/^\d{6}$/, "the code is 6 digits")
+});
 var authMeResponseSchema = external_exports.object({
-  /** `name` (0.20.0): the person's display name from identity, fresh per call; absent if unset. */
+  /** `name` (0.20.0): the person's display name, fresh per call; absent if unset. */
   user: external_exports.object({
     id: external_exports.string().min(1).max(255),
     email: external_exports.string(),
@@ -30902,10 +32016,7 @@ var authMeResponseSchema = external_exports.object({
   }).nullable(),
   authTime: external_exports.number().int().nonnegative().nullable(),
   memberships: external_exports.array(membershipSchema),
-  /**
-   * The org this call acts in: a key's org, or the identity token's org (switching orgs happens in
-   * identity, D40 (7)). Null for a person with no org.
-   */
+  /** The org this call acts in: a key's org, or the session's current org. Null for a person with no org. */
   currentOrgId: idSchema("tenant").nullable().optional(),
   /**
    * 0.41.2: the org's home region for a signed-in person who has no tenant on this API, because
@@ -30918,11 +32029,6 @@ var authMeResponseSchema = external_exports.object({
     projectId: idSchema("project"),
     role: roleSchema
   }).nullable(),
-  /**
-   * Lookover identity's base URL (the issuer the API signs people in with), for links to its
-   * account and `/org/members` pages (0.18.1). Absent: API-key auth only.
-   */
-  identityUrl: external_exports.string().url().optional(),
   /**
    * Set while a platform admin is impersonating this org (0.28.0); the dashboard shows a banner.
    * Absent or null: a normal sign-in. `mode` read_only refuses writes (`impersonation_read_only`).
@@ -31044,7 +32150,12 @@ var profileInfoSchema = external_exports.object({
   updatedAt: external_exports.number(),
   /** Session the profile was last saved from, or `import`. */
   source: external_exports.string(),
-  engine: engineSchema
+  engine: engineSchema,
+  /**
+   * S5 LOGINS (D91 §5.4): the App environment whose automatic signed-in state this is ("Stay signed in"). One
+   * per environment; absent: a profile saved or imported by hand.
+   */
+  environmentId: idSchema("qaEnvironment").optional()
 });
 var profileListSchema = external_exports.object({ profiles: external_exports.array(profileInfoSchema) });
 var profileName = external_exports.string().min(1).max(100);
@@ -31070,98 +32181,53 @@ var extensionListSchema = external_exports.object({ extensions: external_exports
 var uploadExtensionQuerySchema = external_exports.object({
   engine: extensionEngineSchema.default("chromium")
 });
-var SECRET_PROVIDERS = ["1password", "bitwarden"];
-var secretProviderKindSchema = external_exports.enum(SECRET_PROVIDERS);
-var credentialSourceRequestSchema = external_exports.object({
-  providerId: idSchema("secretProvider"),
-  /** 1Password `op://Vault/Item[/field]`; Bitwarden a Secrets Manager secret key or id. */
-  reference: external_exports.string().min(1).max(300)
-});
-var credentialSourceSchema = credentialSourceRequestSchema.extend({
-  provider: secretProviderKindSchema
-});
-var CREDENTIAL_SECRETS_MAX = 20;
-var credentialSecretsSchema = external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3)).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
-  message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
-});
-var credentialInfoSchema = external_exports.object({
-  id: external_exports.string(),
-  /**
-   * Exact origin the credential is used on, e.g. `https://staging.example.com`. For an
-   * `anyOrigin` credential the api returns `"*"`.
-   */
-  origin: external_exports.string(),
-  /** Usable on any site (0.42.0). Absent = false. */
-  anyOrigin: external_exports.boolean().optional(),
-  /** Groups credentials (per environment, per test suite); sessions pick a namespace. */
-  namespace: external_exports.string(),
-  label: external_exports.string(),
-  username: external_exports.string(),
-  hasTotp: external_exports.boolean(),
-  /** Names of the credential's secrets (0.48.2), never the values. Absent: none. */
-  secretNames: external_exports.array(qaVariableNameSchema).max(CREDENTIAL_SECRETS_MAX).optional(),
-  source: credentialSourceSchema.optional(),
-  lastResolvedAt: external_exports.number().optional(),
-  resolveError: external_exports.string().optional(),
-  createdAt: external_exports.number(),
-  updatedAt: external_exports.number()
-});
-var listCredentialsQuerySchema = external_exports.object({ namespace: external_exports.string().max(64).optional() });
-var credentialListSchema = external_exports.object({ credentials: external_exports.array(credentialInfoSchema) });
-var createCredentialRequestSchema = external_exports.object({
-  /** Required unless `anyOrigin` is true (then it must be left out). */
-  origin: external_exports.string().max(300).optional(),
-  /** Use this login on any site (0.42.0, default false), e.g. the seeded "Test login". */
-  anyOrigin: external_exports.boolean().optional(),
-  username: external_exports.string().max(500).optional(),
-  password: external_exports.string().min(1).max(5e3).optional(),
-  source: credentialSourceRequestSchema.optional(),
+var credentialAddCodeSchema = external_exports.string().trim().toUpperCase().regex(/^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/, "expected a code like ABCD-EFGH");
+var credentialAddStatusSchema = external_exports.enum(["waiting", "saved", "expired"]);
+var addLoginInputSchema = external_exports.object({
+  /** The exact site, e.g. `https://app.acme.com`. */
+  origin: external_exports.string().trim().min(1).max(300).optional(),
+  label: external_exports.string().trim().min(1).max(200).optional(),
+  /** Not secret: prefilled in the CLI and the page. */
+  username: external_exports.string().trim().min(1).max(500).optional(),
   namespace: external_exports.string().min(1).max(64).optional(),
-  label: external_exports.string().max(200).optional(),
-  totpSecret: external_exports.string().max(200).optional(),
-  /** Named secrets (0.48.2), see `credentialSecretsSchema`. */
-  secrets: credentialSecretsSchema.optional()
-}).superRefine((v, ctx) => {
-  if (v.anyOrigin && v.origin !== void 0) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["origin"],
-      message: "origin must be left out when anyOrigin is true"
-    });
-  }
-  if (!v.anyOrigin && v.origin === void 0) {
-    ctx.addIssue({ code: "custom", path: ["origin"], message: "origin is required" });
-  }
+  /** Ask about an earlier `add_login` instead of starting one. */
+  addId: external_exports.string().min(1).max(64).optional()
+}).refine((v) => v.addId === void 0 !== (v.origin === void 0), {
+  message: "send origin to start, or addId to check one"
 });
-var patchCredentialRequestSchema = external_exports.object({
+var addLoginResultSchema = external_exports.object({
+  addId: external_exports.string(),
+  status: credentialAddStatusSchema,
+  origin: external_exports.string(),
+  expiresAt: external_exports.iso.datetime(),
+  code: credentialAddCodeSchema.optional(),
+  /** E.g. `npx @lookover-ai/cli vault add https://app.acme.com --code ABCD-EFGH`. */
+  command: external_exports.string().optional(),
+  /** The page `<dashboard>/vault/add#code=…`; absent when the api knows no dashboard origin. */
+  openUrl: external_exports.string().optional(),
+  /** Set once `saved`. */
+  credentialId: external_exports.string().optional(),
+  label: external_exports.string().optional()
+});
+var credentialAddPeekRequestSchema = external_exports.object({ code: credentialAddCodeSchema });
+var credentialAddPeekResponseSchema = external_exports.object({
+  origin: external_exports.string(),
+  label: external_exports.string().optional(),
+  username: external_exports.string().optional(),
+  projectName: external_exports.string(),
+  appName: external_exports.string().optional(),
+  expiresAt: external_exports.iso.datetime()
+});
+var credentialAddClaimRequestSchema = external_exports.object({
+  code: credentialAddCodeSchema,
   username: external_exports.string().min(1).max(500).optional(),
-  password: external_exports.string().min(1).max(5e3).optional(),
-  source: credentialSourceRequestSchema.optional(),
-  label: external_exports.string().max(200).optional(),
-  totpSecret: external_exports.string().max(200).nullable().optional(),
-  secrets: external_exports.record(qaVariableNameSchema, external_exports.string().min(1).max(2e3).nullable()).refine((v) => Object.keys(v).length <= CREDENTIAL_SECRETS_MAX, {
-    message: `at most ${CREDENTIAL_SECRETS_MAX} secrets`
-  }).optional()
+  password: external_exports.string().min(1).max(5e3),
+  totpSecret: external_exports.string().max(200).optional()
 });
-var secretProviderInfoSchema = external_exports.object({
-  id: external_exports.string(),
-  provider: secretProviderKindSchema,
-  label: external_exports.string(),
-  scope: external_exports.string(),
-  settings: external_exports.record(external_exports.string(), external_exports.string()),
-  status: external_exports.enum(["ok", "error", "untested"]),
-  lastCheckedAt: external_exports.number().optional(),
-  error: external_exports.string().optional(),
-  createdAt: external_exports.number(),
-  updatedAt: external_exports.number()
-});
-var secretProviderListSchema = external_exports.object({ providers: external_exports.array(secretProviderInfoSchema) });
-var createSecretProviderRequestSchema = external_exports.object({
-  provider: secretProviderKindSchema,
-  token: external_exports.string().min(1).max(5e3),
-  label: external_exports.string().max(200).optional(),
-  scope: external_exports.string().max(500).optional(),
-  settings: external_exports.record(external_exports.string().max(40), external_exports.string().max(500)).optional()
+var credentialAddClaimResponseSchema = external_exports.object({
+  credentialId: external_exports.string(),
+  origin: external_exports.string(),
+  label: external_exports.string()
 });
 var pageQuerySchema = external_exports.object({
   limit: external_exports.coerce.number().int().min(1).max(100).default(50),
@@ -31511,6 +32577,101 @@ var skillUsageResponseSchema = external_exports.object({
     })
   )
 });
+var decisionEngineSchema = external_exports.enum(["jev", "gemini-decision-1", "off"]);
+var modelProviderKindSchema = external_exports.enum(["anthropic", "google", "other"]);
+var modelCatalogEntrySchema = external_exports.object({
+  /** Gateway alias = what goes in a route, e.g. `gemini-3.8-flash`, `claude-haiku-5-5`. */
+  id: external_exports.string().min(1),
+  provider: modelProviderKindSchema,
+  /** Human label, e.g. "Gemini 3.8 Flash". */
+  label: external_exports.string().min(1),
+  /** Accepts image input (needed for the `vision` role). */
+  vision: external_exports.boolean()
+});
+var modelCatalogResponseSchema = external_exports.object({
+  models: external_exports.array(modelCatalogEntrySchema),
+  /** Decision engines this deployment can run (its key is configured). */
+  decisionEngines: external_exports.array(decisionEngineSchema)
+});
+var modelSetupRoutesSchema = external_exports.object({
+  /** Fast model for each step decision. */
+  actions: external_exports.string().min(1),
+  /** Strong model when `actions` cannot decide. */
+  fallback: external_exports.string().min(1),
+  /** Screenshot model for canvas pages and visual checks. */
+  vision: external_exports.string().min(1)
+});
+var modelSetupSchema = external_exports.object({
+  decisionEngine: decisionEngineSchema,
+  routes: modelSetupRoutesSchema,
+  /** `org` = this org overrides it; `global` = inherited from the platform default. */
+  source: external_exports.object({
+    decisionEngine: external_exports.enum(["org", "global"]),
+    routes: external_exports.enum(["org", "global"])
+  })
+});
+var modelSetupPatchSchema = external_exports.object({
+  decisionEngine: decisionEngineSchema.nullable().optional(),
+  routes: modelSetupRoutesSchema.partial().nullable().optional()
+}).strict();
+var llmKeyStatusSchema = external_exports.object({
+  set: external_exports.boolean(),
+  last4: external_exports.string().max(4).optional(),
+  updatedAt: external_exports.string().optional(),
+  updatedBy: external_exports.string().optional()
+});
+var llmKeyPutSchema = external_exports.object({
+  apiKey: external_exports.string().trim().min(10).max(500).nullable()
+});
+var unixMs32 = external_exports.number().int().nonnegative();
+var projectUseCaseSchema = external_exports.enum(["general", "testing"]);
+var projectProfileSchema = external_exports.object({
+  writesTests: external_exports.enum(["me", "agent", "both"]).optional(),
+  scope: external_exports.enum(["key_flows", "full_regression"]).optional(),
+  cadence: external_exports.array(external_exports.enum(["pr", "nightly", "manual"])).max(3).optional(),
+  role: external_exports.string().trim().max(100).optional(),
+  needsLogin: external_exports.boolean().optional(),
+  needsCode: external_exports.boolean().optional()
+});
+var projectSchema = external_exports.object({
+  id: idSchema("project"),
+  tenantId: idSchema("tenant"),
+  name: external_exports.string().min(1).max(100),
+  isDefault: external_exports.boolean(),
+  /** 0.43.0. Old payloads without it read as `general`. */
+  useCase: projectUseCaseSchema.default("general"),
+  /** 0.43.0. Absent: not answered. */
+  profile: projectProfileSchema.optional(),
+  /**
+   * 0.70.0 (hub D101). Where the project's data lives and its browsers run. Set at create, never changes
+   * (no update path takes it).
+   */
+  region: regionCodeSchema,
+  createdAt: unixMs32
+});
+var listProjectsResponseSchema = external_exports.object({ projects: external_exports.array(projectSchema) });
+var createProjectRequestSchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(100),
+  /** 0.43.0. Absent: `testing` (0.70.0, hub D101; was `general`). */
+  useCase: projectUseCaseSchema.optional(),
+  /** 0.43.0. */
+  profile: projectProfileSchema.optional(),
+  /**
+   * 0.70.0 (hub D101). Absent: the region of the api stack that takes the call. Must be a live region and
+   * (until cross-region routing) the stack's own; else `invalid_input`.
+   */
+  region: regionCodeSchema.optional()
+});
+var updateProjectRequestSchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(100).optional(),
+  useCase: projectUseCaseSchema.optional(),
+  profile: projectProfileSchema.nullable().optional()
+}).refine((v) => v.name !== void 0 || v.useCase !== void 0 || v.profile !== void 0, {
+  message: "send at least one of name, useCase, profile"
+});
+var deleteProjectResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
+var MCP_RESOURCE_PATHS = ["/mcp", "/mcp/qa", "/mcp/browser"];
+var mcpResourcePathSchema = external_exports.enum(MCP_RESOURCE_PATHS);
 var oauthClientKindSchema = external_exports.enum(["cimd", "registered"]);
 var clientIdSchema = external_exports.string().min(1).max(2e3).regex(/^\S+$/, "client_id must not contain spaces");
 var clientFields = {
@@ -31536,6 +32697,11 @@ var oauthGrantSchema = external_exports.object({
   projectId: idSchema("project"),
   /** Identity subject of the person who approved. */
   userId: external_exports.string().min(1).max(200),
+  /** Email of the person who approved (0.58.0-rc.1, S7-B5): shown next to the org and project. */
+  userEmail: external_exports.string().max(320).optional(),
+  /** Org and project names for the list (0.58.0-rc.1, S7-B5). */
+  orgName: external_exports.string().max(200).optional(),
+  projectName: external_exports.string().max(200).optional(),
   role: memberRoleSchema.extract(["member"]),
   createdAt: external_exports.string(),
   lastUsedAt: external_exports.string().optional(),
@@ -31552,57 +32718,49 @@ var oauthRequestViewSchema = external_exports.object({
   redirectHost: external_exports.string().min(1).max(255),
   scope: external_exports.string().max(200),
   org: external_exports.object({ id: idSchema("tenant"), name: external_exports.string().min(1).max(200) }),
+  /** Who is signed in on the consent page (0.58.0-rc.1, S7-B5): "Approving as <email>". */
+  account: external_exports.object({ email: external_exports.string().max(320) }).optional(),
+  /**
+   * Which MCP server the client asked for (0.68.0-rc.0, B4; `/mcp/browser` 0.71.0, D102): `/mcp/qa` (Lookover
+   * QA) and `/mcp/browser` (Lookover Browser) offer only Testing projects and can allow several; `/mcp`
+   * (general) one project as before. Absent from older apis.
+   */
+  resource: mcpResourcePathSchema.optional(),
   /** The projects of the signed-in person in this org; one is the default selection. */
   projects: external_exports.array(
     external_exports.object({
       id: idSchema("project"),
       name: external_exports.string().min(1).max(200),
-      isDefault: external_exports.boolean()
+      isDefault: external_exports.boolean(),
+      /** The project's kind (0.68.0-rc.0, B4): a QA connection lists only `testing` ones. */
+      useCase: projectUseCaseSchema.optional()
     })
   ).max(500),
   expiresAt: external_exports.string()
 }).superRefine(checkClientId);
-var approveOauthRequestSchema = external_exports.object({ projectId: idSchema("project") });
+var approveOauthRequestSchema = external_exports.object({
+  projectId: idSchema("project"),
+  projectIds: external_exports.array(idSchema("project")).min(1).max(100).optional(),
+  allTesting: external_exports.boolean().optional()
+}).superRefine((v, ctx) => {
+  if (v.projectIds && v.allTesting) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["allTesting"],
+      message: "send projectIds or allTesting, not both"
+    });
+  }
+  if (v.projectIds && !v.projectIds.includes(v.projectId)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["projectIds"],
+      message: "projectIds must include projectId"
+    });
+  }
+});
 var approveOauthRequestResponseSchema = external_exports.object({
   redirectUrl: external_exports.string().min(1).max(4e3)
 });
-var unixMs32 = external_exports.number().int().nonnegative();
-var projectUseCaseSchema = external_exports.enum(["general", "testing"]);
-var projectProfileSchema = external_exports.object({
-  writesTests: external_exports.enum(["me", "agent", "both"]).optional(),
-  scope: external_exports.enum(["key_flows", "full_regression"]).optional(),
-  cadence: external_exports.array(external_exports.enum(["pr", "nightly", "manual"])).max(3).optional(),
-  role: external_exports.string().trim().max(100).optional(),
-  needsLogin: external_exports.boolean().optional(),
-  needsCode: external_exports.boolean().optional()
-});
-var projectSchema = external_exports.object({
-  id: idSchema("project"),
-  tenantId: idSchema("tenant"),
-  name: external_exports.string().min(1).max(100),
-  isDefault: external_exports.boolean(),
-  /** 0.43.0. Old payloads without it read as `general`. */
-  useCase: projectUseCaseSchema.default("general"),
-  /** 0.43.0. Absent: not answered. */
-  profile: projectProfileSchema.optional(),
-  createdAt: unixMs32
-});
-var listProjectsResponseSchema = external_exports.object({ projects: external_exports.array(projectSchema) });
-var createProjectRequestSchema = external_exports.object({
-  name: external_exports.string().trim().min(1).max(100),
-  /** 0.43.0. Absent: `general`. */
-  useCase: projectUseCaseSchema.optional(),
-  /** 0.43.0. */
-  profile: projectProfileSchema.optional()
-});
-var updateProjectRequestSchema = external_exports.object({
-  name: external_exports.string().trim().min(1).max(100).optional(),
-  useCase: projectUseCaseSchema.optional(),
-  profile: projectProfileSchema.nullable().optional()
-}).refine((v) => v.name !== void 0 || v.useCase !== void 0 || v.profile !== void 0, {
-  message: "send at least one of name, useCase, profile"
-});
-var deleteProjectResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
 var unixMs42 = external_exports.number().int().nonnegative();
 var HOSTNAME_RE = /^(?=.{1,253}$)[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 var IPV6_RE = /^(?=.*:)[0-9a-fA-F:.]{2,45}$/;
@@ -31684,6 +32842,109 @@ var TYPE_BY_NUMBER = new Map(
 );
 var enc = new TextEncoder();
 var dec = new TextDecoder();
+var BROWSER_MCP_TOOL_NAMES = [
+  "list_apps",
+  "start_session",
+  "observe",
+  "click",
+  "type",
+  "select",
+  "press",
+  "navigate",
+  "scroll",
+  "assert",
+  "sign_in",
+  "handoff",
+  "save_as_test",
+  "end_session"
+];
+var browserMcpToolNameSchema = external_exports.enum(BROWSER_MCP_TOOL_NAMES);
+var BROWSER_HANDOFF_WAIT_MAX_S = 85;
+var BROWSER_SAVE_WAIT_MAX_S = 85;
+var sessionId = idSchema("session").describe("The session from start_session (sess_...).");
+var ref = refSchema.describe("An element ref from the latest observe (e12).");
+var browserListAppsInputSchema = external_exports.object({});
+var browserStartSessionInputSchema = external_exports.object({
+  appId: external_exports.string().max(100).optional().describe(
+    "The App (app_...) of this project to drive. Absent: the project's only App, or the one App with this URL; with several Apps you get an error listing them."
+  ),
+  environment: external_exports.string().max(100).optional().describe("URL name or id (staging, a preview...). Absent: the App's default URL."),
+  accept: external_exports.string().max(40).optional().describe(
+    "The rules version the PERSON accepted after seeing the start card. Never send it on your own."
+  )
+});
+var browserObserveInputSchema = external_exports.object({
+  sessionId,
+  screenshot: external_exports.boolean().optional().describe("Add a small JPEG screenshot (costs your tokens; ask only when needed)."),
+  viewportOnly: external_exports.boolean().optional().describe("Only what is on screen now (a shorter outline).")
+});
+var browserClickInputSchema = external_exports.object({ sessionId, ref });
+var browserTypeInputSchema = external_exports.object({
+  sessionId,
+  ref,
+  text: external_exports.string().max(2e3).describe("Plain text. Never a password or code: use sign_in or handoff."),
+  submit: external_exports.boolean().optional().describe("Press Enter afterwards.")
+});
+var browserSelectInputSchema = external_exports.object({
+  sessionId,
+  ref,
+  value: external_exports.string().max(500).optional(),
+  label: external_exports.string().max(500).optional()
+}).refine((a) => a.value !== void 0 || a.label !== void 0, "value or label is required");
+var browserPressInputSchema = external_exports.object({
+  sessionId,
+  key: external_exports.string().min(1).max(32).describe("Enter, Escape, Tab, ArrowDown..."),
+  ref: ref.optional()
+});
+var browserNavigateInputSchema = external_exports.object({
+  sessionId,
+  url: external_exports.string().url().max(2e3).describe("An address on this App (other sites are refused).")
+});
+var browserScrollInputSchema = external_exports.object({
+  sessionId,
+  direction: external_exports.enum(["up", "down", "left", "right"]).optional(),
+  to: external_exports.enum(["top", "bottom"]).optional(),
+  ref: ref.optional().describe("Scroll this element into view.")
+});
+var browserAssertInputSchema = external_exports.object({
+  sessionId,
+  text: external_exports.string().trim().min(1).max(200).optional().describe('Text the page must show (or not show with visible false), e.g. "Order placed".'),
+  urlContains: external_exports.string().trim().min(1).max(500).optional().describe("A part the current address must contain, e.g. /orders/."),
+  visible: external_exports.boolean().optional().describe("Default true: the text must show; false: it must not show.")
+}).refine((a) => a.text !== void 0 || a.urlContains !== void 0, {
+  message: "send text or urlContains (or both)"
+});
+var browserAssertResultSchema = external_exports.object({
+  passed: external_exports.boolean(),
+  seen: external_exports.string().max(500)
+});
+var browserSignInInputSchema = external_exports.object({
+  sessionId,
+  account: external_exports.string().trim().min(1).max(200).optional().describe(
+    "A saved Test login: its id (cred_...), label or username. Absent: the URL's default login."
+  )
+});
+var browserHandoffInputSchema = external_exports.object({
+  sessionId,
+  reason: external_exports.string().trim().min(1).max(200).describe("Short: what is needed (sign in, OTP, CAPTCHA, pay...)."),
+  instructions: external_exports.string().trim().min(1).max(300).optional().describe(
+    `What the person must do, in plain words, e.g. "Log in with your work account, then click I'm done".`
+  ),
+  autoOpen: external_exports.boolean().optional().describe("Default true: you are told to open the page in the person's browser."),
+  waitSeconds: external_exports.number().int().min(0).max(BROWSER_HANDOFF_WAIT_MAX_S).optional().describe("Default 60.")
+});
+var browserSaveAsTestInputSchema = external_exports.object({
+  sessionId,
+  appId: external_exports.string().max(100).optional().describe(
+    "The App (app_...) to save the test in, as start_session answered. Absent: the App of the session's site."
+  ),
+  name: external_exports.string().trim().min(1).max(200).describe("The test's title, e.g. Checkout with a saved card."),
+  expect: external_exports.string().trim().min(1).max(500).optional().describe(
+    'What the page must show at the end, e.g. shows "Order placed". Absent: the passed asserts of this session, else the final address.'
+  ),
+  waitSeconds: external_exports.number().int().min(0).max(BROWSER_SAVE_WAIT_MAX_S).optional().describe("Wait for our replay; default 60.")
+});
+var browserEndSessionInputSchema = external_exports.object({ sessionId });
 var QA_ALERT_RECIPIENTS_MAX = 10;
 var qaAlertModeSchema = external_exports.enum(["transitions", "every_failure"]);
 var qaAlertSettingsSchema = external_exports.object({
@@ -31798,6 +33059,7 @@ var qaTriageGuessSchema = external_exports.object({
   kind: qaTriageGuessKindSchema,
   text: external_exports.string().max(500)
 });
+var qaTestTrustSchema = external_exports.enum(["unverified_model", "verified"]);
 var reportVerdictSchema = external_exports.enum(["pass", "fail", "error", "running"]);
 var reportStepResolutionSchema = external_exports.enum(["replayed", "healed", "model"]);
 var reportHealKindSchema = external_exports.enum(["locator", "wait", "text"]);
@@ -31848,12 +33110,40 @@ var reportStepSchema = external_exports.object({
   error: external_exports.string().max(500).optional(),
   ms: external_exports.number().nonnegative().optional(),
   /** Short-lived link (see `evidence.urlsExpireAt`). Failed steps only before 0.43.0; with the QA evidence policy every step can have one. */
-  screenshotUrl: external_exports.string().max(2e3).optional()
+  screenshotUrl: external_exports.string().max(2e3).optional(),
+  /** Stable id (S7, D94): `findingIdOf(rule, selector, page)`; equal ids across runs = the same problem. */
+  findingId: external_exports.string().max(64).optional(),
+  /** The element the failure is about (S7). */
+  selector: external_exports.string().max(500).optional(),
+  /** How the screenshot was taken (S7): viewport, scroll, dpr; places `boxes` on it. */
+  shot: reportShotSchema.optional(),
+  /** Where the element(s) were on the screenshot, CSS px, max 5 (S7). Absent: plain screenshot, never a guessed box. */
+  boxes: reportBoxListSchema.optional(),
+  /** Readable rule title, e.g. "WCAG 2.2 SC 1.1.1 Non-text content" (S7). */
+  ruleName: external_exports.string().max(300).optional()
 });
 var reportFindingSchema = findingSchema.pick({ rule: true, severity: true, title: true, url: true, fix: true }).extend({
   detail: external_exports.string().max(1e3).optional(),
   /** Set on a workflow-run case's report when the run had a `baselineRunId` (0.41.3): true = not in the baseline. */
-  new: external_exports.boolean().optional()
+  new: external_exports.boolean().optional(),
+  /** Stable id (S7, D94): `findingIdOf(rule, selector, page)`; equal ids across runs = the same problem. */
+  findingId: external_exports.string().max(64).optional(),
+  /** The element the failure is about (S7). */
+  selector: external_exports.string().max(500).optional(),
+  /** How the screenshot was taken (S7): viewport, scroll, dpr; places `boxes` on it. */
+  shot: reportShotSchema.optional(),
+  /** Where the element(s) were on the screenshot, CSS px, max 5 (S7). Absent: plain screenshot, never a guessed box. */
+  boxes: reportBoxListSchema.optional(),
+  /** Readable rule title, e.g. "WCAG 2.2 SC 1.1.1 Non-text content" (S7). */
+  ruleName: external_exports.string().max(300).optional(),
+  /** Short-lived link to the screenshot at the failure (S7; see `evidence.urlsExpireAt`). */
+  screenshotUrl: external_exports.string().max(2e3).optional(),
+  /** What should have happened, in words (S7). */
+  expected: external_exports.string().max(500).optional(),
+  /** What happened instead (S7). */
+  actual: external_exports.string().max(500).optional(),
+  /** Steps to reproduce, in order (S7). */
+  steps: external_exports.array(external_exports.string().max(300)).max(20).optional()
 });
 var reportConsoleErrorSchema = external_exports.object({
   source: external_exports.enum(["console", "pageerror"]),
@@ -31917,7 +33207,9 @@ var runReportSchema = external_exports.object({
   /** A QA case's assertion results (0.48.1, W1-1), the same list as the run case's `assertions`. */
   assertions: qaAssertionResultListSchema.optional(),
   /** A QA case's setup/teardown outcome (0.48.2, W1-2), as the runtime wrote it under `hooks`. Absent: no hooks. */
-  hooks: qaHookOutcomeSchema.optional()
+  hooks: qaHookOutcomeSchema.optional(),
+  /** Compliance checks of a QA run (0.57.0, D93), per pack; the same report as `WorkflowRun.compliance`. Absent: none ran. */
+  compliance: complianceReportSchema.optional()
 });
 var cronSchema = external_exports.string().trim().regex(/^\S+(\s+\S+){4}$/, "five cron fields: minute hour day month weekday");
 var scheduleTimezoneSchema = external_exports.string().min(1).max(64);
@@ -32036,12 +33328,26 @@ var skillRunSummarySchema = external_exports.object({
   summary: external_exports.string().nullable(),
   counts: external_exports.record(external_exports.string(), external_exports.number().int().nonnegative()).nullable(),
   /** Engine the run's session used (0.19.0); absent for runs placed before engines. */
-  engineRef: engineRefSchema.optional()
+  engineRef: engineRefSchema.optional(),
+  /**
+   * The project the run belongs to (0.58.0, S7-B1). Always set by api 0.58+; optional so older replies still parse.
+   * The dashboard's run page switches to it when the viewer opened a link from another project.
+   */
+  projectId: idSchema("project").optional(),
+  /**
+   * The QA app the run is filed under (0.58.0, S7-B1): the caller's `?appId=` (dashboard), the app a test run
+   * belongs to, or the app an MCP run tool attached the URL to. `null` = no app (API-key runs, runs before 0.58).
+   */
+  appId: appIdSchema.nullable().optional(),
+  /** Name of that app now (0.58.0); `null` when the run has no app or the app was deleted. */
+  appName: external_exports.string().nullable().optional()
 });
 var toArray = (v) => v === void 0 || Array.isArray(v) ? v : [v];
 var listSkillRunsQuerySchema = pageQuerySchema.extend({
   status: external_exports.preprocess(toArray, external_exports.array(skillRunStatusSchema).min(1).max(6)).optional(),
-  skill: external_exports.string().trim().min(1).max(200).optional()
+  skill: external_exports.string().trim().min(1).max(200).optional(),
+  /** Only runs filed under this App (0.58.0-rc.1, like the test runs list). */
+  appId: appIdSchema.optional()
 });
 var listSkillRunsResponseSchema = external_exports.object({
   runs: external_exports.array(skillRunSummarySchema),
@@ -32152,6 +33458,8 @@ var workflowCaseSchema = external_exports.object({
   status: workflowCaseStatusSchema.default("active"),
   /** Where the case came from (0.43.0). Absent: unknown (cases made before 0.43.0). */
   origin: workflowCaseOriginSchema.optional(),
+  /** Trust label (S5 BYO, `qa-trust.ts`): `unverified_model` = saved by the customer's own model over MCP. Absent: no label. */
+  trust: qaTestTrustSchema.optional(),
   /** Feature area for grouping and filtering, e.g. `checkout` (0.43.0). */
   area: external_exports.string().trim().min(1).max(60).optional(),
   /** Person or team that looks after the test (0.43.0). Free text. */
@@ -32222,6 +33530,8 @@ function checkExpandedSteps(v, ctx) {
 }
 var workflowFieldsSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(200),
+  /** The QA app (0.56.0, D92); testing projects only. Absent: the project's only app (or none). */
+  appId: appIdSchema.optional(),
   description: external_exports.string().max(1e3).optional(),
   /** Unique per project; lets CI upsert with `PUT /v1/workflows/by-key/:key`. */
   key: workflowSlugSchema.optional(),
@@ -32313,8 +33623,14 @@ var workflowTriggerLabelSchema = external_exports.enum([
   "pr",
   "agent",
   "chat",
+  "slack",
   "api"
 ]);
+var workflowRunStartedBySchema = sessionStartedBySchema.and(
+  external_exports.object({
+    person: external_exports.object({ id: external_exports.string().min(1).max(128), name: external_exports.string().min(1).max(200) }).optional()
+  })
+);
 var workflowCiSchema = external_exports.object({
   provider: external_exports.enum(["github", "other"]),
   repo: external_exports.string().max(200).optional(),
@@ -32333,6 +33649,8 @@ var workflowCiSchema = external_exports.object({
   changedFiles: external_exports.array(external_exports.string().max(300)).max(300).optional()
 });
 var startWorkflowRunRequestSchema = external_exports.object({
+  /** The QA app (0.56.0, D92); testing projects only. Absent: the project's only app (or none). */
+  appId: appIdSchema.optional(),
   /** Key of the workflow's `targets`. Absent: `defaultTarget`. */
   target: workflowSlugSchema.optional(),
   /** Run against this url instead of a saved target. */
@@ -32347,11 +33665,18 @@ var startWorkflowRunRequestSchema = external_exports.object({
   timeoutMs: workflowRunTimeoutMsSchema.optional(),
   trigger: workflowTriggerSchema.default("api"),
   ci: workflowCiSchema.optional(),
+  /**
+   * S4 (0.54.0): record this run against the App environment with this name (case-insensitive). Unknown name:
+   * `invalid_input`. Absent with `ci.pr` + `url`: the api files it under that PR's preview environment.
+   */
+  environment: external_exports.string().trim().min(1).max(100).optional(),
   /** Fail-fast, re-run failed and cancel-superseded (0.47.0); see `workflow-run-control.ts`. */
   ...workflowRunControlFields
 });
 var startAdhocWorkflowRunRequestSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(200).optional(),
+  /** The QA app (0.56.0, D92); testing projects only. Absent: the project's only app (or none). */
+  appId: appIdSchema.optional(),
   url: workflowUrlSchema,
   cases: external_exports.array(workflowCaseSchema).min(1).max(WORKFLOW_MAX_CASES),
   /** Absent: the saved workflow's engine when `workflowKey` names one, else the project default engine (D68). */
@@ -32381,6 +33706,11 @@ var startAdhocWorkflowRunRequestSchema = external_exports.object({
   baselineRunId: idSchema("workflowRun").optional(),
   trigger: workflowTriggerSchema.default("api"),
   ci: workflowCiSchema.optional(),
+  /**
+   * S4 (0.54.0): record this run against the App environment with this name (case-insensitive). Unknown name:
+   * `invalid_input`. Absent with `ci.pr` + `url`: the api files it under that PR's preview environment.
+   */
+  environment: external_exports.string().trim().min(1).max(100).optional(),
   /**
    * Fail-fast, re-run failed and cancel-superseded (0.47.0); see `workflow-run-control.ts`. With
    * `failedOnly`, `cases` still lists every case; the api runs only those that did not pass in the earlier
@@ -32540,6 +33870,12 @@ var workflowRunCountsSchema = external_exports.object({
 var workflowRunSchema = external_exports.object({
   id: idSchema("workflowRun"),
   workflowId: idSchema("workflow").optional(),
+  /** The QA app (0.56.0, D92); testing projects only. Absent: the project's only app (or none). */
+  appId: appIdSchema.optional(),
+  /** The project the run belongs to (0.58.0, S7-B1); set on every read. Lets one run page serve skill runs and test runs. */
+  projectId: idSchema("project").optional(),
+  /** Name of the run's app (0.58.0, S7-B1). Set on `GET /v1/workflow-runs/:id` only (not on list items); absent without an app. */
+  appName: external_exports.string().optional(),
   /** The workflow version the cases were frozen from. */
   workflowVersion: external_exports.number().int().min(1).optional(),
   name: external_exports.string().max(200),
@@ -32547,6 +33883,8 @@ var workflowRunSchema = external_exports.object({
   trigger: workflowTriggerSchema,
   /** Display label of what started the run (0.44.0). Absent on old runs: derive it with `workflowTriggerLabel`. */
   triggerLabel: workflowTriggerLabelSchema.optional(),
+  /** Who started the run (H23 S2), on list items and the detail. Absent: unknown (fall back to `triggerLabel`). */
+  startedBy: workflowRunStartedBySchema.optional(),
   /** Pull request number when `triggerLabel` is `pr` (0.44.0); also `ci.pr` for CI runs. */
   prNumber: external_exports.number().int().positive().optional(),
   /** The QA environment the run used (0.45.0), e.g. "Staging" or "Preview"; the sha is in `ci.sha`. Absent: none chosen. */
@@ -32610,10 +33948,17 @@ var workflowRunSchema = external_exports.object({
     urlsExpireAt: external_exports.iso.datetime().optional()
   }),
   /** What is missing and why, one sentence each. */
-  notes: external_exports.array(external_exports.string().max(300)).max(8)
+  notes: external_exports.array(external_exports.string().max(300)).max(8),
+  /**
+   * Compliance checks (0.57.0, D93): one report per pack the run used. Absent: the run used none (or it ran
+   * before 0.57.0). Show it with `COMPLIANCE_DISCLAIMER`. Left out of the list (`workflowRunListItemSchema`).
+   */
+  compliance: complianceReportSchema.optional()
 });
-var workflowRunListItemSchema = workflowRunSchema.omit({ cases: true });
+var workflowRunListItemSchema = workflowRunSchema.omit({ cases: true, compliance: true });
 var listWorkflowRunsQuerySchema = pageQuerySchema.extend({
+  /** The QA app (0.56.0, D92); testing projects only. Absent: the project's only app (or none). */
+  appId: appIdSchema.optional(),
   workflowId: idSchema("workflow").optional(),
   verdict: reportVerdictSchema.optional(),
   trigger: workflowTriggerSchema.optional()
@@ -32657,6 +34002,8 @@ var qaEnvironmentLastRunSchema = external_exports.object({
 var qaEnvironmentSchema = external_exports.object({
   id: idSchema("qaEnvironment"),
   projectId: idSchema("project"),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   name: qaEnvironmentNameSchema,
   baseUrl: workflowUrlSchema,
   /** The environment runs use when none is named. Exactly one per project. */
@@ -32682,9 +34029,18 @@ var qaEnvironmentSchema = external_exports.object({
   sha: external_exports.string().max(100).optional(),
   /** Set when the PR closed (or a person archived it). Archived environments are hidden unless asked for. */
   archivedAt: external_exports.iso.datetime().optional(),
-  lastRun: qaEnvironmentLastRunSchema.optional()
+  lastRun: qaEnvironmentLastRunSchema.optional(),
+  /**
+   * S5 LOGINS (D91 §5.4): the ★ default login of this environment, preselected in the session's Logins panel
+   * and used by `sign_in` without an account name. A credential id only, never a value. Absent: none chosen.
+   */
+  defaultCredentialId: idSchema("credential").optional(),
+  /** S5 LOGINS: "Stay signed in" (the environment's automatic profile). Absent: on. */
+  staySignedIn: external_exports.boolean().optional()
 });
 var createQaEnvironmentRequestSchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   name: qaEnvironmentNameSchema,
   baseUrl: workflowUrlSchema,
   isDefault: external_exports.boolean().optional(),
@@ -32694,7 +34050,10 @@ var createQaEnvironmentRequestSchema = external_exports.object({
   previewPattern: qaPreviewPatternSchema.optional(),
   signInSteps: qaSignInStepsSchema.optional(),
   canChangeData: qaCanChangeDataSchema.optional(),
-  apiHosts: qaApiHostsSchema.optional()
+  apiHosts: qaApiHostsSchema.optional(),
+  /** S5 LOGINS, see `qaEnvironmentSchema`. */
+  defaultCredentialId: idSchema("credential").optional(),
+  staySignedIn: external_exports.boolean().optional()
 });
 var updateQaEnvironmentRequestSchema = external_exports.object({
   name: qaEnvironmentNameSchema,
@@ -32707,11 +34066,16 @@ var updateQaEnvironmentRequestSchema = external_exports.object({
   signInSteps: qaSignInStepsSchema,
   canChangeData: qaCanChangeDataSchema,
   /** `[]` clears it. */
-  apiHosts: qaApiHostsSchema
+  apiHosts: qaApiHostsSchema,
+  /** S5 LOGINS: `null` clears the ★ default. */
+  defaultCredentialId: idSchema("credential").nullable(),
+  staySignedIn: external_exports.boolean()
 }).partial().refine((v) => Object.values(v).some((x) => x !== void 0), {
   message: "send at least one field"
 });
 var listQaEnvironmentsQuerySchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   includeArchived: external_exports.enum(["true", "false"]).optional().transform((v) => v === "true")
 });
 var listQaEnvironmentsResponseSchema = external_exports.object({
@@ -32722,6 +34086,8 @@ var QA_QUICK_CHECK_MAX_PAGES = 25;
 var QA_QUICK_CHECK_MAX_SUGGESTIONS = 8;
 var qaQuickCheckRequestSchema = external_exports.object({
   url: workflowUrlSchema,
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   /** Pages to visit, 1..25. Default 10. */
   maxPages: external_exports.number().int().min(1).max(QA_QUICK_CHECK_MAX_PAGES).default(QA_QUICK_CHECK_DEFAULT_PAGES),
   /** Use this environment's App notes as context. The check itself never signs in (read-only, no forms). */
@@ -32764,15 +34130,32 @@ var qaAppLoginSchema = external_exports.object({
   /** The sign-in page, when it is not easy to find from the home page. */
   loginUrl: workflowUrlSchema.optional()
 });
+var qaAppCreateExtraFields = {
+  compliancePacks: compliancePacksSchema.optional(),
+  complianceAnswered: external_exports.boolean().optional(),
+  knowledgeText: external_exports.string().min(1).max(2e5).optional()
+};
+var qaAppSettingsFields = {
+  compliancePacks: compliancePacksSchema.optional(),
+  complianceAnswered: external_exports.boolean().optional(),
+  knowledgeLearn: external_exports.boolean().optional(),
+  knowledgeUse: external_exports.boolean().optional(),
+  engineId: idSchema("engine").nullable().optional()
+};
 var qaCreateAppRequestSchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(100).optional(),
   url: workflowUrlSchema,
   login: qaAppLoginSchema.optional(),
-  mode: qaAppModeSchema
+  mode: qaAppModeSchema,
+  appId: appIdSchema.optional(),
+  ...qaAppCreateExtraFields
 });
 var qaAppSchema = external_exports.object({
+  id: appIdSchema.optional(),
   projectId: idSchema("project"),
-  name: external_exports.string().min(1).max(100)
+  name: external_exports.string().min(1).max(100),
+  createdAt: external_exports.number().int().nonnegative().optional(),
+  ...qaAppSettingsFields
 });
 var qaAppFirstRunSchema = external_exports.object({
   kind: external_exports.enum(["quick-check", "explore"]),
@@ -32825,6 +34208,35 @@ var qaAppSummarySchema = qaAppSchema.extend({
 var qaListAppsResponseSchema = external_exports.object({
   apps: external_exports.array(qaAppSummarySchema)
 });
+var qaAppNameSchema = external_exports.string().trim().min(1).max(80);
+var qaAppRecordSchema = external_exports.object({
+  id: appIdSchema,
+  projectId: idSchema("project"),
+  name: qaAppNameSchema,
+  createdAt: external_exports.number().int().nonnegative(),
+  /** Sprint 6 (0.57.0, D93): compliance packs, knowledge switches, hidden engine (`qa-apps.ts`). Optional so older replies parse. */
+  ...qaAppSettingsFields
+});
+var createQaAppRequestSchema = external_exports.object({
+  name: qaAppNameSchema,
+  url: workflowUrlSchema.optional(),
+  ...qaAppCreateExtraFields
+});
+var updateQaAppRequestSchema = external_exports.object({
+  name: qaAppNameSchema.optional(),
+  compliancePacks: qaAppSettingsFields.compliancePacks,
+  complianceAnswered: qaAppSettingsFields.complianceAnswered,
+  knowledgeLearn: qaAppSettingsFields.knowledgeLearn,
+  knowledgeUse: qaAppSettingsFields.knowledgeUse
+}).refine((v) => Object.values(v).some((x) => x !== void 0), { message: "nothing to update" });
+var qaPostAppsRequestSchema = external_exports.union([
+  qaCreateAppRequestSchema,
+  createQaAppRequestSchema
+]);
+var qaAppScopeFields = {
+  appId: appIdSchema.optional()
+};
+var qaAppQuerySchema = external_exports.object(qaAppScopeFields);
 var QA_AUDIT_ACTIONS = [
   "qa.alerts.update",
   "qa.tests.status",
@@ -32900,6 +34312,8 @@ var qaTestRefSchema = external_exports.object({
 var qaTestVerdictSchema = external_exports.enum(["pass", "fail", "error", "skipped"]);
 var qaTestHistoryItemSchema = external_exports.object({
   runId: idSchema("workflowRun"),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   verdict: qaTestVerdictSchema,
   endedAt: external_exports.iso.datetime(),
   triage: qaTriageSchema.optional(),
@@ -32918,10 +34332,14 @@ var qaTestHistoryItemSchema = external_exports.object({
 });
 var QA_TEST_HISTORY_MAX = 20;
 var qaTestRowSchema = qaTestRefSchema.extend({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   title: external_exports.string().max(200),
   status: workflowCaseStatusSchema,
   origin: workflowCaseOriginSchema.optional(),
   area: external_exports.string().max(60).optional(),
+  /** Trust label (S5 BYO): `unverified_model` until one replay on our engine passed, then `verified`. Absent: no label. */
+  trust: qaTestTrustSchema.optional(),
   owner: external_exports.string().max(120).optional(),
   /** The latest results, newest first, at most 20. */
   last: external_exports.array(qaTestHistoryItemSchema).max(QA_TEST_HISTORY_MAX),
@@ -32930,15 +34348,28 @@ var qaTestRowSchema = qaTestRefSchema.extend({
   /** True while `status` is `quarantined`: it runs, but a failure never gates. */
   quarantined: external_exports.boolean(),
   /**
+   * "Page changed" (0.57.0, D93 spec 3.4): App Knowledge saw a page this test visits change or go away since the
+   * test's last run. `paths`: the page path templates, at most 5. Absent or null: nothing changed (or the App
+   * has no knowledge). A hint to look at the test, never a verdict.
+   */
+  pageChanged: external_exports.object({ paths: external_exports.array(external_exports.string().max(300)).min(1).max(5) }).nullable().optional(),
+  /**
    * The test wants a person's look (0.45.0): its steps were healed `QA_NEEDS_REVIEW_HEALS` times in a
    * window. A hint, not a verdict: the result stays what it was. Absent: false.
    */
   needsReview: external_exports.boolean().optional(),
   /** Why `needsReview` is set (0.45.0). `heals`: the steps keep needing repair. */
-  needsReviewReason: external_exports.enum(["heals"]).optional()
+  needsReviewReason: external_exports.enum(["heals"]).optional(),
+  /**
+   * Pending proposed changes to this test (0.69.0): an agent's `qa_update_test` waiting for a person.
+   * The `proposed` filter lists these tests too, next to new tests waiting for approval. Absent: 0.
+   */
+  pendingChanges: external_exports.number().int().min(0).optional()
 });
 var qaTestFilterSchema = external_exports.enum(["failing", "flaky", "proposed"]);
 var qaListTestsQuerySchema = pageQuerySchema.extend({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   workflowId: idSchema("workflow").optional(),
   filter: qaTestFilterSchema.optional(),
   area: external_exports.string().trim().min(1).max(60).optional(),
@@ -32983,6 +34414,8 @@ var qaProposalChangeSchema = external_exports.object({
 });
 var qaProposalSchema = external_exports.object({
   id: idSchema("qaProposal"),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   testRef: qaTestRefSchema,
   change: qaProposalChangeSchema,
   /** Who proposed it: `agent` (MCP) or `chat`, rarely `dashboard`. */
@@ -32990,11 +34423,22 @@ var qaProposalSchema = external_exports.object({
   status: qaProposalStatusSchema,
   createdAt: external_exports.iso.datetime(),
   /** Identity subject or grant id of the proposer. Free text. */
-  createdBy: external_exports.string().min(1).max(200).optional()
+  createdBy: external_exports.string().min(1).max(200).optional(),
+  /** When a person applied or rejected it (0.69.0). Absent while `pending`. */
+  resolvedAt: external_exports.iso.datetime().optional(),
+  /** Who applied or rejected it (0.69.0): a person's name or email. Free text. */
+  resolvedBy: external_exports.string().min(1).max(200).optional()
 });
 var qaListProposalsResponseSchema = external_exports.object({
   proposals: external_exports.array(qaProposalSchema),
   ...pageNextField
+});
+var QA_TEST_PROPOSALS_MAX = 20;
+var qaResolveProposalSchema = external_exports.object({
+  action: external_exports.enum(["apply", "reject"])
+});
+var qaResolveProposalResponseSchema = external_exports.object({
+  proposal: qaProposalSchema
 });
 var QA_DEBUG_ACTIONS_MAX = 30;
 var qaOpenDebugLiveRequestSchema = external_exports.object({
@@ -33084,14 +34528,18 @@ var qaExploreBudgetsSchema = external_exports.object({
   maxMinutes: external_exports.number().int().min(1).max(QA_EXPLORE_DEFAULT_MINUTES).default(QA_EXPLORE_DEFAULT_MINUTES)
 });
 var qaExploreRequestSchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   environmentId: idSchema("qaEnvironment").optional(),
   focus: external_exports.string().trim().min(1).max(500).optional(),
   budgets: qaExploreBudgetsSchema.partial().optional()
 });
 var qaExploreStartResponseSchema = external_exports.object({
   runId: idSchema("skillRun"),
-  /** Explorations left this month on the plan after this one. */
-  allowanceLeft: external_exports.number().int().nonnegative()
+  /** The browser session it runs in (S4, 0.54.0): the dashboard opens it live at `/sessions/:id`. */
+  sessionId: idSchema("session").optional(),
+  /** Explorations left this month on the plan. Absent since S4 E1: unlimited, only the sessions limit applies. */
+  allowanceLeft: external_exports.number().int().nonnegative().optional()
 });
 var qaExploreStatusSchema = external_exports.enum(["running", "done", "failed"]);
 var qaExploreVisitedSchema = external_exports.object({
@@ -33156,11 +34604,20 @@ var qaExploreObservationSchema = external_exports.object({
 });
 var qaExploreResultSchema = external_exports.object({
   runId: idSchema("skillRun"),
+  /** The browser session it runs in (S4, 0.54.0). */
+  sessionId: idSchema("session").optional(),
   status: qaExploreStatusSchema,
+  /**
+   * While `running`: the session interaction the exploration waits on (0.55.0, S5-REG), e.g. a
+   * `handoff` at a sign-in wall ("Needs you: sign in"). Answer it with the session interactions routes.
+   */
+  waiting: external_exports.object({ interactionId: idSchema("interaction"), tool: interactionToolSchema }).optional(),
   /** Why it `failed`, in plain words. Only with `status: "failed"`. */
   error: external_exports.string().max(300).optional(),
   /** Starts with what it visited and what it did not ("Visited 12 pages; did not visit 4: ..."). */
   summary: external_exports.string().max(1e3),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   environmentId: idSchema("qaEnvironment").optional(),
   /** The app origin the exploration was locked to. */
   origin: workflowUrlSchema,
@@ -33176,6 +34633,8 @@ var qaExploreResultSchema = external_exports.object({
 });
 var qaTriageFeedbackSchema = external_exports.enum(["real_bug", "test_wrong", "environment"]);
 var qaTriageCountsQuerySchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   days: external_exports.coerce.number().int().min(1).max(90).default(30)
 });
 var qaTriageCountsSchema = external_exports.object({
@@ -33271,6 +34730,100 @@ var qaPutGithubRequestSchema = external_exports.object({
   repo: qaGithubRepoSchema.nullable(),
   rules: qaGithubRulesSchema
 });
+var QA_KNOWLEDGE_BODY_MAX = 8192;
+var QA_KNOWLEDGE_IMPORT_MAX = 2e5;
+var qaKnowledgeKindSchema = external_exports.enum([
+  "overview",
+  "page",
+  "flow",
+  "api",
+  "role",
+  "issue",
+  "note"
+]);
+var qaKnowledgeSourceSchema = external_exports.enum([
+  "explore",
+  "session",
+  "run",
+  "import",
+  "mcp",
+  "user"
+]);
+var qaKnowledgeChangeKindSchema = external_exports.enum(["added", "changed", "removed", "suggested"]);
+var qaKnowledgeTitleSchema = external_exports.string().trim().min(1).max(200);
+var qaKnowledgeBodySchema = external_exports.string().max(QA_KNOWLEDGE_BODY_MAX);
+var qaKnowledgeDocSummarySchema = external_exports.object({
+  id: knowledgeDocIdSchema,
+  appId: appIdSchema,
+  slug: external_exports.string().min(1).max(300),
+  title: qaKnowledgeTitleSchema,
+  kind: qaKnowledgeKindSchema,
+  pathPattern: external_exports.string().max(300).nullable(),
+  source: qaKnowledgeSourceSchema,
+  /** The session or run id, or the file name of an import. */
+  sourceRef: external_exports.string().max(300).nullable(),
+  editedByUser: external_exports.boolean(),
+  version: external_exports.number().int().min(1),
+  createdAt: external_exports.number().int().nonnegative(),
+  updatedAt: external_exports.number().int().nonnegative()
+});
+var qaKnowledgeDocSchema = qaKnowledgeDocSummarySchema.extend({
+  bodyMd: qaKnowledgeBodySchema
+});
+var qaKnowledgeListResponseSchema = external_exports.object({
+  docs: external_exports.array(qaKnowledgeDocSummarySchema)
+});
+var qaKnowledgePatchRequestSchema = external_exports.object({
+  title: qaKnowledgeTitleSchema.optional(),
+  bodyMd: qaKnowledgeBodySchema.optional()
+}).refine((v) => v.title !== void 0 || v.bodyMd !== void 0, {
+  message: "send title or bodyMd"
+});
+var qaKnowledgeDocParamsSchema = external_exports.object({
+  appId: appIdSchema,
+  docId: knowledgeDocIdSchema
+});
+var qaKnowledgeImportRequestSchema = external_exports.object({
+  kind: external_exports.enum(["text", "url"]),
+  text: external_exports.string().min(1).max(QA_KNOWLEDGE_IMPORT_MAX).optional(),
+  url: workflowUrlSchema.optional(),
+  fileName: external_exports.string().trim().min(1).max(200).optional()
+}).refine((v) => v.kind === "text" ? v.text !== void 0 : v.url !== void 0, {
+  message: "kind text needs text, kind url needs url"
+});
+var qaKnowledgeImportResponseSchema = external_exports.object({
+  docs: external_exports.array(qaKnowledgeDocSummarySchema)
+});
+var qaKnowledgeChangesQuerySchema = external_exports.object({
+  path: external_exports.string().trim().min(1).max(300).optional()
+});
+var qaKnowledgeChangeSchema = external_exports.object({
+  id: idSchema("knowledgeChange"),
+  appId: appIdSchema,
+  docSlug: external_exports.string().min(1).max(300),
+  /** The doc's title when it still exists (a `removed` change may outlive its doc). */
+  docTitle: external_exports.string().max(200).optional(),
+  change: qaKnowledgeChangeKindSchema,
+  summary: external_exports.string().min(1).max(300),
+  /** The path template the change is about, when the doc has one (feeds the Tests list's "Page changed" badge). */
+  pathPattern: external_exports.string().max(300).nullable(),
+  sessionId: idSchema("session").optional(),
+  runId: external_exports.union([idSchema("workflowRun"), idSchema("skillRun")]).optional(),
+  createdAt: external_exports.number().int().nonnegative()
+});
+var qaKnowledgeChangesResponseSchema = external_exports.object({
+  changes: external_exports.array(qaKnowledgeChangeSchema).max(200)
+});
+var qaKnowledgeSettingsSchema = external_exports.object({
+  knowledgeLearn: external_exports.boolean(),
+  knowledgeUse: external_exports.boolean()
+});
+var qaGetAppKnowledgeInputSchema = external_exports.object({ appId: appIdSchema });
+var qaAddAppKnowledgeInputSchema = external_exports.object({
+  appId: appIdSchema,
+  title: qaKnowledgeTitleSchema,
+  bodyMd: qaKnowledgeBodySchema.min(1)
+});
 var qaStepLearnStateSchema = external_exports.enum(["learned", "repaired", "ai"]);
 var qaLearnSummarySchema = external_exports.object({
   replayed: external_exports.number().int().nonnegative(),
@@ -33288,6 +34841,98 @@ var qaDebugSaveStepsRequestSchema = external_exports.object({
   message: "actions or steps: give at least one",
   path: ["actions"]
 });
+var reportChartCellSchema = external_exports.union([external_exports.string(), external_exports.number(), external_exports.null()]);
+var reportChartRowsSchema = external_exports.array(external_exports.array(reportChartCellSchema));
+var reportRatioSchema = external_exports.object({
+  value: external_exports.number().nonnegative(),
+  total: external_exports.number().nonnegative()
+});
+var reportCheckSchema = external_exports.object({
+  name: external_exports.string().min(1).max(300),
+  category: external_exports.string().max(100),
+  result: external_exports.enum(["pass", "fail", "skipped"]),
+  /** Pages the check ran on, and how many of them failed ("Failed on {k} of {n} pages"). */
+  pages: external_exports.number().int().nonnegative().optional(),
+  failedPages: external_exports.number().int().nonnegative().optional(),
+  /** The finding a failed check links to ("See finding"). */
+  findingId: external_exports.string().max(64).optional()
+});
+var REPORT_SOURCES = [
+  "checks.pass_rate",
+  "checks.by_page_category",
+  "checks.list",
+  "api.by_endpoint",
+  "api.failure_rate",
+  "findings.by_severity",
+  "history.pass_rate"
+];
+var reportSourceSchema = external_exports.enum(REPORT_SOURCES);
+var reportSnapshotSchema = external_exports.object({
+  /** Checks passed of checks run. */
+  "checks.pass_rate": reportRatioSchema.optional(),
+  /** `[Page, <category>…]`, then `[page, percent passed | null…]`. */
+  "checks.by_page_category": reportChartRowsSchema.optional(),
+  "checks.list": external_exports.array(reportCheckSchema).max(500).optional(),
+  /** `[Endpoint, OK, Failed]`, then `["POST /api/checkout", 18, 6]`. */
+  "api.by_endpoint": reportChartRowsSchema.optional(),
+  /** Failed API calls of all calls. */
+  "api.failure_rate": reportRatioSchema.optional(),
+  /** `[Severity, Findings]`, then `[Critical, n]`, `[High, n]`, `[Medium, n]`, `[Low, n]` (fixed order). */
+  "findings.by_severity": reportChartRowsSchema.optional(),
+  /** `[Run, Pass rate]`, then `[label, percent]`, oldest first, this run last. */
+  "history.pass_rate": reportChartRowsSchema.optional()
+});
+var reportRunKindSchema = external_exports.enum(["workflow", "skill"]);
+var reportAssetUrlsSchema = external_exports.record(external_exports.string().max(200), external_exports.string().url());
+var runReportDocumentSchema = external_exports.object({
+  runKind: reportRunKindSchema,
+  runId: external_exports.union([idSchema("workflowRun"), idSchema("skillRun")]),
+  /** 1 = generated at run end; each PUT adds one. */
+  version: external_exports.number().int().positive(),
+  markdown: external_exports.string().max(5e5),
+  snapshot: reportSnapshotSchema,
+  createdAt: external_exports.iso.datetime(),
+  /**
+   * `generator` = written by the api at run end; otherwise the user who saved this version (a Lookover identity user
+   * id, opaque, not `usr_`: contracts 0.46.1).
+   */
+  author: external_exports.union([external_exports.literal("generator"), identityUserIdSchema]),
+  assets: reportAssetUrlsSchema.optional(),
+  /** When the `assets` urls stop working. */
+  urlsExpireAt: external_exports.iso.datetime().optional()
+});
+var putRunReportRequestSchema = external_exports.object({
+  markdown: external_exports.string().min(1).max(5e5)
+});
+var reportShareExpirySchema = external_exports.enum(["never", "7d", "30d"]);
+var createReportShareRequestSchema = external_exports.object({
+  expiresIn: reportShareExpirySchema.optional()
+});
+var reportShareSchema = external_exports.object({
+  id: idSchema("reportShare"),
+  createdAt: external_exports.iso.datetime(),
+  /** The person who made it (identity user id, opaque). */
+  createdBy: identityUserIdSchema,
+  revokedAt: external_exports.iso.datetime().nullable(),
+  /** After this the public page answers 404; null = never. */
+  expiresAt: external_exports.iso.datetime().nullable()
+});
+var listReportSharesResponseSchema = external_exports.object({ shares: external_exports.array(reportShareSchema) });
+var reportShareLinkSchema = reportShareSchema.extend({
+  /** Unguessable (at least 128 bits of randomness, url-safe). */
+  token: external_exports.string().min(22).max(128),
+  /** Public page `<dashboard>/r/<token>`. */
+  url: external_exports.string().url()
+});
+var publicRunReportSchema = runReportDocumentSchema.pick({
+  runKind: true,
+  version: true,
+  markdown: true,
+  snapshot: true,
+  createdAt: true,
+  assets: true,
+  urlsExpireAt: true
+});
 var qaNoteKindSchema = external_exports.enum(["app_note", "known_issue"]);
 var noteFields = {
   kind: qaNoteKindSchema,
@@ -33297,7 +34942,9 @@ var noteFields = {
   /** When the note stops applying. Absent: until deleted. */
   expiresAt: external_exports.iso.datetime().optional(),
   /** The test this note is about. Absent: the whole app. */
-  testRef: qaTestRefSchema.optional()
+  testRef: qaTestRefSchema.optional(),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional()
 };
 var qaNoteSchema = external_exports.object({
   id: idSchema("qaNote"),
@@ -33306,6 +34953,50 @@ var qaNoteSchema = external_exports.object({
 });
 var createQaNoteRequestSchema = external_exports.object(noteFields);
 var listQaNotesResponseSchema = external_exports.object({ notes: external_exports.array(qaNoteSchema) });
+var QA_SHARED_STEP_STEPS_MAX = 20;
+var qaSharedStepStepListSchema = external_exports.array(qaStepSchema).min(1).max(QA_SHARED_STEP_STEPS_MAX).refine((steps2) => steps2.every((s) => typeof s === "string" || s.kind !== "use"), {
+  message: "a shared step cannot use another shared step"
+});
+var qaSharedStepSchema = external_exports.object({
+  id: idSchema("qaSharedStep"),
+  projectId: idSchema("project"),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
+  name: qaSharedStepNameSchema,
+  version: external_exports.number().int().min(1),
+  /** One line on what it does, shown in the "Shared steps" filter. */
+  description: external_exports.string().trim().max(200).optional(),
+  steps: qaSharedStepStepListSchema,
+  /** Active tests that use this name at any version ("used by 12 tests"). */
+  usedBy: external_exports.number().int().nonnegative(),
+  /** Active tests frozen on THIS version. */
+  usedByThisVersion: external_exports.number().int().nonnegative(),
+  /** True for the newest version of the name. */
+  latest: external_exports.boolean(),
+  createdAt: external_exports.iso.datetime(),
+  /** Identity subject or grant id of who saved it. Free text. */
+  createdBy: external_exports.string().min(1).max(200).optional()
+});
+var qaListSharedStepsResponseSchema = external_exports.object({
+  sharedSteps: external_exports.array(qaSharedStepSchema)
+});
+var qaGetSharedStepQuerySchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
+  version: external_exports.coerce.number().int().min(1).optional()
+});
+var qaSaveSharedStepRequestSchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
+  name: qaSharedStepNameSchema,
+  description: external_exports.string().trim().max(200).optional(),
+  steps: qaSharedStepStepListSchema
+});
+var qaSaveSharedStepResponseSchema = external_exports.object({
+  sharedStep: qaSharedStepSchema,
+  /** Proposals opened for active tests on older versions (0 for a new name or an unused one). */
+  proposalsOpened: external_exports.number().int().nonnegative()
+});
 var QA_STORY_MAX_CHARS = 4e3;
 var QA_STORY_MAX_TESTS = 10;
 var qaStoryTextSchema = external_exports.string().trim().min(1).max(QA_STORY_MAX_CHARS);
@@ -33333,24 +35024,41 @@ var qaStoryResultSchema = external_exports.object({
   /** With `save: true`: where each test was saved, always `proposed`. */
   saved: external_exports.array(external_exports.object({ workflowId: idSchema("workflow"), caseId: workflowSlugSchema })).max(QA_STORY_MAX_TESTS).optional()
 });
-var QA_MCP_TOOL_NAMES = [
-  "qa_quick_check",
-  "qa_create_tests",
-  "qa_update_test",
-  "qa_list_tests",
-  "qa_get_test",
-  "qa_run",
-  "qa_status",
-  "qa_list_runs",
-  "qa_report",
-  "qa_cancel_run",
-  "qa_file_bug",
-  "qa_add_note",
-  "qa_review_list",
-  "qa_save_environment",
-  "qa_explore",
-  "qa_debug_link"
+var QA_MCP_DEFAULT_TOOL_NAMES = [
+  // Set up
+  "list_apps",
+  "create_app",
+  "add_url",
+  "add_login",
+  "connect_local_app",
+  // Write
+  "list_tests",
+  "get_test",
+  "create_tests",
+  "update_test",
+  "list_folders",
+  "list_proposed_tests",
+  // Run
+  "quick_check",
+  "run_tests",
+  "get_run",
+  "cancel_run",
+  "list_runs",
+  // Results
+  "get_report",
+  "share_report",
+  "file_bug",
+  // Knowledge
+  "get_knowledge",
+  "add_knowledge"
 ];
+var QA_MCP_DEV_TOOL_NAMES = [
+  "explore_app",
+  "get_debug_link",
+  "list_modules",
+  "save_module"
+];
+var QA_MCP_TOOL_NAMES = [...QA_MCP_DEFAULT_TOOL_NAMES, ...QA_MCP_DEV_TOOL_NAMES];
 var qaMcpToolNameSchema = external_exports.enum(QA_MCP_TOOL_NAMES);
 var suiteIdSchema = idSchema("workflow");
 var runIdSchema = idSchema("workflowRun");
@@ -33368,6 +35076,8 @@ var qaCreateTestsInputSchema = external_exports.object({
   tests: external_exports.array(qaNewTestSchema).min(1).max(QA_CREATE_TESTS_MAX).optional(),
   yaml: external_exports.string().min(1).max(QA_CREATE_TESTS_YAML_MAX).optional(),
   suiteId: suiteIdSchema.optional(),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   dryRun: external_exports.boolean().default(true),
   /**
    * Free text (qa-next W2-4): a story the api turns into tests with one cheap-model call (`qa-story.ts`).
@@ -33400,6 +35110,8 @@ var qaUpdateTestInputSchema = external_exports.object({
   message: "send at least one of title, steps, expect"
 });
 var qaListTestsInputSchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   filter: qaTestFilterSchema.optional(),
   area: external_exports.string().trim().min(1).max(60).optional(),
   suiteId: suiteIdSchema.optional(),
@@ -33409,6 +35121,8 @@ var qaGetTestInputSchema = external_exports.object({ testRef: qaTestRefSchema })
 var qaRunInputSchema = external_exports.object({
   suiteId: suiteIdSchema.optional(),
   tests: external_exports.array(qaTestRefSchema).min(1).max(100).optional(),
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   environmentId: idSchema("qaEnvironment").optional(),
   url: workflowUrlSchema.optional(),
   tags: external_exports.array(workflowSlugSchema).min(1).max(20).optional(),
@@ -33424,6 +35138,8 @@ var qaRunInputSchema = external_exports.object({
 });
 var qaStatusInputSchema = external_exports.object({ runId: qaPollRunIdSchema });
 var qaListRunsInputSchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   environmentId: idSchema("qaEnvironment").optional(),
   trigger: workflowTriggerSchema.optional(),
   verdict: reportVerdictSchema.optional(),
@@ -33440,15 +35156,65 @@ var qaFileBugInputSchema = external_exports.object({
   tracker: qaBugTrackerSchema.optional()
 });
 var qaAddNoteInputSchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   kind: qaNoteKindSchema,
   text: external_exports.string().trim().min(1).max(2e3),
   testRef: qaTestRefSchema.optional()
 });
-var qaReviewListInputSchema = external_exports.object({}).strict();
+var qaAddKnowledgeKindSchema = external_exports.enum(["note", "doc"]);
+var qaAddKnowledgeInputSchema = external_exports.object({
+  kind: qaAddKnowledgeKindSchema,
+  appId: appIdSchema.optional(),
+  text: external_exports.string().trim().min(1).max(2e3).optional(),
+  noteType: qaNoteKindSchema.optional(),
+  testRef: qaTestRefSchema.optional(),
+  title: qaKnowledgeTitleSchema.optional(),
+  bodyMd: qaKnowledgeBodySchema.min(1).optional()
+}).superRefine((v, ctx) => {
+  if (v.kind === "note") {
+    if (v.text === void 0)
+      ctx.addIssue({ code: "custom", path: ["text"], message: "a note needs text" });
+    if (v.title !== void 0 || v.bodyMd !== void 0)
+      ctx.addIssue({
+        code: "custom",
+        path: ["kind"],
+        message: 'title and bodyMd are for kind "doc"'
+      });
+  } else {
+    if (v.title === void 0 || v.bodyMd === void 0)
+      ctx.addIssue({ code: "custom", path: ["title"], message: "a doc needs title and bodyMd" });
+    if (v.text !== void 0 || v.noteType !== void 0 || v.testRef !== void 0)
+      ctx.addIssue({
+        code: "custom",
+        path: ["kind"],
+        message: 'text, noteType and testRef are for kind "note"'
+      });
+  }
+});
+var qaGetKnowledgeInputSchema = external_exports.object({ appId: appIdSchema.optional() });
+var qaListAppsInputSchema = external_exports.object({});
+var qaCreateAppInputSchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(80),
+  environment: external_exports.string().trim().min(1).max(100).optional(),
+  baseUrl: workflowUrlSchema
+});
+var qaListModulesInputSchema = external_exports.object({ appId: appIdSchema.optional() });
+var qaReviewListInputSchema = external_exports.object({ appId: appIdSchema.optional() }).strict();
 var qaSaveEnvironmentInputSchema = external_exports.object({
+  /** The QA app (0.56.0, D92). Absent: the project's only app. */
+  appId: appIdSchema.optional(),
   name: qaEnvironmentNameSchema,
   baseUrl: workflowUrlSchema,
   previewPattern: qaPreviewPatternSchema.optional()
+});
+var qaListSuitesInputSchema = external_exports.object({
+  /** The QA app (D92). Absent: the project's only app. */
+  appId: appIdSchema.optional()
+});
+var qaShareReportInputSchema = external_exports.object({
+  runId: runIdSchema,
+  expiresIn: reportShareExpirySchema.optional()
 });
 var qaReadinessSchema = external_exports.object({
   status: external_exports.enum(["ready", "not_ready", "unknown"]),
@@ -33490,45 +35256,54 @@ var qaOverviewSchema = external_exports.object({
 });
 var qaStartRunRequestSchema = startWorkflowRunRequestSchema.extend({
   workflowId: idSchema("workflow"),
-  environmentId: idSchema("qaEnvironment").optional()
+  environmentId: idSchema("qaEnvironment").optional(),
+  /**
+   * Compliance checks for this run (0.57.0, D93): a subset of the App's packs. Absent: the App's packs. A pack the
+   * App does not have is `invalid_input`. `[]` runs no compliance checks.
+   */
+  compliancePacks: compliancePacksSchema.optional()
 });
-var QA_SHARED_STEP_STEPS_MAX = 20;
-var qaSharedStepStepListSchema = external_exports.array(qaStepSchema).min(1).max(QA_SHARED_STEP_STEPS_MAX).refine((steps2) => steps2.every((s) => typeof s === "string" || s.kind !== "use"), {
-  message: "a shared step cannot use another shared step"
+var QA_SKILL_IMPORT_MAX_FILES = 20;
+var QA_SKILL_IMPORT_MAX_BYTES = 256 * 1024;
+var qaSkillsImportRequestSchema = external_exports.object({
+  kind: external_exports.enum(["url", "text"]),
+  url: workflowUrlSchema.optional(),
+  text: external_exports.string().min(1).max(QA_SKILL_IMPORT_MAX_BYTES).optional(),
+  fileName: external_exports.string().trim().min(1).max(200).optional()
+}).refine((v) => v.kind === "url" ? v.url !== void 0 : v.text !== void 0, {
+  message: "kind url needs url, kind text needs text"
 });
-var qaSharedStepSchema = external_exports.object({
-  id: idSchema("qaSharedStep"),
-  projectId: idSchema("project"),
-  name: qaSharedStepNameSchema,
-  version: external_exports.number().int().min(1),
-  /** One line on what it does, shown in the "Shared steps" filter. */
-  description: external_exports.string().trim().max(200).optional(),
-  steps: qaSharedStepStepListSchema,
-  /** Active tests that use this name at any version ("used by 12 tests"). */
-  usedBy: external_exports.number().int().nonnegative(),
-  /** Active tests frozen on THIS version. */
-  usedByThisVersion: external_exports.number().int().nonnegative(),
-  /** True for the newest version of the name. */
-  latest: external_exports.boolean(),
-  createdAt: external_exports.iso.datetime(),
-  /** Identity subject or grant id of who saved it. Free text. */
-  createdBy: external_exports.string().min(1).max(200).optional()
+var qaSkillExtraFileSchema = external_exports.object({
+  path: external_exports.string().min(1).max(300),
+  text: external_exports.string().max(QA_SKILL_IMPORT_MAX_BYTES)
 });
-var qaListSharedStepsResponseSchema = external_exports.object({
-  sharedSteps: external_exports.array(qaSharedStepSchema)
+var qaSkillImportPreviewSchema = external_exports.object({
+  draftId: idSchema("skillDraft"),
+  name: external_exports.string().min(1).max(100),
+  description: external_exports.string().max(1e3),
+  bodyMd: external_exports.string().max(QA_SKILL_IMPORT_MAX_BYTES),
+  extraFiles: external_exports.array(qaSkillExtraFileSchema).max(QA_SKILL_IMPORT_MAX_FILES),
+  sourceUrl: external_exports.string().max(2e3).optional(),
+  warnings: external_exports.array(external_exports.string().max(300)).max(20)
 });
-var qaGetSharedStepQuerySchema = external_exports.object({
-  version: external_exports.coerce.number().int().min(1).optional()
+var qaAppSkillSchema = external_exports.object({
+  appId: appIdSchema,
+  name: external_exports.string().min(1).max(100),
+  description: external_exports.string().max(1e3),
+  source: skillSourceSchema,
+  sourceUrl: external_exports.string().max(2e3).optional(),
+  addedAt: external_exports.number().int().nonnegative(),
+  /** Safety-scan warnings, sent by the add call (not stored). */
+  warnings: external_exports.array(external_exports.string().max(500)).max(20).optional()
 });
-var qaSaveSharedStepRequestSchema = external_exports.object({
-  name: qaSharedStepNameSchema,
-  description: external_exports.string().trim().max(200).optional(),
-  steps: qaSharedStepStepListSchema
-});
-var qaSaveSharedStepResponseSchema = external_exports.object({
-  sharedStep: qaSharedStepSchema,
-  /** Proposals opened for active tests on older versions (0 for a new name or an unused one). */
-  proposalsOpened: external_exports.number().int().nonnegative()
+var qaAppSkillsResponseSchema = external_exports.object({ skills: external_exports.array(qaAppSkillSchema) });
+var qaAddAppSkillRequestSchema = external_exports.union([
+  external_exports.object({ draftId: idSchema("skillDraft") }).strict(),
+  external_exports.object({ builtinSkill: external_exports.string().min(1).max(100) }).strict()
+]);
+var qaAppSkillParamsSchema = external_exports.object({
+  appId: appIdSchema,
+  skillName: external_exports.string().min(1).max(100)
 });
 var QA_STARTER_TEST_IDS = [
   "starter-sign-in-works",
@@ -33557,7 +35332,7 @@ var qaTestVersionSchema = external_exports.object({
   byKind: external_exports.enum(["user", "agent"]).optional(),
   /** What changed, one line in words ("Step 3 now clicks Pay now"). */
   change: external_exports.string().max(300),
-  /** The proposal that was applied, when this version came from one (`GET .../proposals`). */
+  /** The proposal that was applied, when this version came from one (`POST .../proposals/:proposalId`). */
   proposalId: idSchema("qaProposal").optional()
 });
 var qaTestDetailSchema = qaTestRowSchema.extend({
@@ -33569,7 +35344,12 @@ var qaTestDetailSchema = qaTestRowSchema.extend({
   links: workflowCaseSchema.shape.links,
   tags: workflowCaseSchema.shape.tags.optional(),
   /** Newest first, at most `QA_TEST_VERSIONS_MAX`. */
-  versions: external_exports.array(qaTestVersionSchema).max(QA_TEST_VERSIONS_MAX)
+  versions: external_exports.array(qaTestVersionSchema).max(QA_TEST_VERSIONS_MAX),
+  /**
+   * Pending proposed changes to this test (0.69.0), newest first, at most `QA_TEST_PROPOSALS_MAX`.
+   * A person applies or rejects each with `POST .../proposals/:proposalId`. Absent: none.
+   */
+  proposals: external_exports.array(qaProposalSchema).max(QA_TEST_PROPOSALS_MAX).optional()
 });
 var qaTrackerKindSchema = external_exports.enum(["linear", "jira"]);
 var jiraHostSchema = external_exports.url({ protocol: /^https$/, error: "host must be an https URL" }).max(300);
@@ -33607,6 +35387,90 @@ var qaFileBugResultSchema = external_exports.object({
   url: workflowUrlSchema.optional(),
   markdown: external_exports.string().max(2e4),
   triage: external_exports.literal("bug_filed")
+});
+var REPORT_CHART_TYPES = [
+  "gauge",
+  "bullet",
+  "bar",
+  "stacked-bar",
+  "line",
+  "heatmap"
+];
+var reportChartTypeSchema = external_exports.enum(REPORT_CHART_TYPES);
+var reportChartSpecSchema = external_exports.object({
+  /** Lowercase letters, digits and dashes; also the PNG file name. */
+  id: external_exports.string().regex(/^[a-z0-9][a-z0-9-]{1,39}$/),
+  type: reportChartTypeSchema,
+  title: external_exports.string().min(1).max(200),
+  /** One sentence saying what the chart shows. */
+  caption: external_exports.string().min(1).max(500),
+  source: reportSourceSchema.optional(),
+  data: reportChartRowsSchema.optional(),
+  value: external_exports.number().optional(),
+  total: external_exports.number().optional(),
+  /** Appended to values, e.g. "%". */
+  unit: external_exports.string().max(10).optional(),
+  target: external_exports.number().optional(),
+  /** Band edges. Default {bad: 70, warn: 90}; with `higher_is: worse`, {warn: 2, bad: 5}. */
+  thresholds: external_exports.object({ bad: external_exports.number(), warn: external_exports.number() }).optional(),
+  higher_is: external_exports.enum(["better", "worse"]).optional(),
+  /** Scale end for gauge and bullet (default 100). */
+  max: external_exports.number().positive().optional(),
+  x_label: external_exports.string().max(100).optional(),
+  y_label: external_exports.string().max(100).optional()
+});
+var REPORT_FORMAT_VERSION = 1;
+var reportKindSchema = external_exports.enum(["quick-check", "explore", "test-suite", "compliance"]);
+var reportDocVerdictSchema = external_exports.enum(["pass", "warn", "fail"]);
+var reportEnvironmentSchema = external_exports.object({
+  browser: external_exports.string().max(100).optional(),
+  /** "1280×800". */
+  viewport: external_exports.string().max(40).optional(),
+  os: external_exports.string().max(100).optional(),
+  build: external_exports.string().max(200).optional()
+});
+var reportFrontMatterSchema = external_exports.object({
+  report: external_exports.literal(REPORT_FORMAT_VERSION),
+  kind: reportKindSchema,
+  title: external_exports.string().min(1).max(300),
+  /** Run id. */
+  run: external_exports.string().min(1).max(100),
+  app: external_exports.string().max(200),
+  env: external_exports.string().max(100),
+  url: external_exports.string().max(2e3),
+  /** Display time, e.g. "19 Nov 2026, 02:14 UTC". */
+  started: external_exports.string().max(100),
+  /** Display duration, e.g. "4m 12s". */
+  duration: external_exports.string().max(40),
+  verdict: reportDocVerdictSchema,
+  /** The baseline run the since-last-run line compares with. */
+  compare_to: external_exports.string().max(100).optional(),
+  environment: reportEnvironmentSchema.optional()
+});
+var assistLevelSchema = external_exports.enum(["quiet", "normal", "chatty"]);
+var sessionCompanionSchema = external_exports.object({
+  assistLevel: assistLevelSchema,
+  /** False = the person paused the "Web agent is watching" chip: no suggestion card opens. */
+  watching: external_exports.boolean()
+});
+var updateSessionCompanionRequestSchema = external_exports.object({ assistLevel: assistLevelSchema.optional(), watching: external_exports.boolean().optional() }).refine((b) => b.assistLevel !== void 0 || b.watching !== void 0, {
+  message: "send assistLevel or watching"
+});
+var runSessionStepRequestSchema = external_exports.object({
+  step: external_exports.string().min(1).max(2e3),
+  testId: external_exports.string().min(1).max(200).optional()
+});
+var sessionBugDraftSchema = external_exports.object({
+  /** = the interaction id of the accepted card. */
+  id: external_exports.string().min(1).max(64),
+  sessionId: external_exports.string().min(1).max(64),
+  title: external_exports.string().min(1).max(200),
+  /** The bug text: steps, what was seen, console + network, environment, sha when known, video link. */
+  markdown: external_exports.string().max(2e4),
+  createdAt: external_exports.iso.datetime()
+});
+var listSessionBugDraftsResponseSchema = external_exports.object({
+  drafts: external_exports.array(sessionBugDraftSchema).max(50)
 });
 var sessionLogsQuerySchema = external_exports.object({
   /** Line offset to start from: the previous page's `next`. */
@@ -33768,7 +35632,7 @@ var dryRunSchema = external_exports.object({
 var unixMs5 = external_exports.number().int().nonnegative();
 var email3 = external_exports.string().trim().toLowerCase().email().max(254);
 var teamMemberSchema = external_exports.object({
-  /** Identity user id (opaque). */
+  /** Control user id (`usr_…`). */
   userId: external_exports.string().min(1),
   email: external_exports.string(),
   name: external_exports.string().nullable(),
@@ -33776,7 +35640,7 @@ var teamMemberSchema = external_exports.object({
   joinedAt: unixMs5
 });
 var teamInvitationSchema = external_exports.object({
-  /** Identity invitation id (opaque). */
+  /** Invitation id (`inv_…`). */
   id: external_exports.string().min(1),
   email: external_exports.string(),
   role: memberRoleSchema,
@@ -33794,6 +35658,13 @@ var createTeamInvitationRequestSchema = external_exports.object({
 });
 var updateTeamMemberRequestSchema = external_exports.object({ role: memberRoleSchema });
 var teamDeletedResponseSchema = external_exports.object({ deleted: external_exports.literal(true) });
+var invitationPreviewSchema = external_exports.object({
+  orgName: external_exports.string(),
+  invitedBy: external_exports.string().nullable(),
+  email: external_exports.string(),
+  role: memberRoleSchema,
+  expired: external_exports.boolean()
+});
 var engineRefStringSchema = external_exports.string().trim().min(1).max(100);
 var testsFileTargetSchema = external_exports.union([
   workflowUrlSchema.transform((url2) => ({ url: url2 })),
@@ -34021,7 +35892,7 @@ var testFlakyWebhookDataSchema = qaTestRefSchema.extend({
   dashboardUrl: external_exports.url()
 });
 var testPingDataSchema = external_exports.object({ message: external_exports.string() });
-var envelope2 = (type, data) => external_exports.object({
+var envelope3 = (type, data) => external_exports.object({
   id: external_exports.string(),
   type: external_exports.literal(type),
   /** ISO 8601. */
@@ -34029,13 +35900,13 @@ var envelope2 = (type, data) => external_exports.object({
   data
 });
 var webhookPayloadSchema = external_exports.discriminatedUnion("type", [
-  envelope2("run.started", runStartedDataSchema),
-  envelope2("run.completed", runFinishedDataSchema),
-  envelope2("run.failed", runFinishedDataSchema),
-  envelope2("workflow_run.completed", workflowRunWebhookDataSchema),
-  envelope2("workflow_run.failed", workflowRunWebhookDataSchema),
-  envelope2("test.flaky", testFlakyWebhookDataSchema),
-  envelope2("test.ping", testPingDataSchema)
+  envelope3("run.started", runStartedDataSchema),
+  envelope3("run.completed", runFinishedDataSchema),
+  envelope3("run.failed", runFinishedDataSchema),
+  envelope3("workflow_run.completed", workflowRunWebhookDataSchema),
+  envelope3("workflow_run.failed", workflowRunWebhookDataSchema),
+  envelope3("test.flaky", testFlakyWebhookDataSchema),
+  envelope3("test.ping", testPingDataSchema)
 ]);
 var slackWebhookPayloadSchema = external_exports.object({ text: external_exports.string() });
 
@@ -34209,8 +36080,30 @@ function readEngines(raw, what) {
   });
 }
 
-// src/api-client.ts
+// src/app-reply.ts
 var isObject2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function readQaApps(raw) {
+  if (!isObject2(raw) || !Array.isArray(raw.apps)) {
+    throw new ReplyError("GET /v1/qa/apps", "the reply has no apps list");
+  }
+  const apps = [];
+  for (const a of raw.apps) {
+    if (!isObject2(a)) continue;
+    const { id, projectId, name } = a;
+    if (typeof id === "string" && typeof projectId === "string" && typeof name === "string") {
+      apps.push({ id, projectId, name });
+    }
+  }
+  return apps;
+}
+function readTenantId(raw) {
+  const id = isObject2(raw) && isObject2(raw.tenant) ? raw.tenant.id : void 0;
+  if (typeof id !== "string") throw new ReplyError("GET /v1/tenant", "the reply has no tenant id");
+  return id;
+}
+
+// src/api-client.ts
+var isObject3 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
 function errorFromReply(res, text2) {
   const header = res.headers.get("retry-after");
   const fromHeader = header !== null && Number.isFinite(Number(header)) ? Number(header) : void 0;
@@ -34220,9 +36113,9 @@ function errorFromReply(res, text2) {
   } catch {
     body = void 0;
   }
-  const e = isObject2(body) && isObject2(body.error) ? body.error : void 0;
+  const e = isObject3(body) && isObject3(body.error) ? body.error : void 0;
   if (e && typeof e.message === "string") {
-    const details = isObject2(e.details) ? e.details : void 0;
+    const details = isObject3(e.details) ? e.details : void 0;
     const fromDetails = details?.retryAfterS;
     return new WebagentApiError({
       code: typeof e.code === "string" ? e.code : "",
@@ -34308,17 +36201,17 @@ var TolerantClient = class {
       });
     }
   }
-  async resolveEngine(ref) {
+  async resolveEngine(ref2) {
     const res = await this.send("GET", "/v1/engines");
     const engines = await this.read(res, (r) => readEngines(r, "GET /v1/engines"));
-    const hits = engines.filter((e) => e.id === ref || e.slug === ref);
+    const hits = engines.filter((e) => e.id === ref2 || e.slug === ref2);
     if (hits.length === 1) return hits[0].id;
     const names = hits.map((e) => `${e.slug ?? e.name ?? e.id} (${e.id})`).join(", ");
     throw new WebagentApiError({
       code: hits.length === 0 ? "not_found" : "conflict",
       status: hits.length === 0 ? 404 : 409,
-      message: hits.length === 0 ? `Engine '${ref}' not found in this project` : `Engine '${ref}' is ambiguous in this project: ${names}`,
-      details: { ref }
+      message: hits.length === 0 ? `Engine '${ref2}' not found in this project` : `Engine '${ref2}' is ambiguous in this project: ${names}`,
+      details: { ref: ref2 }
     });
   }
   async listWorkflows(query = {}) {
@@ -34354,6 +36247,14 @@ var TolerantClient = class {
     const res = await this.send("GET", `/v1/workflow-runs/${runId}/report.md`);
     return res.text();
   }
+  async listQaApps() {
+    const res = await this.send("GET", "/v1/qa/apps");
+    return this.read(res, readQaApps);
+  }
+  async getTenantId() {
+    const res = await this.send("GET", "/v1/tenant");
+    return this.read(res, readTenantId);
+  }
   async cancelWorkflowRun(runId) {
     const path = `/v1/workflow-runs/${runId}/cancel`;
     const res = await this.send("POST", path);
@@ -34382,8 +36283,86 @@ var TolerantClient = class {
   }
 };
 
-// src/args.ts
-var import_node_util = require("util");
+// src/app-file.ts
+var import_promises = require("fs/promises");
+var import_node_path = require("path");
+var APP_FILE = ".webagent/app.json";
+var appFileSchema = external_exports.object({
+  v: external_exports.literal(1),
+  orgId: idSchema("tenant"),
+  projectId: idSchema("project"),
+  appId: appIdSchema,
+  name: external_exports.string().trim().min(1).max(100),
+  /** The API this app lives on; absent means the default host. */
+  apiUrl: external_exports.url().optional()
+});
+async function exists(path) {
+  try {
+    await (0, import_promises.stat)(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function findGitRoot(from) {
+  for (let dir = from; ; dir = (0, import_node_path.dirname)(dir)) {
+    if (await exists((0, import_node_path.join)(dir, ".git"))) return dir;
+    if (dir === (0, import_node_path.parse)(dir).root) return void 0;
+  }
+}
+function parseAppFile(text2) {
+  let raw;
+  try {
+    raw = JSON.parse(text2);
+  } catch {
+    return { reason: "it is not valid JSON" };
+  }
+  const r = appFileSchema.safeParse(raw);
+  if (r.success) return { file: r.data };
+  const i = r.error.issues[0];
+  const where = i?.path.length ? `${i.path.join(".")}: ` : "";
+  return { reason: `${where}${i?.message ?? "invalid"}` };
+}
+async function findAppFile(cwd) {
+  for (let dir = cwd; ; dir = (0, import_node_path.dirname)(dir)) {
+    const path = (0, import_node_path.join)(dir, APP_FILE);
+    let text2;
+    try {
+      text2 = await (0, import_promises.readFile)(path, "utf8");
+    } catch {
+      text2 = void 0;
+    }
+    if (text2 !== void 0) {
+      const parsed = parseAppFile(text2);
+      return "file" in parsed ? { kind: "ok", path, file: parsed.file } : { kind: "invalid", path, reason: parsed.reason };
+    }
+    if (await exists((0, import_node_path.join)(dir, ".git")) || dir === (0, import_node_path.parse)(dir).root) return { kind: "none" };
+  }
+}
+function formatAppFile(file2) {
+  const ordered = {
+    v: file2.v,
+    orgId: file2.orgId,
+    projectId: file2.projectId,
+    appId: file2.appId,
+    name: file2.name,
+    ...file2.apiUrl !== void 0 ? { apiUrl: file2.apiUrl } : {}
+  };
+  return `${JSON.stringify(ordered, null, 2)}
+`;
+}
+async function writeAppFile(dir, file2) {
+  const valid = appFileSchema.parse(file2);
+  const path = (0, import_node_path.join)(dir, APP_FILE);
+  await (0, import_promises.mkdir)((0, import_node_path.dirname)(path), { recursive: true });
+  await (0, import_promises.writeFile)(path, formatAppFile(valid), "utf8");
+  return path;
+}
+async function deleteAppFile(path) {
+  if (!await exists(path)) return false;
+  await (0, import_promises.rm)(path);
+  return true;
+}
 
 // src/constants.ts
 var DEFAULT_API_URL = "https://webagent-staging-in-api.lookover.ai";
@@ -34399,25 +36378,134 @@ var EXIT = {
 };
 var SetupError = class extends Error {
   lines;
-  constructor(message, lines = []) {
-    super(message);
+  constructor(message2, lines = []) {
+    super(message2);
     this.name = "SetupError";
     this.lines = lines;
   }
 };
 var CouldNotTestError = class extends Error {
-  constructor(message) {
-    super(message);
+  constructor(message2) {
+    super(message2);
     this.name = "CouldNotTestError";
   }
 };
 
+// src/app-cmd.ts
+var message = (e) => e instanceof Error ? e.message : String(e);
+async function runApp(opts, d2) {
+  if (opts.action === "show") return show(d2);
+  if (opts.action === "clear") return clear(d2);
+  return use(opts, d2);
+}
+async function show(d2) {
+  const found = await findAppFile(d2.cwd);
+  if (found.kind === "none") {
+    d2.out(`No app is set for this repo (no ${APP_FILE} from ${d2.cwd} up to the repo root).`);
+    d2.out(
+      "Set one with: lookover app use <appId>   (the app id is on the app's page in the dashboard)"
+    );
+    return EXIT.pass;
+  }
+  if (found.kind === "invalid") {
+    d2.err(
+      `Setup problem: ${found.path} cannot be used: ${found.reason} (fix it, or run: lookover app clear)`
+    );
+    return EXIT.setup;
+  }
+  const f = found.file;
+  d2.out(`App:     ${f.name} (${f.appId})`);
+  d2.out(`Project: ${f.projectId}`);
+  d2.out(`Org:     ${f.orgId}`);
+  if (f.apiUrl !== void 0) d2.out(`API:     ${f.apiUrl}`);
+  d2.out(`File:    ${found.path}`);
+  return EXIT.pass;
+}
+async function clear(d2) {
+  const found = await findAppFile(d2.cwd);
+  if (found.kind === "none") {
+    d2.out(`Nothing to clear: no ${APP_FILE} found from ${d2.cwd} up to the repo root.`);
+    return EXIT.pass;
+  }
+  await deleteAppFile(found.path);
+  d2.out(`Removed ${found.path}`);
+  return EXIT.pass;
+}
+async function use(opts, d2) {
+  let project = opts.project;
+  let org = opts.org;
+  let name = opts.name;
+  let lookupNote;
+  const key = d2.env.WEBAGENT_API_KEY;
+  if (key) {
+    const client = d2.makeClient(opts.api ?? (d2.env.WEBAGENT_API_URL || d2.defaultApiUrl), key);
+    try {
+      const app = (await client.listQaApps()).find((a) => a.id === opts.appId);
+      if (!app) {
+        lookupNote = "the API key cannot see that app (an API key sees only its own project's apps)";
+      } else {
+        if (project !== void 0 && project !== app.projectId) {
+          d2.err(
+            `Setup problem: --project ${project} is not the project of ${opts.appId} (${app.projectId})`
+          );
+          return EXIT.setup;
+        }
+        project = app.projectId;
+        name ??= app.name;
+        if (org === void 0) {
+          try {
+            org = await client.getTenantId();
+          } catch (e) {
+            lookupNote = `the org could not be read from the API (${message(e)})`;
+          }
+        }
+      }
+    } catch (e) {
+      lookupNote = `the API key could not list apps (${message(e)})`;
+    }
+  }
+  const missing = [
+    project === void 0 ? "--project <prj_...>" : void 0,
+    org === void 0 ? "--org <ten_...>" : void 0,
+    name === void 0 ? "--name <name>" : void 0
+  ].filter((m) => m !== void 0);
+  if (project === void 0 || org === void 0 || name === void 0) {
+    const why = key ? lookupNote ?? "the API key could not read the app" : "WEBAGENT_API_KEY is not set, so the app could not be looked up";
+    d2.err(`Setup problem: ${why}; pass ${missing.join(", ")}`);
+    return EXIT.setup;
+  }
+  const file2 = {
+    v: 1,
+    orgId: org,
+    projectId: project,
+    appId: opts.appId,
+    name,
+    ...opts.api !== void 0 ? { apiUrl: opts.api } : {}
+  };
+  const root = await findGitRoot(d2.cwd) ?? d2.cwd;
+  let path;
+  try {
+    path = await writeAppFile(root, file2);
+  } catch (e) {
+    const detail = e instanceof ZodError ? e.issues[0]?.message ?? "invalid value" : message(e);
+    d2.err(`Setup problem: could not write ${APP_FILE}: ${detail}`);
+    return EXIT.setup;
+  }
+  d2.out(`This repo now uses ${name} (${opts.appId}), project ${project}.`);
+  d2.out(`Wrote ${path}`);
+  if (lookupNote) d2.out(`Note: ${lookupNote}`);
+  return EXIT.pass;
+}
+
 // src/args.ts
+var import_node_util = require("util");
 var DEFAULT_FILE = ".webagent/tests.yaml";
 var MAX_WAIT_FOR_URL_SECONDS = 180;
-var HELP = `webagent: run your QA workflow in CI
+var HELP = `lookover: run your QA workflow in CI (the old command name, webagent, still works as an alias)
 
-Usage: webagent test [options]
+Usage: lookover test [options]
+       lookover vault add <origin> --code ABCD-EFGH [options]
+       lookover app show | use <appId> [options] | clear
 
   --file <path>              tests file (default ${DEFAULT_FILE})
   --url <url>                preview URL to test; wins over the file's target
@@ -34444,7 +36532,34 @@ Usage: webagent test [options]
   --environment <name>       record the run against this environment (for example Production)
   --ci-pr <n>                pull request number of this run; wins over the one read from the CI
 
-Environment: WEBAGENT_API_KEY (required), WEBAGENT_API_URL
+lookover vault add: save a site login from your terminal, so the password never passes through an AI chat.
+Your agent asks for a code (add_login); you run the command it shows. No API key: the code is the only auth.
+  <origin>                   the site, as your agent showed it (for example https://app.acme.com)
+  --code <ABCD-EFGH>         the single-use code from your agent (valid 10 minutes)
+  --username <name>          the login name (asked for when the code does not carry it)
+  --password-stdin           read the password (first line) from stdin instead of asking for it
+  --totp                     also ask for the authenticator seed (with --password-stdin: second stdin line)
+  --api <base url>           API to talk to (default: WEBAGENT_API_URL or the built-in host)
+The password is never a flag (it would show in your shell history and the process list). In a normal
+terminal window you are asked for it with hidden input. Where there is no terminal (a "!" command in an
+AI chat tool), pipe it in: pbpaste | npx @lookover-ai/cli vault add <origin> --code <code> --password-stdin
+(Linux: xclip -o | ..., Windows PowerShell: Get-Clipboard | ...). Exit codes: 0 saved, 1 refused or failed,
+2 no terminal and no --password-stdin, 3 bad usage, 130 interrupted.
+
+lookover app: remember which Lookover QA app this repo belongs to, so one machine can work on several projects.
+The choice lives in ${APP_FILE} (commit it or not), next to ${DEFAULT_FILE}. Your AI agent (MCP) reads and writes it too.
+  app show                   print the app, project and org this repo uses, and the file path
+  app use <appId>            write the file in the repo root; with WEBAGENT_API_KEY set and able to read the app,
+                             the project, org and name are filled in from the API
+    --project <prj_...>      the project (needed when the API key cannot read the app)
+    --org <ten_...>          the org (needed when the API key cannot read the app)
+    --name <name>            the app's name (needed when the API key cannot read the app)
+    --api <base url>         the API the app lives on (also written to the file)
+  app clear                  delete the file
+With the file present, \`lookover test\` runs against its app when its project is the API key's project; otherwise
+it prints a warning and ignores the file.
+
+Environment: WEBAGENT_API_KEY (required for test), WEBAGENT_API_URL
 Pull request context (optional): WEBAGENT_CI_TITLE, WEBAGENT_CI_BODY, WEBAGENT_CI_CHANGED_FILES (one path per line)
 CI details (repo, sha, branch, PR, build link) are read from GitHub Actions, GitLab CI and Jenkins variables
 Exit codes: 0 pass, 1 a required case failed, 2 could not test, 3 setup problem
@@ -34464,8 +36579,12 @@ function parseCli(argv) {
     return { command: "help" };
   }
   if (argv[0] === "--version" || argv[0] === "-v") return { command: "version" };
+  if (argv[0] === "vault") return parseVaultAdd(argv.slice(1));
+  if (argv[0] === "app") return parseApp(argv.slice(1));
   if (argv[0] !== "test") {
-    throw new SetupError(`unknown command "${argv[0]}" (the only command is "test")`);
+    throw new SetupError(
+      `unknown command "${argv[0]}" (the commands are "test", "vault add" and "app")`
+    );
   }
   let values;
   try {
@@ -34556,9 +36675,162 @@ function parseCli(argv) {
     }
   };
 }
+var PASSWORD_FLAG = "there is no --password flag: a password in the command line shows up in your shell history and the process list. Type it at the hidden prompt, or pipe it in with --password-stdin (pbpaste | lookover vault add <origin> --code <code> --password-stdin)";
+function parseVaultAdd(argv) {
+  if (argv[0] === "--help" || argv[0] === "-h" || argv.length === 0) return { command: "help" };
+  if (argv[0] !== "add") {
+    throw new SetupError(
+      `unknown command "vault ${argv[0]}" (the only vault command is "vault add")`
+    );
+  }
+  const rest = argv.slice(1);
+  if (rest.some((a) => a === "--password" || a.startsWith("--password="))) {
+    throw new SetupError(PASSWORD_FLAG);
+  }
+  if (rest.some((a) => a === "--totp-secret" || a.startsWith("--totp-secret="))) {
+    throw new SetupError(
+      "there is no --totp-secret flag: use --totp and type the seed at the hidden prompt"
+    );
+  }
+  let values;
+  let positionals;
+  try {
+    ({ values, positionals } = (0, import_node_util.parseArgs)({
+      args: rest,
+      allowPositionals: true,
+      options: {
+        code: { type: "string" },
+        username: { type: "string" },
+        "password-stdin": { type: "boolean" },
+        totp: { type: "boolean" },
+        api: { type: "string" },
+        help: { type: "boolean", short: "h" }
+      }
+    }));
+  } catch (err) {
+    throw new SetupError(err instanceof Error ? err.message : String(err));
+  }
+  if (values.help) return { command: "help" };
+  if (positionals.length !== 1) {
+    throw new SetupError("vault add needs the site: lookover vault add <origin> --code ABCD-EFGH");
+  }
+  const rawCode = values.code;
+  if (rawCode === void 0)
+    throw new SetupError("vault add needs --code ABCD-EFGH (ask your agent for one)");
+  const code = credentialAddCodeSchema.safeParse(rawCode);
+  if (!code.success)
+    throw new SetupError(`--code is not a valid code (expected a code like ABCD-EFGH)`);
+  const username = values.username?.trim();
+  if (username !== void 0 && (username === "" || username.length > 500)) {
+    throw new SetupError("--username needs 1 to 500 characters");
+  }
+  const api = values.api?.trim();
+  if (api !== void 0 && api === "") throw new SetupError("--api needs a base URL");
+  return {
+    command: "vault-add",
+    options: {
+      origin: positionals[0],
+      code: code.data,
+      username,
+      passwordStdin: values["password-stdin"] === true,
+      totp: values.totp === true,
+      api
+    }
+  };
+}
+function parseApp(argv) {
+  if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") return { command: "help" };
+  const action = argv[0];
+  if (action !== "show" && action !== "use" && action !== "clear") {
+    throw new SetupError(
+      `unknown command "app ${action}" (the app commands are show, use and clear)`
+    );
+  }
+  let values;
+  let positionals;
+  try {
+    ({ values, positionals } = (0, import_node_util.parseArgs)({
+      args: argv.slice(1),
+      allowPositionals: true,
+      options: {
+        project: { type: "string" },
+        org: { type: "string" },
+        name: { type: "string" },
+        api: { type: "string" },
+        help: { type: "boolean", short: "h" }
+      }
+    }));
+  } catch (err) {
+    throw new SetupError(err instanceof Error ? err.message : String(err));
+  }
+  if (values.help) return { command: "help" };
+  if (action !== "use") {
+    if (positionals.length > 0 || Object.keys(values).length > 0) {
+      throw new SetupError(`app ${action} takes no arguments`);
+    }
+    return { command: "app", options: { action } };
+  }
+  if (positionals.length !== 1) {
+    throw new SetupError("app use needs the app id: lookover app use app_...");
+  }
+  const appId = positionals[0];
+  if (!appIdSchema.safeParse(appId).success) {
+    throw new SetupError(`app use needs an app id (app_...), got "${appId}"`);
+  }
+  const project = values.project?.trim();
+  if (project !== void 0 && !idSchema("project").safeParse(project).success) {
+    throw new SetupError(`--project needs a project id (prj_...), got "${project}"`);
+  }
+  const org = values.org?.trim();
+  if (org !== void 0 && !idSchema("tenant").safeParse(org).success) {
+    throw new SetupError(`--org needs an org id (ten_...), got "${org}"`);
+  }
+  const name = values.name?.trim();
+  if (name !== void 0 && (name === "" || name.length > 100)) {
+    throw new SetupError("--name needs 1 to 100 characters");
+  }
+  const api = values.api?.trim();
+  if (api !== void 0 && !external_exports.url().safeParse(api).success) {
+    throw new SetupError("--api needs a base URL (https://...)");
+  }
+  return { command: "app", options: { action: "use", appId, project, org, name, api } };
+}
+
+// src/redact.ts
+var REDACTED = "[redacted]";
+var PATTERNS = [
+  [/\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/gi, `Bearer ${REDACTED}`],
+  // Our own API keys (`wa_<region>_...`) and `key_...` tokens (random part only, so `key_name` words stay).
+  [/\bwa_[a-z]{2,}_[A-Za-z0-9]{8,}/g, REDACTED],
+  [/\bkey_[A-Za-z0-9]{16,}/g, REDACTED],
+  [/\b(?:ghp|ghs|gho|ghu|ghr)_[A-Za-z0-9]{20,}/g, REDACTED],
+  [/\bgithub_pat_[A-Za-z0-9_]{20,}/g, REDACTED],
+  [/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]*/g, REDACTED],
+  // `"password": "x"` (JSON), then `password=x`, `password="x y"`, `passwd=x`.
+  [/("(?:password|passwd)"\s*:\s*)"[^"]*"/gi, `$1"${REDACTED}"`],
+  [/\b((?:password|passwd)\s*=\s*)(?:"[^"]*"|'[^']*'|[^\s&,;"'<>]+)/gi, `$1${REDACTED}`]
+];
+function redact(text2, known = []) {
+  let out = text2;
+  for (const k of known) {
+    if (k && k.length >= 4) out = out.split(k).join(REDACTED);
+  }
+  for (const [re, to] of PATTERNS) out = out.replace(re, to);
+  return out;
+}
+function redactDeep(value, known = []) {
+  if (typeof value === "string") return redact(value, known);
+  if (Array.isArray(value)) return value.map((v) => redactDeep(v, known));
+  if (value !== null && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = redactDeep(v, known);
+    return out;
+  }
+  return value;
+}
 
 // src/run-test.ts
-var import_node_path = require("path");
+var import_node_path2 = require("path");
 
 // src/api-call.ts
 var TRANSIENT = /* @__PURE__ */ new Set([
@@ -34594,10 +36866,10 @@ function issueLines(e) {
   const lines = [];
   for (const i of issues.slice(0, 10)) {
     if (typeof i !== "object" || i === null) continue;
-    const { path, message } = i;
-    if (typeof message !== "string") continue;
+    const { path, message: message2 } = i;
+    if (typeof message2 !== "string") continue;
     const where = Array.isArray(path) ? path.map(String).join(".") : "";
-    lines.push(where ? `${where}: ${message}` : message);
+    lines.push(where ? `${where}: ${message2}` : message2);
   }
   return lines;
 }
@@ -34615,6 +36887,37 @@ async function callApi(d2, what, fn) {
       throw toCliError(e, what, d2.apiUrl);
     }
   }
+}
+
+// src/app-default.ts
+async function appIdFromFile(d2) {
+  const found = d2.appFile ? await d2.appFile() : { kind: "none" };
+  if (found.kind === "none") return void 0;
+  if (found.kind === "invalid") {
+    d2.err(`Warning: ignoring ${found.path}: ${found.reason}`);
+    return void 0;
+  }
+  const { file: file2, path } = found;
+  let apps;
+  try {
+    apps = await d2.client.listQaApps();
+  } catch {
+    d2.err(`Warning: ignoring ${path}: could not check it against the API key's project`);
+    return void 0;
+  }
+  if (!apps.some((a) => a.projectId === file2.projectId)) {
+    d2.err(
+      `Warning: ignoring ${path}: it is for project ${file2.projectId} (${file2.name}), not this API key's project`
+    );
+    return void 0;
+  }
+  if (!apps.some((a) => a.id === file2.appId)) {
+    d2.err(
+      `Warning: ignoring ${path}: app ${file2.appId} (${file2.name}) was not found in this project`
+    );
+    return void 0;
+  }
+  return file2.appId;
 }
 
 // src/ci-context.ts
@@ -34682,21 +36985,21 @@ function ciFromEnv(env, event) {
   if (!isGithub(env)) return void 0;
   const repo = env.GITHUB_REPOSITORY;
   const pr = event?.pull_request?.number ?? event?.number ?? pullFromRef(env.GITHUB_REF);
-  const ref = env.GITHUB_HEAD_REF || env.GITHUB_REF_NAME || env.GITHUB_REF;
+  const ref2 = env.GITHUB_HEAD_REF || env.GITHUB_REF_NAME || env.GITHUB_REF;
   const sha = event?.pull_request?.head?.sha ?? env.GITHUB_SHA;
   const server = (env.GITHUB_SERVER_URL || "https://github.com").replace(/\/+$/, "");
   const buildUrl = repo && env.GITHUB_RUN_ID ? `${server}/${repo}/actions/runs/${env.GITHUB_RUN_ID}` : void 0;
   return {
     provider: "github",
     ...repo ? { repo } : {},
-    ...ref ? { ref } : {},
+    ...ref2 ? { ref: ref2 } : {},
     ...sha ? { sha } : {},
     ...pr !== void 0 ? { pr } : {},
     ...buildUrl ? { buildUrl } : {}
   };
 }
-function pullFromRef(ref) {
-  const m = /^refs\/pull\/(\d+)\//.exec(ref ?? "");
+function pullFromRef(ref2) {
+  const m = /^refs\/pull\/(\d+)\//.exec(ref2 ?? "");
   return m ? Number(m[1]) : void 0;
 }
 function managedByFromEnv(env, path) {
@@ -34759,8 +37062,69 @@ function jenkinsCiFromEnv(env) {
     title: cut(env.CHANGE_TITLE, 200)
   });
 }
+function branchName(value) {
+  return cut(value?.trim().replace(/^refs\/heads\//, ""), 200);
+}
+function prFromUrl(value) {
+  return positiveInt(value?.trim().match(/\/(\d+)\/?$/)?.[1]);
+}
+function circleCiFromEnv(env) {
+  if (env.CIRCLECI !== "true") return void 0;
+  const owner = env.CIRCLE_PROJECT_USERNAME?.trim();
+  const name = env.CIRCLE_PROJECT_REPONAME?.trim();
+  return build({
+    repo: owner && name ? cut(`${owner}/${name}`, 200) : void 0,
+    ref: branchName(env.CIRCLE_BRANCH),
+    sha: cut(env.CIRCLE_SHA1, 100),
+    pr: positiveInt(env.CIRCLE_PR_NUMBER) ?? prFromUrl(env.CIRCLE_PULL_REQUEST),
+    buildUrl: httpUrl2(env.CIRCLE_BUILD_URL)
+  });
+}
+function bitbucketCiFromEnv(env) {
+  if (!env.BITBUCKET_BUILD_NUMBER) return void 0;
+  const repo = env.BITBUCKET_REPO_FULL_NAME?.trim();
+  return build({
+    repo: cut(repo, 200),
+    ref: branchName(env.BITBUCKET_BRANCH),
+    sha: cut(env.BITBUCKET_COMMIT, 100),
+    pr: positiveInt(env.BITBUCKET_PR_ID),
+    buildUrl: repo ? httpUrl2(
+      `https://bitbucket.org/${repo}/pipelines/results/${encodeURIComponent(env.BITBUCKET_BUILD_NUMBER.trim())}`
+    ) : void 0
+  });
+}
+function repoFromGitUrl(value) {
+  const m = value?.trim().match(/[:/]([^:/]+\/[^/]+?)(?:\.git)?\/?$/);
+  return m?.[1];
+}
+function buildkiteCiFromEnv(env) {
+  if (env.BUILDKITE !== "true") return void 0;
+  const sha = env.BUILDKITE_COMMIT?.trim();
+  return build({
+    repo: cut(repoFromGitUrl(env.BUILDKITE_REPO), 200),
+    ref: branchName(env.BUILDKITE_BRANCH),
+    sha: sha && sha !== "HEAD" ? cut(sha, 100) : void 0,
+    pr: positiveInt(env.BUILDKITE_PULL_REQUEST),
+    buildUrl: httpUrl2(env.BUILDKITE_BUILD_URL)
+  });
+}
+function azureCiFromEnv(env) {
+  if (env.TF_BUILD?.toLowerCase() !== "true") return void 0;
+  const base2 = env.SYSTEM_COLLECTIONURI?.trim();
+  const project = env.SYSTEM_TEAMPROJECT?.trim();
+  const id = env.BUILD_BUILDID?.trim();
+  return build({
+    repo: cut(env.BUILD_REPOSITORY_NAME, 200),
+    ref: branchName(env.SYSTEM_PULLREQUEST_SOURCEBRANCH || env.BUILD_SOURCEBRANCH),
+    sha: cut(env.BUILD_SOURCEVERSION, 100),
+    pr: positiveInt(env.SYSTEM_PULLREQUEST_PULLREQUESTNUMBER) ?? positiveInt(env.SYSTEM_PULLREQUEST_PULLREQUESTID),
+    buildUrl: base2 && project && id ? httpUrl2(
+      `${base2.replace(/\/?$/, "/")}${encodeURIComponent(project)}/_build/results?buildId=${encodeURIComponent(id)}`
+    ) : void 0
+  });
+}
 function detectCi(env, event) {
-  return ciFromEnv(env, event) ?? gitlabCiFromEnv(env) ?? jenkinsCiFromEnv(env);
+  return ciFromEnv(env, event) ?? gitlabCiFromEnv(env) ?? circleCiFromEnv(env) ?? bitbucketCiFromEnv(env) ?? buildkiteCiFromEnv(env) ?? azureCiFromEnv(env) ?? jenkinsCiFromEnv(env);
 }
 
 // src/exit-codes.ts
@@ -35149,7 +37513,20 @@ async function waitForUrl(url2, maxSeconds, deps, everyMs = 3e3) {
 }
 
 // src/run-test.ts
-async function runTest(opts, d2) {
+function knownSecrets(d2) {
+  return d2.env.WEBAGENT_API_KEY ? [d2.env.WEBAGENT_API_KEY] : [];
+}
+function scrubbed(d2) {
+  const known = knownSecrets(d2);
+  return {
+    ...d2,
+    out: (l) => d2.out(redact(l, known)),
+    err: (l) => d2.err(redact(l, known)),
+    writeFile: (p, t) => d2.writeFile(p, redact(t, known))
+  };
+}
+async function runTest(opts, deps) {
+  const d2 = scrubbed(deps);
   const log = opts.json ? d2.err : d2.out;
   const who = { name: opts.workflow ?? "tests", key: opts.workflow };
   try {
@@ -35192,6 +37569,8 @@ async function execute(opts, d2, log, setName) {
   const detected = detectCi(d2.env, await d2.readEvent());
   const withPr = opts.ciPr !== void 0 ? { ...detected ?? { provider: "other" }, pr: opts.ciPr } : detected;
   const ci = withCiContext(withPr, await loadCiContext(opts, d2));
+  const appId = await appIdFromFile(d2);
+  const appDefault = appId !== void 0 ? { appId } : {};
   const common = {
     trigger: "ci",
     ...ci ? { ci } : {},
@@ -35212,7 +37591,7 @@ async function execute(opts, d2, log, setName) {
     const wf = await findByKey(d2, key2);
     await checkUrl(opts, opts.url, d2, log);
     log(`Running saved workflow ${key2} (v${wf.version}) against ${opts.url}`);
-    const run2 = await startSaved(d2, wf.id, opts, { ...common, url: opts.url });
+    const run2 = await startSaved(d2, wf.id, opts, { ...appDefault, ...common, url: opts.url });
     return waitForRun(run2, opts, d2, log);
   }
   if (text2 === void 0) {
@@ -35243,10 +37622,16 @@ async function execute(opts, d2, log, setName) {
     const wf = await callApi(
       api,
       `saving workflow ${key2}`,
-      () => d2.client.upsertWorkflowByKey(key2, { ...loaded.extra, ...request, key: key2, managedBy })
+      () => d2.client.upsertWorkflowByKey(key2, {
+        ...appDefault,
+        ...loaded.extra,
+        ...request,
+        key: key2,
+        managedBy
+      })
     );
     log(`Synced workflow ${key2} (v${wf.version}); running it against ${target.url}`);
-    const run2 = await startSaved(d2, wf.id, opts, { ...common, url: target.url });
+    const run2 = await startSaved(d2, wf.id, opts, { ...appDefault, ...common, url: target.url });
     return waitForRun(run2, opts, d2, log);
   }
   const adhoc = {
@@ -35265,7 +37650,7 @@ async function execute(opts, d2, log, setName) {
   };
   log(`Running ${adhoc.cases.length} case(s) ad hoc against ${target.url} (nothing is saved)`);
   const key = d2.randomId();
-  const body = { ...loaded.extra, ...adhoc };
+  const body = { ...appDefault, ...loaded.extra, ...adhoc };
   const run = await callApi(
     api,
     "starting the run",
@@ -35287,21 +37672,21 @@ async function loadCiContext(opts, d2) {
   }
   return mergeCiContext(fromEnv, parseCiContextFile(raw, opts.ciContext));
 }
-async function resolveEngineRef(d2, api, ref) {
+async function resolveEngineRef(d2, api, ref2) {
   return callApi(api, "looking up the engine", async () => {
     try {
-      return await d2.client.resolveEngine(ref);
+      return await d2.client.resolveEngine(ref2);
     } catch (e) {
       if (e instanceof WebagentApiError && (e.code === "not_found" || e.code === "conflict")) {
-        if (e.details?.ref === ref) throw new SetupError(e.message);
+        if (e.details?.ref === ref2) throw new SetupError(e.message);
       }
       throw e;
     }
   });
 }
 function repoPath(cwd, file2) {
-  const rel = (0, import_node_path.relative)(cwd, (0, import_node_path.resolve)(cwd, file2));
-  return rel.startsWith("..") ? (0, import_node_path.basename)(file2) : rel.split(import_node_path.sep).join(import_node_path.posix.sep);
+  const rel = (0, import_node_path2.relative)(cwd, (0, import_node_path2.resolve)(cwd, file2));
+  return rel.startsWith("..") ? (0, import_node_path2.basename)(file2) : rel.split(import_node_path2.sep).join(import_node_path2.posix.sep);
 }
 async function checkUrl(opts, url2, d2, log) {
   if (!opts.waitForUrl) return;
@@ -35422,6 +37807,7 @@ async function finish(opts, d2, log, who, fin) {
   return code;
 }
 async function writeReports(opts, d2, who, run, error62) {
+  const known = knownSecrets(d2);
   if (opts.markdown) {
     let md = `# Lookover QA \xB7 Couldn't test
 
@@ -35445,8 +37831,9 @@ ${error62 ?? "no result"}
       renderJunit({
         name: run?.name ?? who.name,
         ...who.key ? { key: who.key } : {},
-        ...run ? { run } : {},
-        ...error62 ? { error: error62 } : {}
+        // Redacted before the XML escape, so `password=a&b` cannot leave its tail behind as `&amp;b`.
+        ...run ? { run: redactDeep(run, known) } : {},
+        ...error62 ? { error: redact(error62, known) } : {}
       })
     );
   }
@@ -35459,8 +37846,271 @@ async function safeWrite(d2, path, text2) {
   }
 }
 
+// src/vault-add.ts
+var VAULT_EXIT = {
+  saved: 0,
+  /** The api refused (code expired or used, rate limit, wrong site) or could not be reached. */
+  failed: 1,
+  /** No terminal and no `--password-stdin`: nothing to ask the password with. */
+  noTerminal: 2,
+  /** Bad flags. */
+  usage: 3,
+  /** Ctrl-C at a prompt. */
+  interrupted: 130
+};
+var Interrupted = class extends Error {
+};
+var Refused = class extends Error {
+};
+var NO_TERMINAL = (origin, code) => [
+  "There is no terminal to type the password into (a command started with ! in an AI chat tool has none).",
+  "Run this in a normal terminal window, or pipe the password in:",
+  `  pbpaste | npx @lookover-ai/cli vault add ${origin} --code ${code} --password-stdin`,
+  "(Linux: xclip -o | ..., Windows PowerShell: Get-Clipboard | ...)"
+].join("\n");
+function normalizeOrigin(raw) {
+  const t = raw.trim();
+  try {
+    const u = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(t) ? t : `https://${t}`);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return void 0;
+    return u.origin;
+  } catch {
+    return void 0;
+  }
+}
+function resolveApiBase(opts, env, fallback) {
+  return (opts.api || env.WEBAGENT_API_URL || fallback).trim().replace(/\/+$/, "");
+}
+function isLocalHost(host) {
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host.endsWith(".localhost");
+}
+function readTtyLine(stdin, write, prompt, echo) {
+  return new Promise((resolve2, reject) => {
+    if (!echo && typeof stdin.setRawMode !== "function") {
+      reject(
+        new Refused("This terminal cannot hide what you type, so the password was not asked for.")
+      );
+      return;
+    }
+    let buf = "";
+    write(prompt);
+    stdin.setEncoding("utf8");
+    stdin.setRawMode?.(true);
+    const finish2 = (fn) => {
+      stdin.off("data", onData);
+      stdin.off("error", onError);
+      try {
+        stdin.setRawMode?.(false);
+      } finally {
+        stdin.pause();
+      }
+      fn();
+    };
+    const onError = (e) => finish2(() => reject(e));
+    const onData = (chunk) => {
+      if (chunk.startsWith("\x1B")) return;
+      for (const ch of chunk) {
+        if (ch === "") {
+          write("\n");
+          return finish2(() => reject(new Interrupted()));
+        }
+        if (ch === "\r" || ch === "\n" || ch === "") {
+          write("\n");
+          return finish2(() => resolve2(buf));
+        }
+        if (ch === "\x7F" || ch === "\b") {
+          if (buf.length > 0) {
+            const last = [...buf].pop();
+            buf = buf.slice(0, buf.length - last.length);
+            if (echo) write("\b \b");
+          }
+          continue;
+        }
+        if (ch < " ") continue;
+        buf += ch;
+        if (echo) write(ch);
+      }
+    };
+    stdin.on("data", onData);
+    stdin.on("error", onError);
+    stdin.resume();
+  });
+}
+function readPipedLines(stdin, lines) {
+  return new Promise((resolve2, reject) => {
+    let buf = "";
+    let done = false;
+    const finish2 = (fn) => {
+      if (done) return;
+      done = true;
+      stdin.off("data", onData);
+      stdin.off("end", onEnd);
+      stdin.off("close", onEnd);
+      stdin.off("error", onError);
+      stdin.pause();
+      fn();
+    };
+    const split = () => buf.split("\n").map((l) => l.replace(/\r$/, ""));
+    const onData = (chunk) => {
+      buf += chunk;
+      if (buf.split("\n").length > lines) finish2(() => resolve2(split().slice(0, lines)));
+    };
+    const onEnd = () => finish2(() => resolve2(split().slice(0, lines)));
+    const onError = (e) => finish2(() => reject(e));
+    stdin.setEncoding("utf8");
+    stdin.on("data", onData);
+    stdin.on("end", onEnd);
+    stdin.on("close", onEnd);
+    stdin.on("error", onError);
+    stdin.resume();
+  });
+}
+async function post(d2, base2, path, body) {
+  let res;
+  try {
+    res = await d2.fetch(`${base2}${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(3e4)
+    });
+  } catch {
+    throw new Refused(`Could not reach ${base2}. Check your connection (or --api) and try again.`);
+  }
+  let json2;
+  try {
+    json2 = await res.json();
+  } catch {
+    json2 = void 0;
+  }
+  return { status: res.status, json: json2 };
+}
+function serverMessage(json2) {
+  const e = json2?.error;
+  return typeof e?.message === "string" && e.message !== "" ? e.message.slice(0, 300) : void 0;
+}
+function explain(status, json2) {
+  if (status === 404 || status === 410) {
+    return "This code has expired or was already used. Ask your agent for a new one.";
+  }
+  if (status === 409) {
+    return "A login with this username already exists for this site. Run it again with another --username (the code still works).";
+  }
+  if (status === 429) return "Too many attempts. Try again in a minute.";
+  if (status === 400) {
+    const m = serverMessage(json2);
+    return `The server did not accept that${m ? `: ${m}` : "."}`;
+  }
+  if (status >= 500) return `The server had a problem (HTTP ${status}). Try again in a moment.`;
+  return `The server refused the request (HTTP ${status}).`;
+}
+async function runVaultAdd(opts, d2) {
+  const wanted = normalizeOrigin(opts.origin);
+  if (!wanted) {
+    d2.err(
+      `Setup problem: "${opts.origin}" is not a site address (expected something like https://app.acme.com)`
+    );
+    return VAULT_EXIT.usage;
+  }
+  const base2 = resolveApiBase(opts, d2.env, d2.defaultApiUrl);
+  try {
+    const u = new URL(base2);
+    if (u.protocol !== "https:" && !(u.protocol === "http:" && isLocalHost(u.hostname))) {
+      d2.err(
+        "Setup problem: the API address must be https:// (a password is never sent over plain http)."
+      );
+      return VAULT_EXIT.usage;
+    }
+  } catch {
+    d2.err(`Setup problem: "${base2}" is not an API address (check --api or WEBAGENT_API_URL).`);
+    return VAULT_EXIT.usage;
+  }
+  const interactive = d2.stdin.isTTY === true && !opts.passwordStdin;
+  if (!interactive && !opts.passwordStdin) {
+    d2.err(NO_TERMINAL(opts.origin, opts.code));
+    return VAULT_EXIT.noTerminal;
+  }
+  try {
+    const peek = await post(d2, base2, "/v1/credentials/add-codes/peek", { code: opts.code });
+    if (peek.status < 200 || peek.status >= 300) throw new Refused(explain(peek.status, peek.json));
+    const info = credentialAddPeekResponseSchema.safeParse(peek.json);
+    if (!info.success)
+      throw new Refused(
+        "The server sent a reply this version does not understand. Update the CLI and try again."
+      );
+    const p = info.data;
+    const peeked = normalizeOrigin(p.origin) ?? p.origin;
+    if (peeked !== wanted) {
+      throw new Refused(`This code is for ${peeked}, not ${wanted}`);
+    }
+    d2.out(
+      `Adding a login for ${p.origin} in ${p.projectName}${p.appName ? ` / ${p.appName}` : ""}`
+    );
+    if (p.username) d2.out(`Username: ${p.username}`);
+    const mins = Math.max(0, Math.round((Date.parse(p.expiresAt) - d2.now()) / 6e4));
+    d2.out(`This code expires in ${mins} minute${mins === 1 ? "" : "s"} (${p.expiresAt}).`);
+    let username = opts.username;
+    let password;
+    let totpSecret;
+    if (opts.passwordStdin) {
+      if (!username && !p.username) {
+        throw new Refused(
+          "This code carries no username. Add --username <name> (the password is read from stdin, nothing is asked)."
+        );
+      }
+      const lines = await readPipedLines(d2.stdin, opts.totp ? 2 : 1);
+      password = lines[0] ?? "";
+      if (password === "")
+        throw new Refused(
+          "The password from stdin was empty. Pipe it in, for example: pbpaste | lookover vault add ... --password-stdin"
+        );
+      if (opts.totp) {
+        totpSecret = (lines[1] ?? "").trim();
+        if (totpSecret === "")
+          throw new Refused(
+            "--totp with --password-stdin reads the authenticator seed from the second line of stdin, and it was empty."
+          );
+      }
+    } else {
+      if (!username && !p.username) {
+        username = (await readTtyLine(d2.stdin, d2.write, "Username: ", true)).trim();
+        if (username === "") throw new Refused("A username is needed.");
+      }
+      password = await readTtyLine(d2.stdin, d2.write, "Password: ", false);
+      if (password === "") throw new Refused("The password was empty, nothing was saved.");
+      if (opts.totp) {
+        const t = (await readTtyLine(d2.stdin, d2.write, "TOTP seed (leave empty for none): ", false)).trim();
+        totpSecret = t === "" ? void 0 : t;
+      }
+    }
+    const body = {
+      code: opts.code,
+      password,
+      ...username ? { username } : {},
+      ...totpSecret ? { totpSecret } : {}
+    };
+    const claim2 = await post(d2, base2, "/v1/credentials/add-codes/claim", body);
+    if (claim2.status < 200 || claim2.status >= 300)
+      throw new Refused(explain(claim2.status, claim2.json));
+    const saved = credentialAddClaimResponseSchema.safeParse(claim2.json);
+    const label = saved.success ? saved.data.label : p.label ?? "login";
+    const origin = saved.success ? saved.data.origin : p.origin;
+    d2.out(`Saved login "${label}" for ${origin}. Your AI agent can use it now.`);
+    return VAULT_EXIT.saved;
+  } catch (e) {
+    if (e instanceof Interrupted) {
+      d2.err("Cancelled. Nothing was saved.");
+      return VAULT_EXIT.interrupted;
+    }
+    d2.err(
+      e instanceof Refused ? e.message : `Could not save the login: ${e instanceof Error ? e.message : "unknown error"}`
+    );
+    return VAULT_EXIT.failed;
+  }
+}
+
 // src/main.ts
-var VERSION = true ? "0.3.0" : "0.1.0";
+var VERSION = true ? "0.7.0" : "0.1.0";
 function sleep(ms, signal) {
   return new Promise((resolve2, reject) => {
     if (signal?.aborted) return reject(signal.reason);
@@ -35478,7 +38128,7 @@ function sleep(ms, signal) {
 async function readEvent(env) {
   if (!env.GITHUB_EVENT_PATH) return void 0;
   try {
-    return JSON.parse(await (0, import_promises.readFile)(env.GITHUB_EVENT_PATH, "utf8"));
+    return JSON.parse(await (0, import_promises2.readFile)(env.GITHUB_EVENT_PATH, "utf8"));
   } catch {
     return void 0;
   }
@@ -35504,6 +38154,28 @@ ${HELP}`);
     console.log(VERSION);
     return EXIT.pass;
   }
+  if (parsed.command === "vault-add") {
+    return runVaultAdd(parsed.options, {
+      env,
+      fetch: (...a) => globalThis.fetch(...a),
+      stdin: process.stdin,
+      out: (l) => console.log(redact(l)),
+      err: (l) => console.error(redact(l)),
+      write: (t) => void process.stderr.write(t),
+      now: () => Date.now(),
+      defaultApiUrl: DEFAULT_API_URL
+    });
+  }
+  if (parsed.command === "app") {
+    return runApp(parsed.options, {
+      cwd: process.cwd(),
+      env,
+      out: (l) => console.log(redact(l)),
+      err: (l) => console.error(redact(l)),
+      makeClient: (baseUrl, apiKey2) => new TolerantClient({ apiKey: apiKey2, baseUrl, timeoutMs: 3e4 }),
+      defaultApiUrl: DEFAULT_API_URL
+    });
+  }
   const apiKey = env.WEBAGENT_API_KEY;
   if (!apiKey) {
     console.error(
@@ -35522,10 +38194,10 @@ ${HELP}`);
       client: new TolerantClient({ apiKey, baseUrl: apiUrl, timeoutMs: 3e4 }),
       apiUrl,
       cwd: process.cwd(),
-      readFile: (p) => (0, import_promises.readFile)(p, "utf8"),
+      readFile: (p) => (0, import_promises2.readFile)(p, "utf8"),
       writeFile: async (p, text2) => {
-        await (0, import_promises.mkdir)((0, import_node_path2.dirname)(p), { recursive: true });
-        await (0, import_promises.writeFile)(p, text2, "utf8");
+        await (0, import_promises2.mkdir)((0, import_node_path3.dirname)(p), { recursive: true });
+        await (0, import_promises2.writeFile)(p, text2, "utf8");
       },
       fetch: (...a) => globalThis.fetch(...a),
       now: () => Date.now(),
@@ -35533,8 +38205,10 @@ ${HELP}`);
       randomId: () => (0, import_node_crypto.randomUUID)(),
       readEvent: () => readEvent(env),
       out: (l) => console.log(l),
+      // runTest scrubs its own output (and knows the API key)
       err: (l) => console.error(l),
-      signal: abort.signal
+      signal: abort.signal,
+      appFile: () => findAppFile(process.cwd())
     });
   } finally {
     process.off("SIGINT", onSignal);

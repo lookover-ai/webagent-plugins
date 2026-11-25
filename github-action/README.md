@@ -4,14 +4,25 @@ Run your `.webagent/tests.yaml` in a cloud browser on every pull request. The jo
 PR shows what broke (updated on every push, never a new one), and the job summary has the full report. Same file as the
 dashboard and the `/webagent:qa` plugin command: [format](../docs/WEBAGENT-FOLDER.md).
 
-> Beta. The Action is bundled JavaScript (no npm install, runs on the `node24` runtime). It carries the `webagent` CLI
-> ([`@lookover-ai/webagent-cli`](../../webagent-contracts/cli/README.md) is the same engine; run it yourself on other CI systems).
+> Beta. The Action is bundled JavaScript (no npm install, runs on the `node24` runtime). It carries the `lookover` CLI
+> ([`@lookover-ai/cli`](../../webagent-contracts/cli/README.md) is the same engine; run it yourself on other CI systems: GitLab, CircleCI, Bitbucket, Buildkite, Azure and Jenkins recipes are in its README).
 > It is not published yet: `@v1` works once `lookover-ai/webagent-plugins` is public and tagged `v1` (the dashboard's "Add to CI" card prints the same `uses:` line).
+
+**Pin the Action to a full commit sha.** A tag like `@v1` can move; a sha cannot. The other examples below write `@v1` to stay short, but
+for a repository that holds a CI key, write the sha of the release you reviewed and keep the tag in a comment:
+
+```yaml
+- uses: lookover-ai/webagent-plugins/github-action@<full 40-character commit sha> # v1.x.y
+```
+
+(Find the sha on the repository's Releases or Tags page; Dependabot or Renovate can bump a sha pin and keep the comment.) `@v1` is
+acceptable for trying it out; GitHub's own advice for any third-party action is the sha.
 
 ## 1. Set up (two minutes)
 
-1. Dashboard, **API keys**, create a key (the **member** role is enough). Save it as the repository secret `WEBAGENT_API_KEY`
-   (Settings, Secrets and variables, Actions). The key is never in a file.
+1. Dashboard, **API keys**, create a key and set its **Key type** to **CI only**: it can start and read test runs and nothing else
+   (no members, vault, billing or other keys), so a leaked secret cannot do more than run tests. Do not use a **Full** key or a
+   personal one. Save it as the repository secret `WEBAGENT_API_KEY` (Settings, Secrets and variables, Actions). The key is never in a file.
 2. Commit `.webagent/tests.yaml` (run `/webagent:qa-init` in Claude Code to write it from your code, or copy the template).
    Put a `key:` in it (for example `key: checkout-flow`): it names the workflow in the dashboard and the PR comment.
 3. Add the workflow below.
@@ -30,7 +41,7 @@ concurrency:                       # a new push cancels the old run (the action 
   group: lookover-qa-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
+permissions:                       # least privilege: nothing else is granted to the job's GITHUB_TOKEN
   contents: read
   pull-requests: write             # for the PR comment (without it the check still works, just no comment)
 
@@ -40,11 +51,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: lookover-ai/webagent-plugins/github-action@v1
+      - uses: lookover-ai/webagent-plugins/github-action@<full-commit-sha> # v1.x.y (pin by sha; @v1 also works)
         with:
           api-key: ${{ secrets.WEBAGENT_API_KEY }}
           url: https://staging.example.com          # the site to test (see "Preview URLs" for per-PR previews)
 ```
+
+**Minimal permissions.** The two lines above are all the Action needs: `contents: read` (the checkout) and `pull-requests: write` (the
+comment). Declaring `permissions:` at all drops every other permission from the job's `GITHUB_TOKEN`; leave `pull-requests: write` out if
+you do not want the comment. Nothing else (`id-token`, `packages`, `actions`...) is used.
 
 `sync` is on by itself for a push to the default branch: the file is saved as the workflow (by `key`), so the dashboard, its history
 and its schedule use the `main` definition. **A pull request run never changes the saved workflow**: it runs the PR's file ad hoc, groups
@@ -179,7 +194,7 @@ jobs:
 
 | Input | Default | What it does |
 |---|---|---|
-| `api-key` | (required) | Your API key, from a secret |
+| `api-key` | (required) | Your API key (a **CI only** key), from a secret. Masked in the log (`::add-mask::`) before anything else runs, like any input named session, header, password, token or secret |
 | `api-url` | the CLI's built-in host | API origin without a path |
 | `url` | | Site to test. Wins over the file's target |
 | `file` | `.webagent/tests.yaml` | The tests file. If this default is missing and `workflow` is set, the saved workflow of that key runs (needs `url`) |
@@ -265,11 +280,20 @@ as untrusted context for Lookover (the bundled CLI, 0.2.0 and later, reads exact
 printed in the log, summary or comment.
 If GitHub's file list cannot be read, the paths are left out and the job is not affected.
 
+### Secrets in the log and the report
+
+The Action masks the API key (and any credential-looking input) in the job log from its first line. The bundled CLI also scrubs what it
+prints and writes: your key, `Bearer <token>`, `wa_...` and `key_...` tokens, `ghp_`/`ghs_`/`github_pat_` tokens, JWTs and `password=<value>`
+become `[redacted]` in the log, the report (so in the PR comment and the job summary) and the JUnit file. It is a safety net for text
+that comes back from your app or the API; keep secrets out of test steps and URLs anyway.
+
 ## 6. Fork pull requests
 
 GitHub does not give secrets to a workflow started by a fork (or Dependabot), so there is no API key. The action prints one notice,
 leaves the comment alone and exits 0 (neutral): nothing was tested, nothing failed. It runs when a maintainer pushes the branch to
-the repo. Do not switch to `pull_request_target` to get the secret: that runs untrusted code with your key.
+the repo. Do not switch to `pull_request_target` to get the secret: that runs untrusted code with your key. **Never use this Action under
+`pull_request_target` after checking out the pull request's head** (`ref: ${{ github.event.pull_request.head.sha }}`): the fork's
+`.webagent/tests.yaml` would then run with your key.
 
 ## 7. Develop
 
@@ -283,8 +307,8 @@ VITEST_MAX_WORKERS=4 pnpm check     # typecheck, tests, build (dist/index.cjs + 
 `webagent-contracts/cli/dist/webagent.cjs` (build contracts, `sdk` and `cli` there first; `WEBAGENT_CLI_BUNDLE` points elsewhere): re-vendor it when the
 CLI changes. `src/cli-contract.test.ts` reads the committed bundle and fails if the `WEBAGENT_CI_*` names differ from what the Action sets.
 
-**Vendored now:** `@lookover-ai/webagent-cli` **0.3.0**, built from contracts `development` commit `87b6599` (v0.54.0-rc.0),
-bundle 1.39 MB. Re-vendor from a release tag before moving the Action's `v1` tag. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
+**Vendored now:** `@lookover-ai/cli` **0.7.0**, built from contracts `development` commit `9ecbb49` (#92),
+bundle 1.47 MB (H24-C: redaction, CircleCI, Bitbucket, Buildkite and Azure detection). Re-vendor from a release tag before moving the Action's `v1` tag. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
 writes the summary, outputs and the sticky comment (hidden marker `<!-- lookover-qa:<workflow key> -->`).
 `CLI-SOURCE` records which CLI version and contracts commit the vendored bundle is (a test checks it).
 

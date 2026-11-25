@@ -72,6 +72,25 @@ export function readInputs(env: Env): Inputs {
   };
 }
 
+/**
+ * Values the job log must never show (H24): the API key, and any input whose name says it carries a credential
+ * (`session`, `header`, `password`, `token`, `secret`: none exists today, so a future one is masked from day one).
+ * Multi-line values give one entry per line, because `::add-mask::` takes a single line.
+ */
+export function secretValues(env: Env): string[] {
+  const out = new Set<string>();
+  for (const [name, raw] of Object.entries(env)) {
+    if (!name.startsWith("INPUT_") || raw === undefined) continue;
+    const n = name.slice("INPUT_".length);
+    if (n !== "API-KEY" && !/SESSION|HEADER|PASSWORD|TOKEN|SECRET/.test(n)) continue;
+    for (const line of raw.split(/\r?\n/)) {
+      const v = line.trim();
+      if (v !== "") out.add(v);
+    }
+  }
+  return [...out];
+}
+
 /** The parts of the GitHub event payload the Action reads; anything may be missing. */
 export interface GithubEvent {
   number?: number;

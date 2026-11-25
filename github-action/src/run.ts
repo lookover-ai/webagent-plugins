@@ -11,6 +11,7 @@ import {
   resolveShareLinks,
   resolveSync,
   secretsWithheld,
+  secretValues,
 } from "./inputs.js";
 import { outcomeFor, type VerdictOutput } from "./outcome.js";
 import {
@@ -107,6 +108,8 @@ export function workflowKeyOf(fileText: string | undefined): string | undefined 
 }
 
 export async function run(d: Deps): Promise<number> {
+  // Mask first, so no later line (the CLI's, an error's, an annotation's) can show a credential input.
+  for (const v of secretValues(d.env)) d.log(`::add-mask::${v}`);
   const inputs = readInputs(d.env);
   const ctx = readContext(d.env, d.event);
   const buildUrl =
@@ -135,7 +138,6 @@ export async function run(d: Deps): Promise<number> {
     await d.appendSummary(summaryFor({ verdict: "setup" }, msg));
     return finish("setup", 3);
   }
-  d.log(`::add-mask::${inputs.apiKey}`);
 
   // A preview deployment event: test the URL it carries when `url` is empty, and wait for a successful deployment.
   if (ctx.eventName === "deployment_status" && inputs.url === "") {

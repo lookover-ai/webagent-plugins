@@ -116,6 +116,17 @@ describe("run", () => {
     expect(writes[1]?.path).toMatch(/comments/);
   });
 
+  it("masks the API key and any credential-looking input before anything else is logged", async () => {
+    const r = rig({ env: { "INPUT_SESSION-COOKIE": "sid=abc\nsecond=line", "INPUT_EXTRA-HEADERS": "x-token: t0k3n" } });
+    await run(r.deps);
+    const masks = r.logs.filter((l) => l.startsWith("::add-mask::"));
+    expect(masks).toContain("::add-mask::wa_us_secretsecretsecretsecretsecretsecretsecret1");
+    expect(masks).toContain("::add-mask::sid=abc");
+    expect(masks).toContain("::add-mask::second=line");
+    expect(masks).toContain("::add-mask::x-token: t0k3n");
+    expect(r.logs.slice(0, masks.length).every((l) => l.startsWith("::add-mask::"))).toBe(true);
+  });
+
   it("re-push updates the same comment (PATCH, no second POST)", async () => {
     const r = rig({ cli: { code: 0 }, comments: [{ id: 5, body: `${MARK}\nold` }] });
     await run(r.deps);
@@ -283,7 +294,7 @@ describe("run", () => {
     const r = rig({ env: { "INPUT_API-KEY": "", GITHUB_EVENT_NAME: "push" }, event: {} });
     expect(await run(r.deps)).toBe(3);
     expect(r.cliCalls).toHaveLength(0);
-    expect(r.logs[0]).toContain("WEBAGENT_API_KEY");
+    expect(r.logs.find((l) => !l.startsWith("::add-mask::"))).toContain("WEBAGENT_API_KEY");
   });
 
   it("a bad input is a setup problem before any call", async () => {
