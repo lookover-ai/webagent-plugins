@@ -4,14 +4,14 @@ version: 1
 name: My app smoke tests
 
 targets:
-  local: http://localhost:3000        # a local URL is reached through a tunnel the agent opens
+  local: http://localhost:3000        # a local URL is reached through your connected machine, else a tunnel the agent opens
   staging:
     url: https://staging.example.com
     credentials: staging              # webagent vault namespace for this site's test login (optional)
 
 # defaultTarget: staging              # optional: one of the targets above (default: the first)
 # key: my-app-smoke                   # optional slug: CI updates the same workflow by it
-# engine: qa                          # optional: any engine in your project (short name or id, yours too); omitted: the project default engine
+# engine: qa                          # optional (part of the shared format; the plugin does not read it)
 
 cases:
   - id: home-loads
