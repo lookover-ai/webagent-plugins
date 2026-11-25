@@ -10,7 +10,7 @@ them in the dashboard, Proposed tests) or, with `git` on a feature branch, **bra
 |---|---|---|---|
 | Set up | `list_apps` | `git?` | The Apps of the project; with `git`, which App the repo resolves to and the person's remembered choices (ask which when unclear; never guess) |
 | | `create_app` | `name`, `baseUrl`, `environment?`, `repo?` | A new App with its first URL (a public address) |
-| | `add_url` | `appId?`, `name`, `baseUrl`, `previewPattern?`, `branch?` | Save a URL (an address of an App: staging, a preview) so runs use it by name |
+| | `add_url` | `appId?`, `name`, `baseUrl`, `previewPattern?`, `branch?`, `kind?` | Save a URL (an address of an App: staging, a preview) so runs use it by name |
 | | `add_login` | `origin`, `label?`, `username?`, `namespace?`, `role?`, `environmentId?`; later `addId` | A one-time code to save a site login without the password passing through chat; call again with `addId` to see if it was saved |
 | | `connect_local_app` | `ports`, `name?` | Connect the person's machine so tests reach their localhost app (needs a signed-in person) |
 | Write | `list_tests` | `appId?`, `filter?`, `area?`, `suiteId?`, `limit?`, `git?`, `module?`, `loginRole?`, `include?: ["branch_drafts"]`, `detail?` | Saved tests with their latest result, author and Modules used |
@@ -20,10 +20,10 @@ them in the dashboard, Proposed tests) or, with `git` on a feature branch, **bra
 | | `list_folders` | `appId?` | The Folders (suites) of the Test suite with test count and latest result |
 | | `list_proposed_tests` | `appId?`, `branch?` | Tests and test changes waiting for a person to approve, branch drafts grouped by branch with their flags |
 | | `list_modules` | `appId?`, `git?`, `detail?` | Reusable steps with inputs, start state, Used by, health, latest version, the branch's draft |
-| | `save_module` | `name`, `steps`, `inputs?`, `startState?`, `changeNote?`, `appId?`, `git?` | A new Module version, or a branch draft with `git`; `kind: version\|branch_draft` |
+| | `save_module` | `name`, `steps`, `description?`, `inputs?`, `startState?`, `changeNote?`, `appId?`, `git?` | A new Module version, or a branch draft with `git`; `kind: version\|branch_draft` |
 | | `list_areas` | `appId?` | Areas: name, code globs, URL patterns, test counts |
 | | `save_area` | `name`, `description?`, `codePaths?`, `urlPatterns?`, `alwaysRun?`, `appId?` | Create or update an Area by name |
-| Run | `quick_check` | `url`, `appId?`, `maxPages?` | First look at a site with no tests set up; suggests tests (saves none) |
+| Run | `quick_check` | `url`, `appId?`, `environmentId?`, `maxPages?` | First look at a site with no tests set up; suggests tests (saves none) |
 | | `run_tests` | `suiteId?` or `tests[]`; `appId?`, `environmentId?`, `url?`, `tags?`, `dryRun?`, `stopAfterFailures?`, `rerunOf?`, `failedOnly?`, `git?`, `select?` (`changed`\|`all`), `remember?`, `detail?` | Run tests, only those the changed files touch when `git.changedFiles` is sent (answer: `selection`, `runIds`); `dryRun: true` first: the tests that would run and the cost estimate; start only after the person agrees |
 | | `get_run` | `runId` or `runIds` (up to 20), `detail?` | How a run is going: result so far, how many finished, which failed, in buckets `yourWork` / `notYourCode` / `environment` |
 | | `cancel_run` | `runId` | Stop a run that is still going |
@@ -34,7 +34,7 @@ them in the dashboard, Proposed tests) or, with `git` on a feature branch, **bra
 | Knowledge | `get_knowledge` | `appId?` | The App's notes and Knowledge docs |
 | | `add_knowledge` | `kind` (`note` = App note, `doc` = Knowledge doc), `appId?`; a note: `text`, `noteType?`, `testRef?`; a doc: `title`, `bodyMd` | Teach Lookover a lasting fact; never a secret |
 `?profile=dev` adds `explore_app` and `get_debug_link`; the plugin does not use them.
-Argument names are the contracts' (0.71, `qa-mcp.ts`); if a name is refused the error text lists the right one.
+Argument names are the contracts' (0.73, `qa-mcp.ts`); if a name is refused the error text lists the right one.
 
 ## Git context, choose, drafts, selection
 `git` = `{ repo: "owner/name", branch, sha?, baseRef?, pr?, changedFiles?, changedFilesTruncated? }` (at most 1000 paths of 300 chars). Untrusted: it steers

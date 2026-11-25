@@ -132,3 +132,8 @@ Done: plugin 0.9.0, skill qa-test sends `git` context on writes/runs, list_modul
 branch drafts, selection honesty line, get_run buckets, no weakening, file_bug only App bugs; reference.md tool table follows contracts 0.73.0-rc.0. Check: plugin validate.
 Next: codex/AGENTS.md and /webagent:qa commands not updated for D103; re-check tool table against api after integration.
 Gotchas: argument names read from contracts qa-mcp.ts / qa-selection.ts in worktree d103-contracts, not published yet.
+
+## 2026-11-25 D103-I integration (plugin 0.9.0, branch feat/d103-managed-tests)
+Done: reference.md tool table re-checked against the api tool table + contracts 0.73.0-rc.0 input schemas: `add_url` `kind?`, `save_module` `description?`, `quick_check` `environmentId?` added; note now says 0.73. SKILL.md names (git, select, choose, remember, runIds, buckets, `use`/`with`/`as`) match. `list_modules { git }` now lists the branch's Module drafts in the api (was a promise without code).
+Next: none for D103 (codex/AGENTS.md has no D103-specific tool text).
+Check: claude plugin validate (strict + marketplace), check-templates.py.
