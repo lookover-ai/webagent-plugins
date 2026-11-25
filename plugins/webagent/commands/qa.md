@@ -1,23 +1,23 @@
 ---
-description: Test your web app in a real cloud browser with webagent, read the report, fix bugs and re-run the failed cases.
+description: Test your web app in a real cloud browser with Lookover QA, read the report, fix bugs and re-run the failed tests.
 argument-hint: [what to test, a URL, "all", or "rerun failed"]
-allowed-tools: mcp__plugin_webagent_webagent__smoke_test mcp__plugin_webagent_webagent-key__smoke_test mcp__plugin_webagent_webagent__run_task mcp__plugin_webagent_webagent-key__run_task mcp__plugin_webagent_webagent__get_report mcp__plugin_webagent_webagent-key__get_report mcp__plugin_webagent_webagent__get_task mcp__plugin_webagent_webagent-key__get_task mcp__plugin_webagent_webagent__create_session mcp__plugin_webagent_webagent-key__create_session mcp__plugin_webagent_webagent__stop_session mcp__plugin_webagent_webagent-key__stop_session mcp__plugin_webagent_webagent__qa_run mcp__plugin_webagent_webagent-key__qa_run mcp__plugin_webagent_webagent__qa_status mcp__plugin_webagent_webagent-key__qa_status mcp__plugin_webagent_webagent__qa_report mcp__plugin_webagent_webagent-key__qa_report mcp__plugin_webagent_webagent__qa_quick_check mcp__plugin_webagent_webagent-key__qa_quick_check Read Grep Glob Bash(git status *) Bash(git diff *)
+allowed-tools: mcp__plugin_webagent_lookover-qa__list_apps mcp__plugin_webagent_lookover-qa-key__list_apps mcp__plugin_webagent_lookover-qa__create_app mcp__plugin_webagent_lookover-qa-key__create_app mcp__plugin_webagent_lookover-qa__add_url mcp__plugin_webagent_lookover-qa-key__add_url mcp__plugin_webagent_lookover-qa__add_login mcp__plugin_webagent_lookover-qa-key__add_login mcp__plugin_webagent_lookover-qa__connect_local_app mcp__plugin_webagent_lookover-qa-key__connect_local_app mcp__plugin_webagent_lookover-qa__list_tests mcp__plugin_webagent_lookover-qa-key__list_tests mcp__plugin_webagent_lookover-qa__get_test mcp__plugin_webagent_lookover-qa-key__get_test mcp__plugin_webagent_lookover-qa__create_tests mcp__plugin_webagent_lookover-qa-key__create_tests mcp__plugin_webagent_lookover-qa__update_test mcp__plugin_webagent_lookover-qa-key__update_test mcp__plugin_webagent_lookover-qa__list_folders mcp__plugin_webagent_lookover-qa-key__list_folders mcp__plugin_webagent_lookover-qa__list_proposed_tests mcp__plugin_webagent_lookover-qa-key__list_proposed_tests mcp__plugin_webagent_lookover-qa__quick_check mcp__plugin_webagent_lookover-qa-key__quick_check mcp__plugin_webagent_lookover-qa__run_tests mcp__plugin_webagent_lookover-qa-key__run_tests mcp__plugin_webagent_lookover-qa__get_run mcp__plugin_webagent_lookover-qa-key__get_run mcp__plugin_webagent_lookover-qa__cancel_run mcp__plugin_webagent_lookover-qa-key__cancel_run mcp__plugin_webagent_lookover-qa__list_runs mcp__plugin_webagent_lookover-qa-key__list_runs mcp__plugin_webagent_lookover-qa__get_report mcp__plugin_webagent_lookover-qa-key__get_report mcp__plugin_webagent_lookover-qa__share_report mcp__plugin_webagent_lookover-qa-key__share_report mcp__plugin_webagent_lookover-qa__file_bug mcp__plugin_webagent_lookover-qa-key__file_bug mcp__plugin_webagent_lookover-qa__get_knowledge mcp__plugin_webagent_lookover-qa-key__get_knowledge mcp__plugin_webagent_lookover-qa__add_knowledge mcp__plugin_webagent_lookover-qa-key__add_knowledge Read Grep Glob Bash(git status *) Bash(git diff *)
 ---
 
-Run a QA pass with webagent.
+Run a QA pass with Lookover QA.
 
 First load the skill `webagent:qa-test` and follow it step by step. If you cannot load it, read
 `${CLAUDE_PLUGIN_ROOT}/skills/qa-test/SKILL.md` and `${CLAUDE_PLUGIN_ROOT}/skills/qa-test/reference.md` and follow those.
 
 What to test: $ARGUMENTS
 
-Default path: read `.webagent/tests.yaml`, pick the cases, and run them in ONE `qa_run`: every case, send the file's raw text as `testsYaml`
-(not re-written as JSON); only some cases, send `testsFile` filtered to those cases (`caseIds` / `tags` do not work with a file); add `target` and,
-for a local app, the tunnel `url` (or, if the skill's local-app gate passes, `url: "http://localhost:<port>"` after `webagent-device connect`, section 7A; if not, one line "Local-app mode is coming soon; using a tunnel"). No `tests.yaml`: send `cases`. Do not fill ids, paths or steps. Give the user the
-`Watch live:` link once and pass on any `Warning:` lines. `smoke_test` (or `qa_quick_check`) only when `qa_run` is not in your tool list.
-Failures to sort out or file as a bug: `/webagent:qa-triage`.
+Default path: `list_apps`, read `.webagent/tests.yaml` and the diff, pick the saved tests with `list_tests` (propose missing ones with
+`create_tests`, dry run first; a person approves them in the dashboard), then `run_tests` with `dryRun: true`, show the number of runs and the
+cost estimate and start only after the user agrees. Follow with `get_run` and `get_report`. Local app: `connect_local_app` (section 7A of the
+skill), else a tunnel (7B). Give the user the dashboard link once. No tests at all: `quick_check`. Failures to sort out or file as a bug:
+`/webagent:qa-triage`.
 
-If the argument is empty, test what the current diff changed plus the smoke cases in `.webagent/tests.yaml` (at most 10 cases). If it is `all`, run every
-case. If it is `rerun failed`, re-run only the cases that failed earlier in this conversation. If it is a URL, use it as the
-target. Keep the rules of the skill: no secrets in tool calls, `error` is never an app bug, close sessions and tunnels,
-and end with the short summary.
+If the argument is empty, test what the current diff changed plus the smoke tests (at most 10). If it is `all`, run every test of the
+Folder. If it is `rerun failed`, run `run_tests` with `rerunOf` the last run and `failedOnly: true`. If it is a URL, use it as the
+address. Keep the rules of the skill: no secrets in tool calls, Couldn't test is never an app bug, close tunnels and connections, and
+end with the short summary.

@@ -1,7 +1,6 @@
 # The `.webagent/` folder
 
-A folder at the root of your repo that tells webagent's agent skills how to work here: which engine to use (`config.yaml`), and,
-for QA, what your app is and which flows matter (`product.md`, `tests.yaml`). The agent in Claude Code or Codex reads it before it
+A folder at the root of your repo that tells webagent's agent skills how to work here: for QA, what your app is and which flows matter (`product.md`, `tests.yaml`). The agent in Claude Code or Codex reads it before it
 acts, and appends cases when you build something new. Commit it with your code.
 
 > **Status: v1, a shared format.** The `tests.yaml` format is defined once, in the webagent contracts, and read by the dashboard
@@ -10,12 +9,12 @@ acts, and appends cases when you build something new. Commit it with your code.
 
 ```
 .webagent/
-  config.yaml    settings for any webagent task: which engine (optional file)
+  config.yaml    optional settings file
   product.md     QA: what the app is: users, key flows, environments, test accounts (by name)
   tests.yaml     QA: the cases
 ```
-Templates: `plugins/webagent/templates/.webagent/`. Create `product.md` and `tests.yaml` from your code with `/webagent:qa-init`,
-and `config.yaml` with `/webagent:engines`. `/webagent:qa-init` also offers the GitHub Actions workflow that runs `tests.yaml` on every pull
+Templates: `plugins/webagent/templates/.webagent/`. Create `product.md` and `tests.yaml` from your code with `/webagent:qa-init`.
+`/webagent:qa-init` also offers the GitHub Actions workflow that runs `tests.yaml` on every pull
 request; `/webagent:qa-ci` prints the CI call for any CI.
 
 ## Never put secrets in it
@@ -25,17 +24,16 @@ to by **namespace**. The agent also writes step text into tool calls and webagen
 ## `config.yaml`
 ```yaml
 version: 1        # required, integer
-engine: research  # optional: engine slug (qa, general, research, forms, monitor, careful, or a team fork) or a full engine id
+engine: research  # optional note: an engine slug or id; the plugin does not read it
 apiUrl: https://...  # optional, informational: the API origin your team uses (no /mcp)
 ```
 | Field | Rule |
 |---|---|
-| `engine` | The engine that drives the cloud browser for tasks started from this repo. Omitted: the project's default engine runs. **Choice order:** the call's `engineId` (a user's explicit choice) > `tests.yaml` `engine` (QA only) > `config.yaml` `engine` > the project default. QA with none set uses the project default engine (`qa` is a sensible choice for testing, never required). |
+| `engine` | A note of which engine your team uses. The plugin's skills do not read it. |
 | `apiUrl` | A note for teammates. The plugin does not read it: the URL is each person's plugin setting (`/plugin configure webagent@webagent`). |
 
 **The API key never goes in this file** (nor anywhere in the repo). It lives in your coding agent's settings (Claude Code
-keychain via plugin settings; Codex `WEBAGENT_API_KEY`). The agent reads `config.yaml` and passes `engine` as the `engineId`
-of `run_task` / `create_session`; the server does not read your repo. Set it with `/webagent:engines`.
+keychain via plugin settings; Codex `WEBAGENT_API_KEY`). The plugin's skills do not read `engine`; the server does not read your repo.
 
 ## `product.md`
 Free Markdown, under one page. Suggested sections: what it is, users and roles, key flows, environments (name, URL, notes),
@@ -49,7 +47,7 @@ version: 1                  # optional, only 1 exists
 name: Acme smoke            # optional: workflow name (default "Tests")
 description: ...            # optional
 key: acme-smoke             # optional slug: CI updates the same workflow by it
-engine: qa                  # optional: any engine of your project (short name or id, your own too) for cases that run as a goal. Default: config.yaml `engine`, else the project default engine.
+engine: qa                  # optional engine slug or id (part of the shared format; the plugin does not read it)
 targets:                    # the sites to test, by name (1 to 10)
   local: http://localhost:3000      # a url, or an object:
   staging:

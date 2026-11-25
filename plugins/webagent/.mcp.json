@@ -1,12 +1,23 @@
 {
   "mcpServers": {
-    "webagent": {
+    "lookover-qa": {
       "type": "http",
-      "url": "${user_config.api_url}/mcp"
+      "url": "${user_config.api_url}/mcp/qa"
     },
-    "webagent-key": {
+    "lookover-qa-key": {
       "type": "http",
-      "url": "${user_config.api_url}/mcp?auth=key",
+      "url": "${user_config.api_url}/mcp/qa?auth=key",
+      "headers": {
+        "Authorization": "Bearer ${user_config.api_key}"
+      }
+    },
+    "lookover-browser": {
+      "type": "http",
+      "url": "${user_config.api_url}/mcp/browser"
+    },
+    "lookover-browser-key": {
+      "type": "http",
+      "url": "${user_config.api_url}/mcp/browser?auth=key",
       "headers": {
         "Authorization": "Bearer ${user_config.api_key}"
       }

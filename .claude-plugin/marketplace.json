@@ -1,6 +1,6 @@
 {
   "name": "webagent",
-  "description": "Lookover webagent plugins for coding agents: a cloud browser for web tasks and for testing the app you are building.",
+  "description": "Lookover webagent plugins for coding agents: Lookover QA tests the app you are building in a cloud browser, Lookover Browser lets your own model drive one.",
   "owner": {
     "name": "Lookover"
   },
@@ -8,7 +8,7 @@
     {
       "name": "webagent",
       "source": "./plugins/webagent",
-      "description": "Give Claude Code a cloud browser: /webagent:run does web tasks (research, forms, scrape, monitor); /webagent:qa tests your app, fixes the bugs and re-runs the failed cases."
+      "description": "Give Claude Code a cloud browser: /webagent:qa tests your app with Lookover QA, fixes the bugs and re-runs the failed tests; /webagent:run drives a browser with your own model through Lookover Browser."
     }
   ]
 }

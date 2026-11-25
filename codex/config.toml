@@ -1,32 +1,38 @@
 # Add to ~/.codex/config.toml (all projects) or .codex/config.toml in a trusted project.
 #
-# Sign in with Lookover (browser, no key): after adding this block run once
-#   codex mcp login webagent
-# A browser opens, you sign in, pick the project and approve. Codex keeps and renews the sign-in.
-# Check with `codex mcp get webagent`; sign out with `codex mcp logout webagent`.
+# Two servers. Lookover QA (lookover-qa) tests your app: tests, runs, reports. Lookover Browser (lookover-browser) lets
+# your own model drive a cloud browser on your App. Add the first, the second, or both.
+#
+# Sign in with Lookover (browser, no key): after adding a block run once per server
+#   codex mcp login lookover-qa
+#   codex mcp login lookover-browser
+# A browser opens, you sign in, pick the project and approve. Codex keeps and renews the sign-in (one sign-in per server).
+# Check with `codex mcp get lookover-qa`; sign out with `codex mcp logout lookover-qa`.
 #
 # Until production is live the staging host is the only live one. Replace the url when your team gives you another.
 
-[mcp_servers.webagent]
-url = "https://webagent-staging-in-api.lookover.ai/mcp"
+[mcp_servers.lookover-qa]
+url = "https://webagent-staging-in-api.lookover.ai/mcp/qa"
 startup_timeout_sec = 20
-# smoke_test waits up to 60 s and run_task up to 90 s for one answer. Codex's default tool timeout is 60 s,
-# which would cut a normal test short, so raise it.
+# A tool call can wait for an answer for a while. Codex's default tool timeout is 60 s, so raise it.
+tool_timeout_sec = 120
+
+[mcp_servers.lookover-browser]
+url = "https://webagent-staging-in-api.lookover.ai/mcp/browser"
+startup_timeout_sec = 20
 tool_timeout_sec = 120
 
 # CI or a machine without a browser: use an API key instead of signing in. Set the key in the shell that starts
-# Codex (export WEBAGENT_API_KEY=wa_...; never write the key in this file), and use this block INSTEAD of the one
-# above (comment that out, remove the leading "# " here).
-# [mcp_servers.webagent]
-# url = "https://webagent-staging-in-api.lookover.ai/mcp?auth=key"
+# Codex (export WEBAGENT_API_KEY=wa_...; never write the key in this file), and use these blocks INSTEAD of the ones
+# above (comment those out, remove the leading "# " here). A key limited to CI is refused on both servers; use a member key.
+# [mcp_servers.lookover-qa]
+# url = "https://webagent-staging-in-api.lookover.ai/mcp/qa?auth=key"
 # bearer_token_env_var = "WEBAGENT_API_KEY"
 # startup_timeout_sec = 20
 # tool_timeout_sec = 120
-
-# QA only (optional): the same api, only the four QA tools (qa_run, qa_status, qa_report, qa_quick_check) and no
-# browse tools. Use it INSTEAD of the block above (two servers would both offer qa_run), then `codex mcp login webagent`
-# again. To switch: comment out [mcp_servers.webagent] above and remove the leading "# " here.
-# [mcp_servers.webagent]
-# url = "https://webagent-staging-in-api.lookover.ai/mcp/qa"
+#
+# [mcp_servers.lookover-browser]
+# url = "https://webagent-staging-in-api.lookover.ai/mcp/browser?auth=key"
+# bearer_token_env_var = "WEBAGENT_API_KEY"
 # startup_timeout_sec = 20
 # tool_timeout_sec = 120
