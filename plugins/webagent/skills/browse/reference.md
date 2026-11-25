@@ -16,7 +16,7 @@ Scope: the Testing project only, App addresses only, trust label Unverified (D91
 | `press` | `sessionId`, `key` (Enter, Escape, Tab, ArrowDown...), `ref?` | On an element or whatever has focus |
 | `navigate` | `sessionId`, `url` | An address of this App only; others are refused. Recorded |
 | `scroll` | `sessionId`, `direction?` (up/down/left/right), `to?` (top/bottom), `ref?` | Not a test step |
-| `assert` | `sessionId`, `text?`, `urlContains?`, `visible?: true` | `{ passed, seen }`, checked live on the page. Each passed assert is kept for the session and becomes the saved test's expectation when `save_as_test` gets no `expect` |
+| `assert` | `sessionId`, `text?`, `urlContains?`, `visible?` (send `text` or `urlContains`, or both) | `{ passed, seen }`, checked live on the page. Each passed assert is kept for the session and becomes the saved test's expectation when `save_as_test` gets no `expect` |
 | `sign_in` | `sessionId`, `account?` (a saved login's id, label or username) | The browser fills the saved login; the password never reaches you or the test (the test gets a step "Sign in"). None saved: `handoff` |
 | `handoff` | `sessionId`, `reason`, `instructions?`, `autoOpen?`, `waitSeconds?` (default 60) | The person takes the browser at the live link (sign-in, OTP, 2FA, CAPTCHA, payment) and hands back. First call returns `openUrl`: open it once, then call again to wait |
 | `save_as_test` | `sessionId`, `name`, `expect?`, `appId?`, `waitSeconds?` (default 60) | Saves the recorded steps as a proposed test, "Unverified · your model", replayed once on Lookover's engine; a green replay: "Verified by web agent". Call before `end_session` |
@@ -26,7 +26,7 @@ Scope: the Testing project only, App addresses only, trust label Unverified (D91
 are refused: `handoff`.
 
 ## `assert` in words
-`text` = the page shows this text; `urlContains` = the address contains this; `visible: true` = the element or text you point at is on screen.
+`text` = the page shows this text (with `visible: false` it must NOT show; default `true`); `urlContains` = the current address contains this.
 Send what the person would check by eye at the end of the flow. A failed assert is information (`seen` says what the page shows): act again or
 report it; do not save a test whose assert failed. An assert is not a test step by itself: it fixes the expectation that `save_as_test` saves.
 

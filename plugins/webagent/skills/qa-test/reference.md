@@ -9,7 +9,7 @@ a person approves them in the dashboard (Proposed tests). Results are one of thr
 | Group | Tool | Key inputs | Use |
 |---|---|---|---|
 | Set up | `list_apps` | none | The Apps of the project (ask the person which when unclear; never guess) |
-| | `create_app` | name, public address | A new App |
+| | `create_app` | `name`, `baseUrl`, `environment?` | A new App with its first URL (a public address) |
 | | `add_url` | `appId?`, `name`, `baseUrl`, `previewPattern?` | Save a URL (an address of an App: staging, a preview) so runs use it by name |
 | | `add_login` | `origin`, `label?`, `username?`, `namespace?`; later `addId` | A one-time code to save a site login without the password passing through chat; call again with `addId` to see if it was saved |
 | | `connect_local_app` | `ports`, `name?` | Connect the person's machine so tests reach their localhost app (needs a signed-in person) |
@@ -27,10 +27,10 @@ a person approves them in the dashboard (Proposed tests). Results are one of thr
 | Results | `get_report` | `runId` or `testRef` (exactly one) | Expected vs saw, one screenshot, healed steps |
 | | `share_report` | `runId`, `expiresIn?` | A public read-only link (default 7 days); ask the person first; needs a signed-in person |
 | | `file_bug` | `runId`, `caseId`, `tracker?` (`linear`, `jira`, `markdown`) | File or draft a bug for one failed result |
-| Knowledge | `get_knowledge` | `appId` | What Lookover knows about the App |
-| | `add_knowledge` | `appId`, `kind` (`note` = App note, `doc` = Knowledge doc), text | Teach Lookover a lasting fact; never a secret |
+| Knowledge | `get_knowledge` | `appId?` | The App's notes and Knowledge docs |
+| | `add_knowledge` | `kind` (`note` = App note, `doc` = Knowledge doc), `appId?`; a note: `text`, `noteType?`, `testRef?`; a doc: `title`, `bodyMd` | Teach Lookover a lasting fact; never a secret |
 `?profile=dev` adds `explore_app`, `get_debug_link`, `list_modules`, `save_module`; the plugin does not use them.
-Argument names are the contracts' (0.69); if a name is refused the error text lists the right one.
+Argument names are the contracts' (0.71, `qa-mcp.ts`); if a name is refused the error text lists the right one.
 
 ## `run_tests`
 Give a Folder (`suiteId`) or a list of `tests` (`testRef` = `{ workflowId, caseId }`); neither runs the project's default Folder. Only active

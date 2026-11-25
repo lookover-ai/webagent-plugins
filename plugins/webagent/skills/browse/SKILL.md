@@ -58,7 +58,7 @@ which flows deserve a test. Then `end_session`.
 ## 5. Save a flow as a test
 Each click, type, select, press and navigate you made is recorded as a test step (scroll and observe are not).
 1. **Assert what you checked, then save.** Before `save_as_test`, call `assert { sessionId, text?, urlContains?, visible? }` for what
-   the page must show at the end (`text: "Order placed"`, `urlContains: "/dashboard"`). It checks the live page and answers
+   the page must show at the end (`text: "Order placed"`, `urlContains: "/dashboard"`; `visible: false` makes `text` something that must NOT show). It checks the live page and answers
    `{ passed, seen }`; a passed assert is kept for the session. If it fails, the flow is not done: look again, do not save a
    test whose check did not pass.
 2. `save_as_test { sessionId, name, expect?, appId? }`. `name` is the test's title. With no `expect`, the passed asserts become the test's
