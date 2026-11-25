@@ -126,3 +126,9 @@ Gotchas: no api in this slice: tool names from `specs/mcp-structure.md`, arg nam
 Done: Action masks the key and credential-looking inputs first (`::add-mask::`, test); vendored CLI 0.7.0 from contracts 237f2f7 (redaction in log, report.md, JUnit; CircleCI/Bitbucket/Buildkite/Azure detection); Action README: pin by sha, "CI only" key, minimal permissions, `pull_request_target` warning kept and extended. Template, `/webagent:qa-init`, `/webagent:qa-ci` say "CI only" key and carry the pin note; `check-templates.py` enforces it. `dist/index.cjs` + `dist/webagent.cjs` rebuilt.
 Next: tag `v1` and move the examples to a real sha when the repo is public (K8); the staging check of the CI key (slice K).
 Gotchas: the template keeps `@v1` (a literal sha placeholder would not run); the sha form is the comment above it. `CLI-SOURCE` names contracts 237f2f7, a local sha: re-record after the contracts PR merges. The Action cannot scrub its own comment, it relies on the CLI's report.md.
+
+## 2026-11-25 P done (D103)
+Done: plugin 0.9.0, skill qa-test sends `git` context on writes/runs, list_modules/list_areas/get_knowledge once, Modules (`use`/`with`/`as`), choose + remember,
+branch drafts, selection honesty line, get_run buckets, no weakening, file_bug only App bugs; reference.md tool table follows contracts 0.73.0-rc.0. Check: plugin validate.
+Next: codex/AGENTS.md and /webagent:qa commands not updated for D103; re-check tool table against api after integration.
+Gotchas: argument names read from contracts qa-mcp.ts / qa-selection.ts in worktree d103-contracts, not published yet.
