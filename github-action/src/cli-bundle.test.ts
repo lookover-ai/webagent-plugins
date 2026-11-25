@@ -1,5 +1,5 @@
 /**
- * The Action with the REAL vendored CLI (`dist/webagent.cjs`, 0.3.0) against a fake API on localhost: the CLI and the
+ * The Action with the REAL vendored CLI (`dist/webagent.cjs`, 0.7.0) against a fake API on localhost: the CLI and the
  * server own steps, expectations, case keys and verdict words; the Action must follow the CLI's exit code, never
  * a pass the reply does not prove. Nothing leaves the machine.
  */
@@ -142,7 +142,7 @@ describe("the vendored CLI", () => {
   it("is the version recorded in CLI-SOURCE", () => {
     const recorded = readFileSync(join(__dirname, "..", "CLI-SOURCE"), "utf8");
     const version = /^version: (\S+)$/m.exec(recorded)?.[1];
-    expect(version).toBe("0.3.0");
+    expect(version).toBe("0.7.0");
     expect(/^contracts: [0-9a-f]{7,40}$/m.test(recorded)).toBe(true);
     return new Promise<void>((resolve, reject) => {
       const child = spawn(process.execPath, [BUNDLE, "--version"]);
@@ -160,7 +160,7 @@ describe("the vendored CLI", () => {
   });
 });
 
-describe("Action + CLI 0.3.0: verdict words the Action does not know are never a pass", () => {
+describe("Action + CLI 0.7.0: verdict words the Action does not know are never a pass", () => {
   it("run verdict `skipped`: could not test (exit 2), output error", async () => {
     fake.refuse = undefined;
     fake.final = runReply("skipped", "skipped");
@@ -193,7 +193,7 @@ describe("Action + CLI 0.3.0: verdict words the Action does not know are never a
   });
 });
 
-describe("Action + CLI 0.3.0: steps, expect and file keys pass through", () => {
+describe("Action + CLI 0.7.0: steps, expect and file keys pass through", () => {
   it("an unknown step kind, expectation and file-level key reach the server untouched", async () => {
     fake.posted = [];
     fake.final = runReply("pass", "pass");
@@ -206,7 +206,7 @@ describe("Action + CLI 0.3.0: steps, expect and file keys pass through", () => {
   });
 });
 
-describe("Action + CLI 0.3.0: a server refusal is exit 3 with the server's sentence", () => {
+describe("Action + CLI 0.7.0: a server refusal is exit 3 with the server's sentence", () => {
   it("shows the sentence and the failing path in the job log, the summary and the annotation", async () => {
     fake.refuse = {
       status: 400,
