@@ -116,3 +116,8 @@ Check: validate x3, check-templates.py, two `claude -p` init runs (see PR).
 Done: `codex/config.toml` default block signs in (`codex mcp login webagent`, no key); key block on `/mcp?auth=key` kept commented for CI; AGENTS.md + README Codex section. Proved on staging after api A185: Codex 0.137 registers itself (loopback DCR, 201), prints the authorize URL, and that URL leads (302 → `/auth/login` → identity) to the Lookover sign-in page.
 Next: a person completes the browser login in Codex and calls a tool.
 Check: validate x2 (--strict), check-templates.py, `codex mcp get webagent` parses both the default and the uncommented key block.
+
+## 2026-11-25 H23 S4 done (plugin 0.8.0, two QA MCP servers, hub D102)
+Done: `.mcp.json` = `lookover-qa` (`/mcp/qa`) + `lookover-browser` (`/mcp/browser`) + `-key` twins; plugin 0.8.0. `qa-test` skill/reference rewritten for run_tests (dry run + cost first), get_run, get_report, create_tests (proposals), quick_check, connect_local_app, file_bug, share_report; no run_task/smoke_test/testsYaml/aliasing. `browse` skill = Lookover Browser (14 tools, `assert` before `save_as_test`). Commands qa, qa-triage, run updated (allowed-tools prefixes `mcp__plugin_webagent_lookover-qa[-key]__`); `/webagent:engines` deleted. Codex config.toml + AGENTS.md, README, CLAUDE.md, folder doc, templates follow. `github-action/` talks REST/CLI: unchanged.
+Next: re-check arg names (`runId`, `suiteId`, `testRef`) against the api once S1 lands; `kind`/text args of `add_knowledge`.
+Gotchas: no api in this slice: tool names from `specs/mcp-structure.md`, arg names from contracts 0.69 qa-mcp.ts. ngrok free dropped (run_tests has no header option).

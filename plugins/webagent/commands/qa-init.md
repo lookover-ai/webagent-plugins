@@ -20,8 +20,8 @@ Steps:
 5. Write steps that replay: one action per step, controls named by their visible label, every typed value a quoted literal
    (`type "qa+{{uid}}@example.com" into Email`; `{{uid}}` is new each run), `expect` as `shows "X"` / `address contains Y` / `does not show "Z"`.
    Keep it small: 5 to 8 cases, plain-language steps, `expect` as what the user sees, one `smoke` tagged per critical flow
-   (`priority: 1`; scale is 1 most important to 5, default 3), `local` target = the dev server URL (the agent opens a tunnel when
-   it tests it). Give every case an `id`. Use only the fields in the templates: the format is shared with the dashboard and CI.
+   (`priority: 1`; scale is 1 most important to 5, default 3), `local` target = the dev server URL (the agent connects your machine or opens a tunnel
+   when it tests it). Give every case an `id`. Use only the fields in the templates: the format is shared with the dashboard and CI.
    A YAML value that contains `: ` (colon and space) is quoted as a whole, or the file does not parse:
    `expect: 'shows "Total: $19.00"'`, never `expect: shows "Total: $19.00"`. Add a `key:` slug (for example `key: checkout-flow`): CI uses it to name the workflow.
 6. After writing, tell the user: commit `.webagent/` with the code (it holds no secrets), and run `/webagent:qa` next.

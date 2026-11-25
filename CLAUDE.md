@@ -1,9 +1,9 @@
 # webagent-plugins
 
 Plugins and snippets that put webagent QA inside the user's own coding agent (Lookover suite, task prefix `K`).
-First product: the Claude Code plugin `webagent` (general connector: `/webagent:run`, `/webagent:engines`; QA is the headline use case: `/webagent:qa`) plus a Codex snippet. Public repo planned
+First product: the Claude Code plugin `webagent` (two MCP servers, hub D102: Lookover QA `/mcp/qa` is the headline use case, `/webagent:qa`; Lookover Browser `/mcp/browser`, bring your own model, `/webagent:run`) plus a Codex snippet. Public repo planned
 (`lookover-ai/webagent-plugins`); remote `origin` exists; changes go by PR into `development` (see Branches).
-Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hub/ENGINES.md` (the `qa` engine).
+Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hub/specs/mcp-structure.md` (D102: the tool names, source of truth).
 
 > **Managed from the hub.** This file wins inside this repo. Hub product rules still bind: no CAPTCHA solving, no
 > fingerprint evasion, no humanized input; SSRF guard (our cloud browser never opens localhost, a tunnel is the user's
@@ -14,10 +14,10 @@ Product decisions: `../webagent/hub/specs/qa-tester-usecase.md`, `../webagent/hu
 .claude-plugin/marketplace.json     marketplace `webagent`, one plugin
 plugins/webagent/                   the plugin (installs copy ONLY this folder: nothing in it may reach outside it)
   .claude-plugin/plugin.json        name, version, license MIT, userConfig (api_key sensitive + optional, api_url default)
-  .mcp.json                         `webagent` (OAuth "Sign in with Lookover", no headers) + `webagent-key` (`/mcp?auth=key`, key header; K16)
-  skills/browse/SKILL.md            general web tasks (hub D66); reference.md beside it
+  .mcp.json                         `lookover-qa` (`/mcp/qa`) + `lookover-browser` (`/mcp/browser`), each OAuth "Sign in with Lookover" (no headers) + a `-key` twin (`?auth=key`, key header; K16)
+  skills/browse/SKILL.md            Lookover Browser: your model drives the browser, assert, save_as_test; reference.md beside it
   skills/qa-test/SKILL.md           the QA workflow, written for a model; long reference in reference.md
-  commands/run.md, engines.md, qa.md, qa-triage.md, qa-init.md, qa-ci.md   /webagent:run, :engines, :qa, :qa-triage, :qa-init, :qa-ci
+  commands/run.md, qa.md, qa-triage.md, qa-init.md, qa-ci.md   /webagent:run, :qa, :qa-triage, :qa-init, :qa-ci
   templates/.webagent/              config.yaml, product.md, tests.yaml starters
   templates/github/webagent-qa.yml  the workflow /webagent:qa-init offers (checked against github-action/action.yml)
 codex/AGENTS.md, config.toml        the same workflow for Codex
@@ -27,7 +27,7 @@ docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs
 
 ## Rules
 1. **Truth lives in the api code.** Every tool name and argument in a skill is checked against
-   `../webagent-api/src/modules/mcp/*` and the contracts. A gap in the product goes to the hub as a task, never into the
+   `../webagent-api/src/modules/mcp/*` and the contracts (names: `../webagent/hub/specs/mcp-structure.md`). A gap in the product goes to the hub as a task, never into the
    skill as a promise. Re-check after every api MCP change (tool table in `reference.md`, `codex/AGENTS.md`).
 2. **The skill is read by a model.** Short imperative steps, exact arg names, no marketing. Keep SKILL.md under 200 lines;
    long tables go in `reference.md`. A claim the model should not make (a fix is live, a CAPTCHA passed) is a rule in the skill.
@@ -38,7 +38,7 @@ docs/WEBAGENT-FOLDER.md             the `.webagent/` format; docs/TASKS.md, docs
    `scripts/check-templates.py` checks the templates (set `WEBAGENT_CONTRACTS_DIST` to also run the contract's own reader).
 5. The plugin has NO env fallback for the key: `${user_config.x:-${ENV}}` makes Claude Code drop the server (tested, v2.1.322). Do not
    add one. Codex keeps `WEBAGENT_API_KEY`. `headersHelper` cannot read `userConfig` (no `${user_config.*}`, no `env` block, v2.1.325),
-   and two plugin servers with the same URL are deduplicated: hence `webagent-key` on `/mcp?auth=key` (K16). Keep both URLs distinct.
+   and two plugin servers with the same URL are deduplicated: hence the `-key` servers on `?auth=key` (K16). Keep every URL distinct.
 6. Bump `version` in `plugin.json` on every change users should receive (Claude Code caches by version).
 
 ## Branches (hub D80)
@@ -56,7 +56,7 @@ claude plugin validate .                         # marketplace
 claude plugin validate plugins/webagent          # plugin + skills + commands + MCP entries
 claude plugin validate plugins/webagent --strict # warnings count too
 claude -p --plugin-dir plugins/webagent --output-format stream-json --verbose "hi"   # init line lists skills, commands, MCP server
-H=$(mktemp -d) && cp codex/config.toml "$H" && CODEX_HOME="$H" codex mcp get webagent   # Codex parses the TOML
+H=$(mktemp -d) && cp codex/config.toml "$H" && CODEX_HOME="$H" codex mcp get lookover-qa   # Codex parses the TOML
 python3 scripts/check-templates.py   # templates parse and match the format (WEBAGENT_CONTRACTS_DIST=../webagent-contracts/dist adds the contract reader)
 ```
 The plugin has no build and no dependencies. `github-action/` does: `cd github-action && VITEST_MAX_WORKERS=4 flock /tmp/claude-1000/webagent-heavy.lock pnpm check` (typecheck, tests, build; commit `dist/`; re-vendor `dist/webagent.cjs` from `../webagent-contracts/cli/dist/webagent.cjs` after `pnpm -C cli build` there). `github-action/CLI-SOURCE` records the vendored CLI version + contracts sha: update it with the bundle (from a worktree, `WEBAGENT_CLI_BUNDLE=<abs path>/cli/dist/webagent.cjs pnpm build`). The Action only maps inputs to the CLI's flags and follows its exit code: the CLI and the api own behaviour (it never parses steps/expect or reads a verdict from the reply). No dev server. Commits: one block, check green, then a PR into `development` (see Branches).
