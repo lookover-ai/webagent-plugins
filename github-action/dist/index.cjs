@@ -148,6 +148,19 @@ function readInputs(env) {
     environment: input(env, "environment")
   };
 }
+function secretValues(env) {
+  const out = /* @__PURE__ */ new Set();
+  for (const [name, raw] of Object.entries(env)) {
+    if (!name.startsWith("INPUT_") || raw === void 0) continue;
+    const n = name.slice("INPUT_".length);
+    if (n !== "API-KEY" && !/SESSION|HEADER|PASSWORD|TOKEN|SECRET/.test(n)) continue;
+    for (const line of raw.split(/\r?\n/)) {
+      const v = line.trim();
+      if (v !== "") out.add(v);
+    }
+  }
+  return [...out];
+}
 function readContext(env, event) {
   return {
     eventName: env.GITHUB_EVENT_NAME ?? "",
@@ -445,6 +458,7 @@ function workflowKeyOf(fileText) {
   return fileText ? /^key:\s*["']?([A-Za-z0-9_-]{1,64})["']?\s*(#.*)?$/m.exec(fileText)?.[1] : void 0;
 }
 async function run(d) {
+  for (const v of secretValues(d.env)) d.log(`::add-mask::${v}`);
   const inputs = readInputs(d.env);
   const ctx = readContext(d.env, d.event);
   const buildUrl = d.env.GITHUB_REPOSITORY && d.env.GITHUB_RUN_ID ? `${(d.env.GITHUB_SERVER_URL || "https://github.com").replace(/\/+$/, "")}/${d.env.GITHUB_REPOSITORY}/actions/runs/${d.env.GITHUB_RUN_ID}` : "";
@@ -469,7 +483,6 @@ ${noticeForFork}
     await d.appendSummary(summaryFor({ verdict: "setup" }, msg));
     return finish("setup", 3);
   }
-  d.log(`::add-mask::${inputs.apiKey}`);
   if (ctx.eventName === "deployment_status" && inputs.url === "") {
     const ds = d.event.deployment_status;
     if (ds?.state !== "success") {

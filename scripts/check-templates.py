@@ -123,6 +123,13 @@ def check_workflow(path):
                     err("workflow: api-key must come from secrets.WEBAGENT_API_KEY")
     if uses != 1:
         err("workflow: expected one webagent-plugins action step")
+    text = path.read_text()
+    if "CI only" not in text:
+        err('workflow: say the key is a "CI only" key')
+    if "sha" not in text:
+        err("workflow: carry the pin-by-sha note")
+    if set(d.get("permissions", {})) - {"contents", "pull-requests"}:
+        err("workflow: permissions must stay minimal (contents, pull-requests)")
     print("parsed", path.name)
 
 

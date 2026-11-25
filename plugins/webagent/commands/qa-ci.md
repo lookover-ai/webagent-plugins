@@ -56,7 +56,7 @@ Flags (exact): `--file <path>` (default `.webagent/tests.yaml`), `--url <url>`, 
 `--junit <path>`, `--markdown <path>`, `--json` (run as JSON on stdout). The URL must be public https: the cloud browser never opens localhost.
 
 ## The API key
-Create it in the webagent dashboard, **API keys**, Create key (the **member** role is enough). Add it as the repository secret
+Create it in the webagent dashboard, **API keys**, Create key, Key type **CI only** (it can start and read test runs and nothing else). Add it as the repository secret
 `WEBAGENT_API_KEY` (GitHub: Settings, Secrets and variables, Actions, New repository secret; on other CI: its secret or masked variable store).
 Never paste the key into a file or a chat. Keys stay for CI; the plugin's own sign-in is separate.
 
