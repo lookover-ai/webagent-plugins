@@ -307,7 +307,7 @@ VITEST_MAX_WORKERS=4 pnpm check     # typecheck, tests, build (dist/index.cjs + 
 `webagent-contracts/cli/dist/webagent.cjs` (build contracts, `sdk` and `cli` there first; `WEBAGENT_CLI_BUNDLE` points elsewhere): re-vendor it when the
 CLI changes. `src/cli-contract.test.ts` reads the committed bundle and fails if the `WEBAGENT_CI_*` names differ from what the Action sets.
 
-**Vendored now:** `@lookover-ai/cli` **0.7.0**, built from contracts branch `feat/h24-ci-hardening` commit `237f2f7`,
+**Vendored now:** `@lookover-ai/cli` **0.7.0**, built from contracts `development` commit `9ecbb49` (#92),
 bundle 1.47 MB (H24-C: redaction, CircleCI, Bitbucket, Buildkite and Azure detection). Re-vendor from a release tag before moving the Action's `v1` tag. The CLI is the engine (flags, exit codes, `report.md` come from it and the API); `src/` only maps inputs to flags,
 writes the summary, outputs and the sticky comment (hidden marker `<!-- lookover-qa:<workflow key> -->`).
 `CLI-SOURCE` records which CLI version and contracts commit the vendored bundle is (a test checks it).

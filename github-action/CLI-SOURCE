@@ -1,6 +1,6 @@
 The CLI bundle vendored in dist/webagent.cjs. Update this file together with the bundle (cli-bundle.test.ts checks it).
 package: @lookover-ai/cli
 version: 0.7.0
-contracts: 237f2f7
-branch: feat/h24-ci-hardening (H24-C: output redaction, CircleCI, Bitbucket, Buildkite and Azure detection; built on contracts 6d0df50)
+contracts: 9ecbb49
+branch: development, squash of #92 (H24-C: output redaction, CircleCI, Bitbucket, Buildkite and Azure detection; built on contracts 6d0df50)
 build: pnpm install && pnpm build && pnpm -C sdk build && pnpm -C cli build, then WEBAGENT_CLI_BUNDLE=<contracts>/cli/dist/webagent.cjs pnpm build here
