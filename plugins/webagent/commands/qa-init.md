@@ -30,7 +30,7 @@ Steps:
    `${CLAUDE_PLUGIN_ROOT}/templates/github/webagent-qa.yml` to `.github/workflows/webagent-qa.yml`, changing only the `url:` line to the
    public https staging or preview URL the user gave (never localhost, never a guessed host; if there is none, keep the placeholder and say it must be replaced).
    Show the file before writing. Do not add inputs or change the `uses:` line. Then tell the user:
-   - Create an API key in the webagent dashboard, **API keys**, Create key (the **member** role is enough), and add it as the repository secret
+   - Create an API key in the webagent dashboard, **API keys**, Create key, Key type **CI only** (it can only start and read test runs), and add it as the repository secret
      `WEBAGENT_API_KEY` (GitHub: Settings, Secrets and variables, Actions, New repository secret). Never paste the key into a file or this chat.
      CI uses a key; it is not the plugin's sign-in.
    - Commit the workflow with `.webagent/`; the first pull request then gets the check and one PR comment.

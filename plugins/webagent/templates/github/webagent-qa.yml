@@ -1,7 +1,8 @@
 # .github/workflows/webagent-qa.yml
 # Runs .webagent/tests.yaml in a cloud browser on every pull request, keeps one comment on the PR, and fails the job when a
 # required case fails. Docs: github-action/README.md in the webagent-plugins repo (inputs, preview URLs, exit codes).
-# The API key is the repository secret WEBAGENT_API_KEY (never in this file).
+# The API key is the repository secret WEBAGENT_API_KEY (never in this file). Make it a "CI only" key (dashboard, API keys,
+# Key type): it can start and read test runs and nothing else, so a leaked secret cannot do more.
 name: Lookover QA
 on:
   pull_request:
@@ -12,7 +13,7 @@ concurrency:                       # a new push cancels the old run (the action 
   group: lookover-qa-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
+permissions:                       # least privilege: the job's GITHUB_TOKEN gets nothing else
   contents: read
   pull-requests: write             # for the PR comment (without it the check still works, just no comment)
 
@@ -22,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Pin to a full commit sha for a repo that holds a key: `@<40-character sha> # v1.x.y` (a tag can move; @v1 is fine to try it out).
       - uses: lookover-ai/webagent-plugins/github-action@v1
         with:
           api-key: ${{ secrets.WEBAGENT_API_KEY }}

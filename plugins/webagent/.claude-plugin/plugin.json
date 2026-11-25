@@ -1,7 +1,7 @@
 {
   "name": "webagent",
   "displayName": "Lookover webagent",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Test your web app in a real cloud browser with Lookover QA (/webagent:qa, /webagent:qa-triage, /webagent:qa-init, /webagent:qa-ci), or drive a browser with your own model through Lookover Browser (/webagent:run). Sign in with Lookover in the browser; no API key needed.",
   "author": {
     "name": "Lookover",
